@@ -1,0 +1,34 @@
+{
+  "name": "pronostici-sito",
+  "version": "0.1.0",
+  "private": true,
+  "scripts": {
+    "dev": "next dev --hostname 127.0.0.1",
+    "build": "next build",
+    "start": "next start",
+    "lint": "eslint",
+    "seed-legal": "node scripts/seed-legal-admin.mjs",
+    "live-poller": "tsx scripts/live-poller.ts",
+    "dev:fix": "ulimit -n 65536 2>/dev/null; next dev --hostname 127.0.0.1"
+  },
+  "dependencies": {
+    "next": "16.1.6",
+    "next-intl": "^4.8.3",
+    "react": "19.2.3",
+    "react-dom": "19.2.3"
+  },
+  "optionalDependencies": {
+    "ioredis": "^5"
+  },
+  "devDependencies": {
+    "@tailwindcss/postcss": "^4",
+    "@types/node": "^20",
+    "@types/react": "^19",
+    "@types/react-dom": "^19",
+    "eslint": "^9",
+    "eslint-config-next": "16.1.6",
+    "tailwindcss": "^4",
+    "tsx": "^4",
+    "typescript": "^5"
+  }
+}

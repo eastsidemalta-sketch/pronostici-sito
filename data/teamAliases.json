@@ -1,0 +1,22 @@
+{
+  "Inter": ["Inter Milan", "FC Internazionale", "Internazionale"],
+  "Milan": ["AC Milan"],
+  "Juventus": ["Juventus FC", "Juve"],
+  "Roma": ["AS Roma", "A.S. Roma"],
+  "Lazio": ["SS Lazio", "S.S. Lazio"],
+  "Napoli": ["SSC Napoli", "SSC Naples"],
+  "Fiorentina": ["ACF Fiorentina"],
+  "Pisa": ["Pisa SC", "AC Pisa"],
+  "Real Madrid": ["Real Madrid CF", "Real Madrid"],
+  "Barcelona": ["FC Barcelona", "FC Barcelona"],
+  "Atletico Madrid": ["Atlético Madrid", "Atletico Madrid", "Atletico"],
+  "Bayern Munich": ["Bayern München", "Bayern Munich", "FC Bayern"],
+  "Borussia Dortmund": ["Dortmund", "BVB"],
+  "Manchester United": ["Man United", "Man Utd", "Manchester Utd"],
+  "Manchester City": ["Man City"],
+  "Liverpool": ["Liverpool FC"],
+  "Chelsea": ["Chelsea FC"],
+  "Arsenal": ["Arsenal FC"],
+  "Tottenham": ["Tottenham Hotspur", "Spurs"],
+  "Paris Saint Germain": ["PSG", "Paris SG", "Paris Saint-Germain"]
+}

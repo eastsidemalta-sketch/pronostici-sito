@@ -1,0 +1,8 @@
+{
+  "crons": [
+    {
+      "path": "/api/cron/live-matches",
+      "schedule": "*/2 * * * *"
+    }
+  ]
+}

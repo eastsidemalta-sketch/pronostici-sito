@@ -1,0 +1,73 @@
+@import "tailwindcss";
+
+/* Design tokens - Oddschecker (verde/blu) + SportyTrader (pulizia, dimensioni) */
+:root {
+  --background: #f5f5f5;
+  --foreground: #000000;
+  --foreground-muted: #1a1a1a;
+  --accent: #1e7b45;
+  --accent-hover: #185c35;
+  --accent-light: #e6f3ea;
+  --blue: #1a1a1a;
+  --blue-hover: #333333;
+  --nav-bar-bg: #ffffff;
+  --nav-bar-active: #1e7b45;
+  --nav-bar-inactive: #1a1a1a;
+  --card-bg: #ffffff;
+  --card-border: #e0e0e0;
+  --best-odds: #1e7b45;
+  /* Safe area per notch/home indicator su mobile */
+  --safe-top: env(safe-area-inset-top, 0px);
+  --safe-bottom: env(safe-area-inset-bottom, 0px);
+  --safe-left: env(safe-area-inset-left, 0px);
+  --safe-right: env(safe-area-inset-right, 0px);
+}
+
+@theme inline {
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --color-accent: var(--accent);
+  /* Verde unificato: stesse tonalità di accent per categorie, testo, quote, pronostici */
+  --color-green-50: var(--accent-light);
+  --color-green-100: #cce8d4;
+  --color-green-700: var(--accent);
+  --color-green-800: var(--accent-hover);
+}
+
+/* Mobile: testo più intenso e leggermente più grande per maggiore leggibilità */
+@media (max-width: 639px) {
+  :root {
+    --foreground: #000000;
+    --foreground-muted: #050505;
+  }
+}
+
+/* Mobile-first: 16px base, touch-friendly. Desktop: più compatto */
+body {
+  background: var(--background);
+  color: var(--foreground);
+  font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  font-size: 17px;
+  line-height: 1.5;
+  -webkit-font-smoothing: antialiased;
+  /* Evita zoom su input su iOS */
+  -webkit-text-size-adjust: 100%;
+}
+
+@media (min-width: 640px) {
+  body {
+    font-size: 15px;
+  }
+}
+
+@media (min-width: 768px) {
+  body {
+    font-size: 14px;
+  }
+}
+
+@media (min-width: 1024px) {
+  body {
+    font-size: 14px;
+  }
+}
