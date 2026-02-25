@@ -60,7 +60,7 @@ export default function CookieSettingsPage() {
       <h1 className="mt-6 text-2xl font-semibold text-[var(--foreground)]">{t("settingsTitle")}</h1>
       <p className="mt-2 text-sm text-[var(--foreground-muted)]">
         {t("settingsDescription")}{" "}
-        <Link href="/privacy" className="underline hover:text-[var(--accent)]">
+        <Link href="/privacy" className="hover:text-[var(--accent)]">
           {t("privacyPolicy")}
         </Link>
       </p>

@@ -96,6 +96,15 @@ export default function AdminDashboardPage() {
             Testo, bottone e link canale per paese (ogni 5 partite nella home)
           </p>
         </Link>
+        <Link
+          href="/ad2min3k/footer-disclaimer"
+          className="rounded-xl border bg-white p-6 shadow-sm hover:border-emerald-500 hover:shadow transition"
+        >
+          <h3 className="font-semibold">Disclaimer footer</h3>
+          <p className="mt-2 text-sm text-neutral-600">
+            Testi responsabile gambling e 18+ per paese nel footer
+          </p>
+        </Link>
       </div>
     </main>
   );

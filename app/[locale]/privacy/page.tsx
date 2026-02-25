@@ -53,10 +53,10 @@ export default async function PrivacyPage() {
 
         <div className="mt-12 border-t border-[var(--card-border)] pt-6">
           <div className="flex flex-wrap gap-4">
-            <Link href="/termini-e-condizioni" className="text-sm underline hover:text-[var(--accent)]">
+            <Link href="/termini-e-condizioni" className="text-sm hover:text-[var(--accent)]">
               {termsLinkName}
             </Link>
-            <Link href="/cookie-settings" className="text-sm underline hover:text-[var(--accent)]">
+            <Link href="/cookie-settings" className="text-sm hover:text-[var(--accent)]">
               {tCookies("cookieSettings")}
             </Link>
           </div>
@@ -128,10 +128,10 @@ export default async function PrivacyPage() {
         <div className="mt-12 border-t border-[var(--card-border)] pt-6">
           <p className="text-xs text-[var(--foreground-muted)]">{t("privacyFooter")}</p>
           <div className="mt-4 flex flex-wrap gap-4">
-            <Link href="/termini-e-condizioni" className="text-sm underline hover:text-[var(--accent)]">
+            <Link href="/termini-e-condizioni" className="text-sm hover:text-[var(--accent)]">
               {t("privacyTermsLink")}
             </Link>
-            <Link href="/cookie-settings" className="text-sm underline hover:text-[var(--accent)]">
+            <Link href="/cookie-settings" className="text-sm hover:text-[var(--accent)]">
               {t("termsCookieLink")}
             </Link>
           </div>

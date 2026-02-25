@@ -2,7 +2,6 @@ import type { Metadata } from "next";
 import Script from "next/script";
 import { NextIntlClientProvider } from "next-intl";
 import { getLocale, getMessages } from "next-intl/server";
-import GaTestButton from "./GaTestButton";
 import "./globals.css";
 
 const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL || "https://playsignal.io";
@@ -55,7 +54,6 @@ export default async function RootLayout({
         <NextIntlClientProvider messages={messages}>
           {children}
         </NextIntlClientProvider>
-        <GaTestButton />
         {process.env.NEXT_PUBLIC_GA_ID && (
           <>
             <Script

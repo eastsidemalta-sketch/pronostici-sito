@@ -96,8 +96,8 @@ export default function HomeBanner({
   return (
     <div className="flex flex-col gap-0">
       {/* Sport tabs */}
-      <div className="-mx-1 overflow-x-auto px-1 pt-1 pb-0.5 sm:pt-1.5 sm:pb-1 md:pt-1.5 md:pb-1 scrollbar-hide [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden">
-        <div className="flex min-w-max gap-2 sm:min-w-0 sm:flex-wrap">
+      <div className="overflow-x-auto pt-1 pb-0.5 sm:pt-1.5 sm:pb-1 md:pt-1.5 md:pb-1 scrollbar-hide [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden">
+        <div className="flex min-w-max justify-start gap-2 sm:min-w-0 sm:flex-wrap">
           <button
             type="button"
             onClick={() => setSport("all")}

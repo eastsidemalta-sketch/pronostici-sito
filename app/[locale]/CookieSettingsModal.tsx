@@ -60,7 +60,7 @@ export default function CookieSettingsModal({ onSave, onClose, initialPrefs }: P
         <div className="space-y-4 p-4">
           <p className="text-sm text-[var(--foreground-muted)]">
             {t("settingsDescription")}{" "}
-            <Link href="/privacy" className="underline hover:text-[var(--accent)]">
+            <Link href="/privacy" className="hover:text-[var(--accent)]">
               {t("privacyPolicy")}
             </Link>
           </p>

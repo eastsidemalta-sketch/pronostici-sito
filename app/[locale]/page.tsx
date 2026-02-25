@@ -61,7 +61,6 @@ export default async function HomePage({
   const { locale } = await params;
   const { sport = "all", league = "all" } = await searchParams;
   const t = await getTranslations("home");
-  const tCommon = await getTranslations("common");
   const tPronostici = await getTranslations("pronosticiQuote");
 
   const country = localeToCountryCode[locale] ?? "IT";
@@ -113,7 +112,7 @@ export default async function HomePage({
     <main className="min-h-screen bg-[var(--background)]">
       {/* Sport tabs + competizioni - fissi in alto */}
       <div className="fixed left-0 right-0 top-[40px] z-40 border-b border-[var(--card-border)] bg-[var(--card-bg)] shadow-sm md:top-[60px]">
-        <div className="mx-auto max-w-6xl px-3 py-1.5 sm:px-4 sm:py-1.5 md:max-w-none md:px-5 md:py-1.5">
+        <div className="mx-auto max-w-6xl px-3 py-1.5 sm:px-4 sm:py-1.5 md:px-5 md:py-1.5">
           <Suspense fallback={<div className="h-8 animate-pulse rounded bg-slate-100" />}>
             <HomeBanner menuItems={menuItems} labels={labels} />
           </Suspense>
@@ -170,26 +169,6 @@ export default async function HomePage({
             </div>
           </div>
         )}
-      </div>
-
-      {/* Link rapidi in fondo */}
-      <div className="mt-6 border-t border-[var(--card-border)] bg-[var(--card-bg)] sm:mt-8">
-        <div className="mx-auto max-w-6xl px-3 py-4 sm:px-4 md:px-5 md:py-5">
-          <div className="flex flex-wrap justify-center gap-3 text-sm sm:gap-4 md:gap-5 md:text-base">
-            <Link href="/" className="font-medium text-[var(--foreground)] hover:underline">
-              {tCommon("home")}
-            </Link>
-            <Link href="/pronostici-quote" className="font-medium text-[var(--foreground-muted)] hover:underline">
-              {tCommon("pronosticiQuote")}
-            </Link>
-            <Link href="/bonus" className="font-medium text-[var(--foreground-muted)] hover:underline">
-              {tCommon("bonus")}
-            </Link>
-            <Link href="/siti-scommesse" className="font-medium text-[var(--foreground-muted)] hover:underline">
-              {tCommon("sitiScommesse")}
-            </Link>
-          </div>
-        </div>
       </div>
     </main>
   );

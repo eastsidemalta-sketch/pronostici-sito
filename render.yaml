@@ -1,31 +1,33 @@
-# Render Blueprint - https://render.com/docs/blueprint-spec
-# Deploy: connetti il repo GitHub e Render creerà il servizio automaticamente
+# Blueprint Render - deploy con un click
+# Vai su dashboard.render.com → New → Blueprint → collega il repo
 
 services:
+  # Produzione - playsignal.io
   - type: web
-    name: pronostici-sito
+    name: playsignal
     runtime: node
-    region: frankfurt  # o oregon per US
-
-    buildCommand: npm ci && npm run build
-    startCommand: npm run start
-
+    region: frankfurt
+    plan: starter  # o free per iniziare
+    branch: main
+    buildCommand: npm install && npm run build
+    startCommand: npm start
     envVars:
-      - key: NODE_VERSION
-        value: "20"
-      - key: NEXT_PUBLIC_SITE_URL
-        sync: false  # imposta: https://<nome-servizio>.onrender.com
-      - key: API_FOOTBALL_KEY
-        sync: false
-      - key: THE_ODDS_API_KEY
-        sync: false
-      - key: ADMIN_EMAIL
-        sync: false
-      - key: ADMIN_PASSWORD
-        sync: false
-      - key: ADMIN_SECRET
-        sync: false
-      - key: CRON_SECRET
-        generateValue: true  # genera secret per proteggere /api/cron/live-matches
-      - key: REDIS_URL
-        sync: false  # opzionale: aggiungi Redis da Dashboard e incolla connection string
+      - key: NODE_ENV
+        value: production
+      # Aggiungi qui le tue variabili (API keys, ecc.)
+      # - key: API_FOOTBALL_KEY
+      #   sync: false  # imposta manualmente nel dashboard
+
+  # Staging - test prima del go-live (puoi metterlo in pausa)
+  - type: web
+    name: playsignal-staging
+    runtime: node
+    region: frankfurt
+    plan: free
+    branch: staging  # crea questo branch per lo staging
+    buildCommand: npm install && npm run build
+    startCommand: npm start
+    envVars:
+      - key: NODE_ENV
+        value: production
+      # Stesse variabili della produzione (o chiavi di test)

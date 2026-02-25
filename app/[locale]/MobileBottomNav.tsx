@@ -177,7 +177,7 @@ export default function MobileBottomNav() {
       >
         <SitesIcon active={isSiti} />
         <span className={`text-[9px] font-medium ${isSiti ? "text-[var(--nav-bar-active)]" : "text-[var(--nav-bar-inactive)]"}`}>
-          {t("bookmakers")}
+          {t("sitiScommesse")}
         </span>
       </Link>
     </nav>

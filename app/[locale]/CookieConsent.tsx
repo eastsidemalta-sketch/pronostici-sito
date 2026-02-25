@@ -79,7 +79,7 @@ export default function CookieConsent() {
             </h2>
             <p id="cookie-consent-desc" className="mt-1 text-xs text-[var(--foreground-muted)]">
               {t("description")}{" "}
-              <Link href="/privacy" className="underline hover:text-[var(--accent)]">
+              <Link href="/privacy" className="hover:text-[var(--accent)]">
                 {t("privacyPolicy")}
               </Link>
             </p>

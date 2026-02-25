@@ -183,7 +183,7 @@ export default function MobileMenuOverlay() {
                 onClick={closeMenu}
                 className="flex items-center justify-between gap-3 py-3 transition hover:bg-[var(--background)]"
               >
-                <span className="font-medium uppercase tracking-wide">{t("bookmakers")}</span>
+                <span className="font-medium uppercase tracking-wide">{t("sitiScommesse")}</span>
                 <ChevronRightIcon />
               </Link>
             </div>
@@ -230,7 +230,7 @@ export default function MobileMenuOverlay() {
                   <span className="text-[var(--accent)]">
                     <GlobeIcon />
                   </span>
-                  <span className="font-medium uppercase tracking-wide">{t("bookmakers")}</span>
+                  <span className="font-medium uppercase tracking-wide">{t("sitiScommesse")}</span>
                 </div>
                 <ChevronRightIcon />
               </Link>

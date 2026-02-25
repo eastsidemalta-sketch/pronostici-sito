@@ -1,107 +1,149 @@
-# Deploy su Render
+# Deploy su Render con PlaySignal.io
 
-Guida per mettere online il sito su [Render.com](https://render.com).
-
----
-
-## Prerequisiti
-
-- Account [Render](https://render.com) (gratuito)
-- Repository GitHub con il codice
-- Chiavi API: API-Football, The Odds API
+Guida per mettere online il sito su Render con dominio Namecheap, email e ambiente di staging.
 
 ---
 
-## 1. Connetti il repository
+## 1. Struttura su Render
 
-1. Vai su [dashboard.render.com](https://dashboard.render.com)
+Crea **due Web Service** separati:
+
+| Servizio | Branch Git | URL | Uso |
+|----------|------------|-----|-----|
+| **Produzione** | `main` | playsignal.io | Sito live |
+| **Staging** | `staging` o `develop` | playsignal-staging.onrender.com | Test prima del go-live |
+
+- **Staging**: puoi metterlo in pausa quando non serve (Render → Dashboard → servizio → Suspend).
+- **Produzione**: sempre attivo.
+
+---
+
+## 2. Setup su Render
+
+### 2.1 Connessione a GitHub
+
+1. Vai su [Render Dashboard](https://dashboard.render.com)
 2. **New** → **Web Service**
-3. Connetti GitHub e seleziona il repo `pronostici-sito`
-4. Render rileverà `render.yaml` (Blueprint) e configurerà il servizio
+3. Connetti il repo GitHub `pronostici-sito`
+4. Configura:
+   - **Name**: `playsignal` (produzione) o `playsignal-staging` (staging)
+   - **Branch**: `main` (prod) o `staging` (staging)
+   - **Build Command**: `npm install && npm run build`
+   - **Start Command**: `npm start`
+   - **Instance Type**: Free (staging) / Starter (prod se serve più risorse)
+
+### 2.2 Variabili d’ambiente
+
+Imposta le stesse variabili per entrambi i servizi (o diverse per staging se serve):
+
+- `NODE_ENV=production`
+- Variabili API (API-Football, The Odds API, ecc.) – usa i valori reali in prod, eventualmente chiavi di test in staging.
 
 ---
 
-## 2. Configura le variabili d'ambiente
+## 3. Dominio PlaySignal.io (Namecheap)
 
-Nella pagina del servizio → **Environment** → aggiungi:
+### 3.1 Produzione (playsignal.io)
 
-| Variabile | Obbligatorio | Descrizione |
-|-----------|--------------|-------------|
-| `NEXT_PUBLIC_SITE_URL` | Sì | URL finale, es. `https://pronostici-sito.onrender.com` |
-| `API_FOOTBALL_KEY` | Sì | Chiave da [api-football.com](https://www.api-football.com/) |
-| `THE_ODDS_API_KEY` | Sì | Chiave da [the-odds-api.com](https://the-odds-api.com/) |
-| `ADMIN_EMAIL` | Sì | Email per accesso admin |
-| `ADMIN_PASSWORD` | Sì | Password admin |
-| `ADMIN_SECRET` | Sì | Secret per sessione admin |
-| `CRON_SECRET` | Consigliato | Generato da Render; usato per proteggere il cron |
-| `REDIS_URL` | No | Opzionale; senza Redis usa fallback file |
+1. Su Render: **Settings** del servizio produzione → **Custom Domains** → **Add Custom Domain** → `playsignal.io` e `www.playsignal.io`
+2. Render ti darà un CNAME (es. `playsignal-xxx.onrender.com`) o record A.
+3. Su Namecheap:
+   - **Domain List** → PlaySignal.io → **Manage** → **Advanced DNS**
+   - Aggiungi:
+     - **CNAME** per `www` → `playsignal-xxx.onrender.com` (o il valore indicato da Render)
+     - **A Record** per `@` → IP fornito da Render (se richiesto)
+   - Rimuovi eventuali record di default che confliggono.
 
-**Nota:** Dopo il primo deploy, copia l’URL assegnato (es. `https://pronostici-sito-xxxx.onrender.com`) e aggiorna `NEXT_PUBLIC_SITE_URL`.
+### 3.2 Staging (opzionale)
 
----
-
-## 3. Redis (opzionale ma consigliato)
-
-Senza Redis il sito usa file locale per live matches. **Attenzione:** su Render il filesystem è effimero: i dati in file si perdono ad ogni deploy/restart. Per i live matches in produzione è consigliato Redis.
-
-Per abilitare Redis:
-
-1. **New** → **Redis**
-2. Scegli piano Free (25 MB)
-3. Dopo la creazione, copia **Internal Connection String**
-4. Incollalo in `REDIS_URL` nel Web Service
+- Puoi usare solo l’URL Render: `playsignal-staging.onrender.com`
+- Oppure un sottodominio: `staging.playsignal.io` → CNAME verso il servizio staging su Render.
 
 ---
 
-## 4. Cron per live matches
+## 4. Email con dominio @playsignal.io
 
-Il polling live va chiamato ogni 2 minuti. Opzioni:
+Render **non gestisce email**. Per usare `@playsignal.io` serve un servizio esterno.
 
-### A) Cron-job.org (gratuito)
+### Opzioni
 
-1. Vai su [cron-job.org](https://cron-job.org)
-2. Crea un job:
-   - **URL:** `https://pronostici-sito-xxxx.onrender.com/api/cron/live-matches`
-   - **Schedule:** ogni 2 minuti
-   - **Request headers:** `Authorization: Bearer <CRON_SECRET>`
+| Servizio | Costo | Note |
+|----------|-------|------|
+| **Namecheap Private Email** | ~€1/mese | Integrato con Namecheap |
+| **ImprovMX** | Gratis (fino a 5 indirizzi) | Solo inoltro, niente casella |
+| **Zoho Mail** | Gratis (fino a 5 utenti) | Casella completa |
+| **Google Workspace** | ~€6/utente/mese | Gmail con dominio custom |
 
-### B) Render Cron Jobs (a pagamento)
+### Setup MX su Namecheap
 
-Con piano a pagamento puoi usare i Cron Jobs nativi di Render.
-
----
-
-## 5. Build e avvio
-
-- **Build:** `npm ci && npm run build`
-- **Start:** `npm run start`
-
-Render esegue il build ad ogni push su `main` (o sul branch configurato).
+1. Scegli il provider email.
+2. Su Namecheap → **Advanced DNS** → **Mail Settings**:
+   - **Custom MX** (se usi provider esterno)
+   - Inserisci i record MX forniti dal provider (es. `mx1.improvmx.com`, `mx2.improvmx.com`, ecc.).
 
 ---
 
-## 6. Note importanti
+## 5. File render.yaml (opzionale)
 
-### Free tier
+Nella root del progetto c’è un `render.yaml` che definisce entrambi i servizi. Puoi usarlo così:
 
-- Il servizio va in **sleep** dopo ~15 min di inattività
-- Il primo accesso dopo lo sleep può richiedere 30–60 secondi
-- Per evitare il sleep: piano a pagamento o servizio esterno che fa ping periodici
+1. Crea il branch `staging`: `git checkout -b staging && git push -u origin staging`
+2. Su Render: **New** → **Blueprint** → collega il repo
+3. Render creerà i due servizi in automatico
 
-### Cold start
-
-Per ridurre i cold start puoi usare [UptimeRobot](https://uptimerobot.com) per fare ping ogni 5 minuti (gratuito).
-
-### Domini custom
-
-In **Settings** → **Custom Domain** puoi collegare un dominio tuo (es. `playsignal.io`).
+Se preferisci, puoi creare i servizi manualmente seguendo il paragrafo 2.
 
 ---
 
-## Checklist finale
+## 6. Workflow di deploy
 
-- [ ] Repo connesso a Render
-- [ ] Variabili d’ambiente impostate
-- [ ] `NEXT_PUBLIC_SITE_URL` aggiornato con l’URL Render
-- [ ] Cron configurato per `/api/cron/live-matches`
-- [ ] (Opzionale) Redis creato e `REDIS_URL` impostato
+### Flusso consigliato
+
+```
+1. Sviluppo locale
+2. Push su branch `staging`
+3. Render fa deploy automatico su staging
+4. Test su playsignal-staging.onrender.com
+5. Se tutto ok → merge su `main`
+6. Render fa deploy automatico su produzione (playsignal.io)
+7. Metti in pausa il servizio staging per risparmiare
+```
+
+### Comandi Git
+
+```bash
+# Lavori su staging
+git checkout staging
+git add .
+git commit -m "Nuova feature"
+git push origin staging
+
+# Dopo i test, merge in produzione
+git checkout main
+git merge staging
+git push origin main
+```
+
+### Pausa del servizio staging
+
+- Render Dashboard → **playsignal-staging** → **Manual Deploy** → **Suspend**
+- Per riattivarlo: **Resume** (il primo avvio può richiedere qualche minuto).
+
+---
+
+## 7. Checklist pre-deploy
+
+- [ ] Variabili d’ambiente configurate (API keys, ecc.)
+- [ ] `next.config.js` / `next.config.ts` ok per produzione
+- [ ] Build locale: `npm run build` senza errori
+- [ ] Dominio playsignal.io puntato correttamente
+- [ ] SSL attivo (Render lo gestisce in automatico)
+- [ ] Redirect `www` → root (o viceversa) se necessario
+
+---
+
+## 8. Costi indicativi Render
+
+- **Free**: 750 ore/mese, servizio si “addormenta” dopo inattività
+- **Starter** (~7$/mese): sempre attivo, più adatto alla produzione
+- Suggerimento: Free per staging (da mettere in pausa quando non serve), Starter per produzione.
