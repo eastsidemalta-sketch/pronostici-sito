@@ -24,7 +24,7 @@ services:
     runtime: node
     region: frankfurt
     plan: free
-    branch: staging  # crea questo branch per lo staging
+    branch: main  # usa main (puoi creare branch staging dopo per workflow separato)
     buildCommand: npm install && npm run build
     startCommand: npm start
     envVars:
