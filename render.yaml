@@ -9,14 +9,14 @@ services:
     region: frankfurt
     plan: starter  # o free per iniziare
     branch: main
-    buildCommand: npm install && npm run build
+    buildCommand: npm ci && npm run build
     startCommand: npm start
     envVars:
       - key: NODE_ENV
         value: production
-      # Aggiungi qui le tue variabili (API keys, ecc.)
-      # - key: API_FOOTBALL_KEY
-      #   sync: false  # imposta manualmente nel dashboard
+      - key: NODE_OPTIONS
+        value: --max-old-space-size=4096
+      # Aggiungi nel dashboard: API_FOOTBALL_KEY, THE_ODDS_API_KEY, ADMIN_EMAIL, ADMIN_PASSWORD
 
   # Staging - test prima del go-live (puoi metterlo in pausa)
   - type: web
@@ -24,10 +24,11 @@ services:
     runtime: node
     region: frankfurt
     plan: free
-    branch: main  # usa main (puoi creare branch staging dopo per workflow separato)
-    buildCommand: npm install && npm run build
+    branch: main
+    buildCommand: npm ci && npm run build
     startCommand: npm start
     envVars:
       - key: NODE_ENV
         value: production
-      # Stesse variabili della produzione (o chiavi di test)
+      - key: NODE_OPTIONS
+        value: --max-old-space-size=512
