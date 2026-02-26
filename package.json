@@ -9,6 +9,7 @@
     "lint": "eslint",
     "seed-legal": "node scripts/seed-legal-admin.mjs",
     "live-poller": "tsx scripts/live-poller.ts",
+    "live-poller:loop": "bash scripts/live-poller-loop.sh",
     "dev:fix": "ulimit -n 65536 2>/dev/null; next dev --hostname 127.0.0.1"
   },
   "dependencies": {

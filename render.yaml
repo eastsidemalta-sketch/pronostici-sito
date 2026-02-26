@@ -32,3 +32,19 @@ services:
         value: production
       - key: NODE_OPTIONS
         value: --max-old-space-size=512
+
+  # Cron job: aggiorna partite live ogni minuto
+  - type: cron
+    name: playsignal-live-cron
+    runtime: node
+    region: frankfurt
+    plan: starter
+    branch: main
+    schedule: "* * * * *"
+    buildCommand: npm install
+    startCommand: node --version && node -e "fetch(process.env.SITE_URL+'/api/cron/live-matches',{headers:{'Authorization':'Bearer '+process.env.CRON_SECRET}}).then(r=>r.json()).then(d=>{console.log(JSON.stringify(d));process.exit(0)}).catch(e=>{console.error(e);process.exit(1)})"
+    envVars:
+      - key: SITE_URL
+        value: https://playsignal.io
+      - key: CRON_SECRET
+        sync: false

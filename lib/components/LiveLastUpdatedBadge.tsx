@@ -51,14 +51,12 @@ export default function LiveLastUpdatedBadge({
     };
   }, [lastUpdatedAt]);
 
-  if (!lastUpdatedAt) return null;
+  if (!lastUpdatedAt || secondsAgo > STALE_THRESHOLD_SEC) return null;
 
   const text =
-    secondsAgo > STALE_THRESHOLD_SEC
-      ? "Aggiornamento in corso…"
-      : secondsAgo <= 1
-        ? "Aggiornato ora"
-        : `Aggiornato ${secondsAgo} secondi fa`;
+    secondsAgo <= 1
+      ? "Aggiornato ora"
+      : `Aggiornato ${secondsAgo} secondi fa`;
 
   return (
     <span
