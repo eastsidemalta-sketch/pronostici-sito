@@ -1,6 +1,7 @@
 import { getFeaturedBookmaker } from "@/lib/quotes/bookmakers";
 import { BookmakerLink } from "@/lib/components/BookmakerLink";
 import { getTranslations } from "next-intl/server";
+import { RichText } from "@/lib/components/RichText";
 
 interface HomeFeaturedBookmakerProps {
   country: string;
@@ -42,9 +43,11 @@ export default async function HomeFeaturedBookmaker({ country, locale }: HomeFea
             {featured.name}
           </h3>
           {featured.bonusDescription && (
-            <p className="mt-0.5 text-sm text-black/95 md:text-base">
-              {featured.bonusDescription}
-            </p>
+            <RichText
+              as="p"
+              text={featured.bonusDescription}
+              className="mt-0.5 text-sm text-black/95 md:text-base"
+            />
           )}
         </div>
       </div>

@@ -1,5 +1,7 @@
 "use client";
 
+import { RichText } from "@/lib/components/RichText";
+
 /** Colore blu Telegram: #0088cc */
 const TELEGRAM_BLUE = "#0088cc";
 
@@ -26,9 +28,11 @@ type Props = {
 export default function TelegramBanner({ text, buttonText, channelUrl }: Props) {
   return (
     <div className="flex flex-col items-center justify-center rounded-lg border border-[var(--card-border)] bg-[var(--card-bg)] p-4 text-center shadow-sm md:p-5">
-      <p className="mb-3 text-sm leading-relaxed text-[var(--foreground-muted)] md:text-base">
-        {text}
-      </p>
+      <RichText
+        as="p"
+        text={text}
+        className="mb-3 text-sm leading-relaxed text-[var(--foreground-muted)] md:text-base"
+      />
       <a
         href={channelUrl}
         target="_blank"
@@ -37,7 +41,7 @@ export default function TelegramBanner({ text, buttonText, channelUrl }: Props) 
         style={{ backgroundColor: TELEGRAM_BLUE }}
       >
         <TelegramIcon className="h-5 w-5" />
-        {buttonText}
+        <RichText as="span" text={buttonText} singleLine />
       </a>
     </div>
   );

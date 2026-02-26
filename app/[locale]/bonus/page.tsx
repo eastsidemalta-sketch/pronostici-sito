@@ -5,6 +5,7 @@ import { BookmakerLink } from "@/lib/components/BookmakerLink";
 import { getBookmakerUrlByUseCase } from "@/lib/quotes/bookmakerUrls";
 import { localeToCountryCode } from "@/i18n/routing";
 import { getBonusOrderForCountry } from "@/lib/bonusOrderConfig";
+import { RichText } from "@/lib/components/RichText";
 
 export async function generateMetadata(): Promise<Metadata> {
   const t = await getTranslations("bonus");
@@ -83,7 +84,11 @@ export default async function BonusPage({
                   )}
                   <div>
                     <h2 className="text-base font-bold text-[var(--foreground)] md:text-lg">{getBookmakerDisplayName(bm)}</h2>
-                    <p className="mt-1 text-sm leading-relaxed text-[var(--foreground-muted)] md:text-base">{bonusDescription}</p>
+                    <RichText
+                      as="p"
+                      text={bonusDescription}
+                      className="mt-1 text-sm leading-relaxed text-[var(--foreground-muted)] md:text-base"
+                    />
                   </div>
                 </div>
                 {bonusUrl && (

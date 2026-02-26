@@ -4,9 +4,10 @@ import { useEffect, useState } from "react";
 import Link from "next/link";
 import type { LegalAdminConfig, LegalDocument } from "@/lib/legalData";
 import { localeToCountry } from "@/i18n/routing";
-import { routing } from "@/i18n/routing";
+import { allUrlSegments } from "@/i18n/routing";
+import RichTextEditor from "@/app/ad2min3k/components/RichTextEditor";
 
-const LOCALES = routing.locales.map((locale) => ({
+const LOCALES = allUrlSegments.map((locale) => ({
   locale,
   name: localeToCountry[locale] ?? locale,
 }));
@@ -189,16 +190,16 @@ export default function AdminLegalPage() {
                 <p className="mb-3 text-xs text-neutral-500">
                   Contenuto della pagina Termini e Condizioni (testo normale, riga vuota = nuovo paragrafo)
                 </p>
-                <textarea
+                <RichTextEditor
+                  label="Testo completo"
                   value={doc.fullText}
-                  onChange={(e) =>
+                  onChange={(v) =>
                     setDoc(selectedLocale, "terms", {
-                      fullText: e.target.value,
+                      fullText: v,
                     })
                   }
-                  placeholder="Inserisci il testo completo dei Termini e Condizioni..."
                   rows={20}
-                  className="w-full rounded-lg border border-neutral-300 px-3 py-2 font-mono text-sm focus:border-emerald-500 focus:outline-none focus:ring-1 focus:ring-emerald-500"
+                  placeholder="Inserisci il testo completo dei Termini e Condizioni..."
                 />
               </div>
             </>
@@ -256,16 +257,16 @@ export default function AdminLegalPage() {
                 <p className="mb-3 text-xs text-neutral-500">
                   Contenuto della pagina Privacy Policy (testo normale, riga vuota = nuovo paragrafo)
                 </p>
-                <textarea
+                <RichTextEditor
+                  label="Testo completo"
                   value={doc.fullText}
-                  onChange={(e) =>
+                  onChange={(v) =>
                     setDoc(selectedLocale, "privacy", {
-                      fullText: e.target.value,
+                      fullText: v,
                     })
                   }
-                  placeholder="Inserisci il testo completo della Privacy Policy..."
                   rows={20}
-                  className="w-full rounded-lg border border-neutral-300 px-3 py-2 font-mono text-sm focus:border-emerald-500 focus:outline-none focus:ring-1 focus:ring-emerald-500"
+                  placeholder="Inserisci il testo completo della Privacy Policy..."
                 />
               </div>
             </>

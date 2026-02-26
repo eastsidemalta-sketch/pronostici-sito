@@ -1,6 +1,6 @@
 import { readFileSync, writeFileSync, mkdirSync, existsSync } from "fs";
 import path from "path";
-import { routing } from "@/i18n/routing";
+import { allUrlSegments } from "@/i18n/routing";
 
 export type LegalDocument = {
   linkName: string;
@@ -103,7 +103,7 @@ function getDefaultPrivacy(locale: string): LegalDocument {
 
 function buildDefaultConfig(): LegalAdminConfig {
   const config: LegalAdminConfig = {};
-  for (const locale of routing.locales) {
+  for (const locale of allUrlSegments) {
     config[locale] = {
       terms: getDefaultTerms(locale),
       privacy: getDefaultPrivacy(locale),
@@ -119,7 +119,7 @@ export function getLegalAdminConfig(): LegalAdminConfig {
       const parsed = JSON.parse(raw) as LegalAdminConfig;
       if (parsed && typeof parsed === "object") {
         const merged: LegalAdminConfig = {};
-        for (const locale of routing.locales) {
+        for (const locale of allUrlSegments) {
           const existing = parsed[locale];
           merged[locale] = {
             terms: {

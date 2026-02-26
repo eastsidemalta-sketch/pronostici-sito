@@ -8,6 +8,7 @@ import {
 } from "@/lib/quotes/bookmakerUrls";
 import { localeToCountryCode } from "@/i18n/routing";
 import { getSitesOrderForCountry } from "@/lib/sitesOrderConfig";
+import { RichText } from "@/lib/components/RichText";
 
 export async function generateMetadata(): Promise<Metadata> {
   const t = await getTranslations("sitiScommesse");
@@ -87,9 +88,17 @@ export default async function SitiScommessePage({
 
               <div className="mt-3">
                 <h3 className="text-xs font-semibold text-[var(--foreground)] md:text-sm">Bonus</h3>
-                <p className="mt-1 text-sm leading-relaxed text-[var(--foreground-muted)] md:text-base">
-                  {bonusDescription || "—"}
-                </p>
+                {bonusDescription ? (
+                  <RichText
+                    as="p"
+                    text={bonusDescription}
+                    className="mt-1 text-sm leading-relaxed text-[var(--foreground-muted)] md:text-base"
+                  />
+                ) : (
+                  <p className="mt-1 text-sm leading-relaxed text-[var(--foreground-muted)] md:text-base">
+                    —
+                  </p>
+                )}
               </div>
 
               <div className="mt-3 flex flex-wrap gap-2">

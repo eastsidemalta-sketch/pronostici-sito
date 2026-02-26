@@ -7,6 +7,7 @@ import type {
   TelegramBannerConfig,
   TelegramBannerCountryConfig,
 } from "@/lib/telegramBannerConfig";
+import RichTextEditor from "@/app/ad2min3k/components/RichTextEditor";
 
 const COUNTRY_NAMES: Record<string, string> = Object.fromEntries(
   Object.entries(localeToCountryCode).map(([locale, code]) => [
@@ -137,27 +138,23 @@ export default function AdminTelegramBannerPage() {
         {/* Form per paese selezionato */}
         <div className="space-y-4">
           <div>
-            <label className="mb-1 block text-sm font-medium text-neutral-700">
-              Testo del banner
-            </label>
-            <textarea
+            <RichTextEditor
+              label="Testo del banner"
               value={countryConfig.text}
-              onChange={(e) => updateCountry("text", e.target.value)}
-              rows={3}
-              className="w-full rounded-lg border border-neutral-300 px-3 py-2 text-sm focus:border-emerald-500 focus:outline-none focus:ring-1 focus:ring-emerald-500"
+              onChange={(v) => updateCountry("text", v)}
+              rows={4}
               placeholder="Resta aggiornato! Iscriviti al nostro canale Telegram..."
             />
           </div>
           <div>
-            <label className="mb-1 block text-sm font-medium text-neutral-700">
-              Testo del bottone
-            </label>
-            <input
-              type="text"
+            <RichTextEditor
+              label="Testo del bottone"
               value={countryConfig.buttonText}
-              onChange={(e) => updateCountry("buttonText", e.target.value)}
-              className="w-full rounded-lg border border-neutral-300 px-3 py-2 text-sm focus:border-emerald-500 focus:outline-none focus:ring-1 focus:ring-emerald-500"
+              onChange={(v) => updateCountry("buttonText", v)}
+              rows={2}
               placeholder="Unisciti su Telegram"
+              singleLine
+              preview={false}
             />
           </div>
           <div>

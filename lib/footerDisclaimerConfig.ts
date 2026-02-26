@@ -1,6 +1,6 @@
 import { readFileSync, writeFileSync, mkdirSync, existsSync } from "fs";
 import path from "path";
-import { routing } from "@/i18n/routing";
+import { allUrlSegments } from "@/i18n/routing";
 
 export type Badge18Config = {
   text?: string;
@@ -82,7 +82,7 @@ export function getFooterDisclaimerConfig(): FooterDisclaimerConfig {
       const parsed = JSON.parse(raw) as FooterDisclaimerConfig;
       if (parsed && typeof parsed === "object") {
         const merged: FooterDisclaimerConfig = {};
-        for (const locale of routing.locales) {
+        for (const locale of allUrlSegments) {
           const existing = parsed[locale];
           merged[locale] = Array.isArray(existing) && existing.length > 0
             ? existing
@@ -98,7 +98,7 @@ export function getFooterDisclaimerConfig(): FooterDisclaimerConfig {
     // fallback
   }
   const result: FooterDisclaimerConfig = {};
-  for (const locale of routing.locales) {
+  for (const locale of allUrlSegments) {
     result[locale] = getDefaultForLocale(locale);
   }
   return result;

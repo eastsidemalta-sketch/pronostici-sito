@@ -12,6 +12,7 @@ import CookieConsent from "./CookieConsent";
 import MobileMenu from "./MobileMenu";
 import MobileMenuWrapper from "./MobileMenuWrapper";
 import BaseSchemaJsonLd from "./BaseSchemaJsonLd";
+import { RichText } from "@/lib/components/RichText";
 
 type Props = {
   children: React.ReactNode;
@@ -121,7 +122,12 @@ export default async function LocaleLayout({ children, params }: Props) {
                 <FooterDisclaimer18Plus className="mr-1.5 align-middle" />
                 {getFooterDisclaimerLines(locale)
                   .filter((l) => l.trim())
-                  .join(" – ")}
+                  .map((line, i, arr) => (
+                    <span key={`${i}-${line.slice(0, 12)}`}>
+                      <RichText as="span" text={line} />
+                      {i < arr.length - 1 ? " – " : null}
+                    </span>
+                  ))}
               </p>
             </div>
           </div>

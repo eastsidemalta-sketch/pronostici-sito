@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import { useParams, useRouter } from "next/navigation";
 import Link from "next/link";
+import RichTextEditor from "@/app/ad2min3k/components/RichTextEditor";
 
 type Bookmaker = {
   id: string;
@@ -430,13 +431,14 @@ export default function AdminBookmakerEditPage() {
                           <span className="text-sm">Attiva bonus</span>
                         </label>
                         <div>
-                          <label className="block text-sm font-medium text-neutral-700 mb-1">Testo bottone</label>
-                          <input
-                            type="text"
+                          <RichTextEditor
+                            label="Testo bottone"
                             value={cfg.matchBoxButtonText || ""}
-                            onChange={(e) => updateMatchBox({ matchBoxButtonText: e.target.value || undefined })}
-                            className="w-full rounded-lg border border-neutral-300 px-4 py-2 focus:border-emerald-500 focus:outline-none focus:ring-1 focus:ring-emerald-500"
+                            onChange={(v) => updateMatchBox({ matchBoxButtonText: v || undefined })}
+                            rows={2}
                             placeholder="100€ DI BONUS"
+                            singleLine
+                            preview={false}
                           />
                         </div>
                         <div>
@@ -465,13 +467,14 @@ export default function AdminBookmakerEditPage() {
                           <span className="text-sm">Attiva bonus</span>
                         </label>
                         <div>
-                          <label className="block text-sm font-medium text-neutral-700 mb-1">Testo bottone (opzionale, se vuoto usa quello delle quote)</label>
-                          <input
-                            type="text"
+                          <RichTextEditor
+                            label="Testo bottone (opzionale, se vuoto usa quello delle quote)"
                             value={cfg.matchBoxPronosticiButtonText || ""}
-                            onChange={(e) => updateMatchBox({ matchBoxPronosticiButtonText: e.target.value || undefined })}
-                            className="w-full rounded-lg border border-neutral-300 px-4 py-2 focus:border-emerald-500 focus:outline-none focus:ring-1 focus:ring-emerald-500"
+                            onChange={(v) => updateMatchBox({ matchBoxPronosticiButtonText: v || undefined })}
+                            rows={2}
                             placeholder="Es. Pronostici gratis"
+                            singleLine
+                            preview={false}
                           />
                         </div>
                         <div>

@@ -143,6 +143,11 @@ export function getActiveMarketCodes(): string[] {
   return getActiveMarkets().map((m) => m.code);
 }
 
+/** Codici mercato supportati (attivi + dormienti) */
+export function getAllMarketCodes(): string[] {
+  return Object.keys(SUPPORTED_MARKETS);
+}
+
 /** Locales attivi per routing (urlSegment dei mercati attivi) */
 export function getActiveLocales(): string[] {
   return getActiveMarkets().map((m) => m.urlSegment);

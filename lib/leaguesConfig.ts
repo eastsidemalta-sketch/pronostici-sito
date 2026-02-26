@@ -1,7 +1,7 @@
 import { readFileSync, writeFileSync, mkdirSync, existsSync } from "fs";
 import path from "path";
 import { CALCIO_COMPETITIONS } from "./homeMenu";
-import { getActiveMarketCodes } from "./markets";
+import { getAllMarketCodes } from "./markets";
 import { getCompetitionsForSport } from "./sportsCompetitions";
 import { isHiddenCompetition } from "./hiddenCompetitions";
 
@@ -98,5 +98,5 @@ export function getEnabledCompetitionIds(
 
 /** Lista paesi supportati (da markets config) */
 export function getSupportedCountries(): string[] {
-  return getActiveMarketCodes();
+  return getAllMarketCodes();
 }

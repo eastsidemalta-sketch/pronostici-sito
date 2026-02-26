@@ -4,9 +4,10 @@ import { useEffect, useState } from "react";
 import Link from "next/link";
 import type { Badge18Config, FooterDisclaimerConfig } from "@/lib/footerDisclaimerConfig";
 import { localeToCountry } from "@/i18n/routing";
-import { routing } from "@/i18n/routing";
+import { allUrlSegments } from "@/i18n/routing";
+import RichTextEditor from "@/app/ad2min3k/components/RichTextEditor";
 
-const LOCALES = routing.locales.map((locale) => ({
+const LOCALES = allUrlSegments.map((locale) => ({
   locale,
   name: localeToCountry[locale] ?? locale,
 }));
@@ -263,15 +264,16 @@ export default function AdminFooterDisclaimerPage() {
               <span className="flex h-10 w-8 shrink-0 items-center text-xs text-neutral-500">
                 {index + 1}
               </span>
-              <input
-                type="text"
-                value={line}
-                onChange={(e) =>
-                  updateLine(selectedLocale, index, e.target.value)
-                }
-                placeholder={`Riga ${index + 1}${index === 0 ? " (con logo 18+ prima)" : ""}`}
-                className="flex-1 rounded-lg border border-neutral-300 px-3 py-2 text-sm focus:border-emerald-500 focus:outline-none focus:ring-1 focus:ring-emerald-500"
-              />
+              <div className="flex-1">
+                <RichTextEditor
+                  label={`Riga ${index + 1}${index === 0 ? " (con logo 18+ prima)" : ""}`}
+                  value={line}
+                  onChange={(v) => updateLine(selectedLocale, index, v)}
+                  rows={2}
+                  placeholder={`Riga ${index + 1}`}
+                  preview={false}
+                />
+              </div>
               <button
                 type="button"
                 onClick={() => removeLine(selectedLocale, index)}

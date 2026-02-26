@@ -4,6 +4,7 @@ export {
   MARKET_COOKIE_NAME,
   getActiveMarkets,
   getActiveMarketCodes,
+  getAllMarketCodes,
   getActiveLocales,
   getDefaultLocale,
   getDefaultMarketCode,

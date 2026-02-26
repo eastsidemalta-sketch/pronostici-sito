@@ -1,6 +1,6 @@
 import { readFileSync, writeFileSync, mkdirSync, existsSync } from "fs";
 import path from "path";
-import { getActiveMarketCodes } from "@/lib/markets";
+import { getAllMarketCodes } from "@/lib/markets";
 
 const DATA_PATH = path.join(process.cwd(), "data", "sitesOrder.json");
 
@@ -49,5 +49,5 @@ export function getSitesOrderForCountry(country: string): string[] | undefined {
 }
 
 export function getSupportedCountries(): string[] {
-  return getActiveMarketCodes();
+  return getAllMarketCodes();
 }

@@ -1,6 +1,6 @@
 import { readFileSync, writeFileSync, mkdirSync, existsSync } from "fs";
 import path from "path";
-import { getActiveMarketCodes, getDefaultMarketCode } from "@/lib/markets";
+import { getAllMarketCodes, getDefaultMarketCode } from "@/lib/markets";
 
 const DATA_PATH = path.join(process.cwd(), "data", "telegramBannerConfig.json");
 
@@ -64,5 +64,5 @@ export function getTelegramBannerForCountry(country: string): TelegramBannerCoun
 }
 
 export function getSupportedCountries(): string[] {
-  return getActiveMarketCodes();
+  return getAllMarketCodes();
 }

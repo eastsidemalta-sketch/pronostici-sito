@@ -1,6 +1,7 @@
 import { getBookmakers, getBookmakerDisplayName } from "@/lib/quotes/bookmakers";
 import { getBookmakerUrlByUseCase } from "@/lib/quotes/bookmakerUrls";
 import { BookmakerLink } from "@/lib/components/BookmakerLink";
+import { RichText } from "@/lib/components/RichText";
 
 interface HomeBonusSidebarProps {
   country: string;
@@ -52,7 +53,7 @@ export default async function HomeBonusSidebar({ country, locale }: HomeBonusSid
               <div className="min-w-0 flex-1">
                 <div className="text-xs font-semibold text-[var(--foreground)] lg:text-sm">{getBookmakerDisplayName(bm)}</div>
                 <div className="mt-0.5 truncate text-[11px] text-[var(--foreground-muted)] lg:text-xs">
-                  {bm.bonusDescription}
+                  <RichText as="span" text={bm.bonusDescription as string} singleLine />
                 </div>
               </div>
               <span className="shrink-0 text-[11px] font-semibold text-[var(--accent)] lg:text-xs">
