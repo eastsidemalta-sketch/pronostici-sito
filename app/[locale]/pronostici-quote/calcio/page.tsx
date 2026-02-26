@@ -7,7 +7,7 @@ import { getPredictionsForFixtures } from "@/app/pronostici-quote/lib/apiFootbal
 import { getQuotesForFixtures } from "@/lib/quotes/fixturesQuotes";
 import { getMenuForCountry } from "@/lib/homeMenuData";
 import { isSportEnabledForCountry } from "@/lib/sportsPerCountryData";
-import { getTelegramBannerForCountry } from "@/lib/telegramBannerConfig";
+import { getTelegramBannerForCountryAsync } from "@/lib/telegramBannerConfig";
 import { getFeaturedBookmaker } from "@/lib/quotes/bookmakers";
 import { localeToCountryCode } from "@/i18n/routing";
 import HomeBanner from "../../HomeBanner";
@@ -147,7 +147,7 @@ export default async function CalcioPage({
                   favicon2: { url: "/logos/circular.svg", name: "Bet" },
                 }}
                 featuredBookmaker={featuredBookmaker ? { bonusUrl: featuredBookmaker.bonusUrl!, buttonText: featuredBookmaker.buttonText, faviconUrl: featuredBookmaker.faviconUrl ?? undefined, logoUrl: featuredBookmaker.logoUrl, name: featuredBookmaker.name, showInPronosticiBox: featuredBookmaker.showInPronosticiBox, pronosticiButtonText: featuredBookmaker.pronosticiButtonText, pronosticiButtonUrl: featuredBookmaker.pronosticiButtonUrl, buttonColor: featuredBookmaker.buttonColor } : null}
-                telegramBanner={getTelegramBannerForCountry(country)}
+                telegramBanner={await getTelegramBannerForCountryAsync(country)}
               />
             </div>
             <HomeBonusSidebar country={country} locale={locale} />

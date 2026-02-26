@@ -67,6 +67,16 @@ export function getTelegramBannerConfig(): TelegramBannerConfig {
 }
 
 /**
+ * Versione async: legge da Redis se disponibile, altrimenti usa il file/cache.
+ * Usare questa nelle Server Component e negli handler che possono fare await.
+ */
+export async function getTelegramBannerConfigAsync(): Promise<TelegramBannerConfig> {
+  if (cache !== null) return cache;
+  await warmTelegramBannerConfigCache();
+  return getRawConfig();
+}
+
+/**
  * Salva config Telegram banner.
  * - Scrive su Redis (se disponibile) per persistenza su Render
  * - Scrive anche su file come fallback/dev
@@ -112,6 +122,12 @@ export function getTelegramBannerForCountry(country: string): TelegramBannerCoun
     buttonText: cc.buttonText?.trim() || DEFAULT_IT.buttonText,
     channelUrl: cc.channelUrl.trim(),
   };
+}
+
+/** Versione async: legge da Redis al primo accesso dopo restart. */
+export async function getTelegramBannerForCountryAsync(country: string): Promise<TelegramBannerCountryConfig | null> {
+  await getTelegramBannerConfigAsync();
+  return getTelegramBannerForCountry(country);
 }
 
 export function getSupportedCountries(): string[] {
