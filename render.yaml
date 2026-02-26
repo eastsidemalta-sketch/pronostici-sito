@@ -45,6 +45,6 @@ services:
     startCommand: node scripts/render-cron.mjs
     envVars:
       - key: SITE_URL
-        value: https://playsignal.io
+        value: https://www.playsignal.io
       - key: CRON_SECRET
         sync: false
