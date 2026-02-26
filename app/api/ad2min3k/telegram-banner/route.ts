@@ -4,6 +4,7 @@ import {
   getTelegramBannerConfig,
   saveTelegramBannerConfig,
   getSupportedCountries,
+  warmTelegramBannerConfigCache,
 } from "@/lib/telegramBannerConfig";
 import type { TelegramBannerConfig } from "@/lib/telegramBannerConfig";
 
@@ -13,6 +14,7 @@ export async function GET() {
     return NextResponse.json({ error: "Non autorizzato" }, { status: 401 });
   }
 
+  await warmTelegramBannerConfigCache();
   const config = getTelegramBannerConfig();
   const countries = getSupportedCountries();
   return NextResponse.json({ config, countries });
@@ -33,6 +35,7 @@ export async function PUT(req: Request) {
       );
     }
 
+    await warmTelegramBannerConfigCache();
     saveTelegramBannerConfig(config);
     return NextResponse.json({ success: true });
   } catch {
