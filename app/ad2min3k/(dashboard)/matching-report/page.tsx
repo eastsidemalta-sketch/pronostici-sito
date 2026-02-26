@@ -56,7 +56,7 @@ function ManualLeagueForm({
   applying: string | null;
   onSuccess: () => void;
 }) {
-  const [bookmakers, setBookmakers] = useState<Array<{ id: string; name: string }>>([]);
+  const [bookmakers, setBookmakers] = useState<Array<{ id: string; name: string; displayName?: string }>>([]);
   const [bookmakerId, setBookmakerId] = useState("");
   const [leagueId, setLeagueId] = useState("");
   const [suggestedValue, setSuggestedValue] = useState("");
@@ -82,7 +82,7 @@ function ManualLeagueForm({
         <option value="">Bookmaker</option>
         {bookmakers.map((b) => (
           <option key={b.id} value={b.id}>
-            {b.name}
+            {b.displayName || b.name}
           </option>
         ))}
       </select>

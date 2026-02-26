@@ -1,4 +1,4 @@
-import { getBookmakers } from "./bookmakers";
+import { getBookmakers, getBookmakerDisplayName } from "./bookmakers";
 import { fetchOddsFromTheOddsApi } from "./providers/theOddsApi";
 import { fetchDirectBookmakerQuotes } from "./providers/directBookmakerFetcher";
 import { normalizeOdds } from "./normalizer";
@@ -43,7 +43,7 @@ export async function getQuotesForMatch(
       continue;
     }
 
-    const normalized = normalizeOdds(raw, bookmaker.name, bookmaker.apiBookmakerKey);
+    const normalized = normalizeOdds(raw, getBookmakerDisplayName(bookmaker), bookmaker.apiBookmakerKey);
     results.push(...normalized);
   }
 

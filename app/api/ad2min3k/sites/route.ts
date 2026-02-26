@@ -6,12 +6,18 @@ import {
   getSupportedCountries,
 } from "@/lib/sitesOrderConfig";
 import type { SitesOrderConfig } from "@/lib/sitesOrderConfig";
-import { getBookmakers } from "@/lib/quotes/bookmakers";
+import { getBookmakers, getBookmakerDisplayName } from "@/lib/quotes/bookmakers";
 
-function getBookmakersByCountry(): Record<string, { id: string; name: string }[]> {
+function getBookmakersByCountry(): Record<
+  string,
+  { id: string; siteId?: string; name: string }[]
+> {
   const bookmakers = getBookmakers();
   const countries = getSupportedCountries();
-  const result: Record<string, { id: string; name: string }[]> = {};
+  const result: Record<
+    string,
+    { id: string; siteId?: string; name: string }[]
+  > = {};
   for (const country of countries) {
     const forCountry = bookmakers.filter(
       (bm) =>
@@ -20,7 +26,11 @@ function getBookmakersByCountry(): Record<string, { id: string; name: string }[]
           bm.country === country ||
           bm.countryConfig?.[country])
     );
-    result[country] = forCountry.map((b) => ({ id: b.id, name: b.name }));
+    result[country] = forCountry.map((b) => ({
+      id: b.id,
+      siteId: b.siteId,
+      name: getBookmakerDisplayName(b),
+    }));
   }
   return result;
 }

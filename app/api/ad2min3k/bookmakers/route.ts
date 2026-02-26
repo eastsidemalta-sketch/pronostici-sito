@@ -1,6 +1,10 @@
 import { NextResponse } from "next/server";
 import { getSession } from "@/lib/auth";
-import { getBookmakers, saveBookmakers } from "@/lib/quotes/bookmakersData";
+import {
+  getBookmakers,
+  saveBookmakers,
+  generateSiteId,
+} from "@/lib/quotes/bookmakersData";
 import type { Bookmaker } from "@/lib/quotes/bookmaker.types";
 
 export async function GET() {
@@ -45,6 +49,62 @@ export async function PUT(req: Request) {
   } catch (error) {
     return NextResponse.json(
       { error: "Errore nel salvataggio" },
+      { status: 500 }
+    );
+  }
+}
+
+export async function POST(req: Request) {
+  const isAuth = await getSession();
+  if (!isAuth) {
+    return NextResponse.json({ error: "Non autorizzato" }, { status: 401 });
+  }
+
+  try {
+    const body = (await req.json()) as Partial<Bookmaker>;
+    const country = (body.country || "IT").toUpperCase().slice(0, 2) || "IT";
+    const name = (body.name || "Nuovo sito").trim() || "Nuovo sito";
+
+    const bookmakers = getBookmakers();
+    const siteId = generateSiteId(country, bookmakers);
+
+    const slug = (name || "nuovo")
+      .toLowerCase()
+      .replace(/\s+/g, "-")
+      .replace(/[^a-z0-9-]/g, "");
+    const baseId = slug || "nuovo";
+    let id = baseId;
+    let n = 1;
+    while (bookmakers.some((b) => b.id === id)) {
+      id = `${baseId}-${n}`;
+      n++;
+    }
+
+    const newBm: Bookmaker = {
+      id,
+      siteId,
+      name,
+      slug: id,
+      country,
+      countries: [country],
+      logoUrl: "",
+      affiliateUrl: "",
+      isActive: false,
+      apiProvider: "the_odds_api",
+      apiKey: "",
+      apiConfig: { markets: ["h2h"] },
+    };
+
+    const updated = [...bookmakers, newBm];
+    saveBookmakers(updated);
+
+    return NextResponse.json({
+      success: true,
+      bookmaker: newBm,
+    });
+  } catch (error) {
+    return NextResponse.json(
+      { error: "Errore nella creazione" },
       { status: 500 }
     );
   }

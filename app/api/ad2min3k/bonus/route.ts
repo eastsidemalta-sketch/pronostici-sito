@@ -6,7 +6,7 @@ import {
   getSupportedCountries,
 } from "@/lib/bonusOrderConfig";
 import type { BonusOrderConfig } from "@/lib/bonusOrderConfig";
-import { getBookmakers } from "@/lib/quotes/bookmakers";
+import { getBookmakers, getBookmakerDisplayName } from "@/lib/quotes/bookmakers";
 
 function getBookmakersWithBonusByCountry(): Record<string, { id: string; name: string }[]> {
   const bookmakers = getBookmakers();
@@ -21,7 +21,7 @@ function getBookmakersWithBonusByCountry(): Record<string, { id: string; name: s
           bm.countryConfig?.[country]) &&
         bm.countryConfig?.[country]?.bonusDescription
     );
-    result[country] = withBonus.map((b) => ({ id: b.id, name: b.name }));
+    result[country] = withBonus.map((b) => ({ id: b.id, name: getBookmakerDisplayName(b) }));
   }
   return result;
 }

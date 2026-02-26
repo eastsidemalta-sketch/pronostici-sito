@@ -5,7 +5,7 @@ import { routing } from "./i18n/routing";
 import { shouldBlockInactiveSegment } from "./lib/countries/segmentGuard";
 
 export function proxy(request: NextRequest) {
-  if (shouldBlockInactiveSegment(request.nextUrl.pathname, [...routing.locales])) {
+  if (shouldBlockInactiveSegment(request.nextUrl.pathname)) {
     return new NextResponse(null, { status: 404 });
   }
   return createMiddleware(routing)(request);

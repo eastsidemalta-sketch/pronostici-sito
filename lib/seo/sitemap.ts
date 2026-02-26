@@ -5,8 +5,9 @@
 
 import { buildCanonical, getSafeSiteUrl } from "./metadata";
 import { getActiveCountryCodes } from "@/lib/countries";
+import { getDefaultLocale } from "@/lib/markets";
 
-const ACTIVE_COUNTRY = "it";
+const ACTIVE_COUNTRY = getDefaultLocale();
 
 export type SitemapUrl = {
   loc: string;

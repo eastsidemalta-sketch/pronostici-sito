@@ -13,12 +13,12 @@ const COUNTRY_NAMES: Record<string, string> = Object.fromEntries(
 );
 
 function applyOrder(
-  bookmakers: { id: string; name: string }[],
+  bookmakers: { id: string; siteId?: string; name: string }[],
   order: string[] | undefined
-): { id: string; name: string }[] {
+): { id: string; siteId?: string; name: string }[] {
   if (!order?.length) return bookmakers;
   const byId = new Map(bookmakers.map((b) => [b.id, b]));
-  const result: { id: string; name: string }[] = [];
+  const result: { id: string; siteId?: string; name: string }[] = [];
   for (const id of order) {
     const b = byId.get(id);
     if (b) result.push(b);
@@ -39,7 +39,7 @@ export default function AdminSitesPage() {
   const [draggedId, setDraggedId] = useState<string | null>(null);
   const [dragOverId, setDragOverId] = useState<string | null>(null);
   const [bookmakersByCountry, setBookmakersByCountry] = useState<
-    Record<string, { id: string; name: string }[]>
+    Record<string, { id: string; siteId?: string; name: string }[]>
   >({});
 
   const bookmakersForCountry = bookmakersByCountry[selectedCountry] || [];
@@ -213,7 +213,9 @@ export default function AdminSitesPage() {
                     ⋮⋮
                   </span>
                   <span className="font-medium">{bm.name}</span>
-                  <span className="text-xs text-neutral-400">({bm.id})</span>
+                  <span className="text-xs text-neutral-400">
+                    {bm.siteId ? `(${bm.siteId})` : `(${bm.id})`}
+                  </span>
                 </li>
               ))}
             </ul>

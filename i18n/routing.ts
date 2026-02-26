@@ -1,50 +1,48 @@
 import { defineRouting } from "next-intl/routing";
+import {
+  getActiveLocales,
+  getDefaultLocale,
+  getAllUrlSegments,
+  getMarketNameByUrlSegment,
+  getCountryCodeByUrlSegment,
+  getIntlLocaleByUrlSegment,
+} from "@/lib/markets";
 
 /**
- * Configurazione routing per paesi e lingue.
- * Lingue supportate: Italiano, Francese, Spagnolo, Tedesco, Inglese, Brasiliano, Inglese (Nigeria, Kenya, Ghana).
+ * Routing derivato da SUPPORTED_MARKETS.
+ * Solo mercati con active: true sono raggiungibili.
  */
 export const routing = defineRouting({
-  locales: ["it", "fr", "es", "de", "en", "pt-BR", "en-NG", "en-KE", "en-GH"],
-  defaultLocale: "it",
+  locales: getActiveLocales(),
+  defaultLocale: getDefaultLocale(),
   localePrefix: "always",
 });
 
-/** Mappa locale -> nome paese (per footer, metadata, ecc.) */
-export const localeToCountry: Record<string, string> = {
-  it: "Italia",
-  fr: "France",
-  es: "España",
-  de: "Deutschland",
-  en: "United Kingdom",
-  "pt-BR": "Brasil",
-  "en-NG": "Nigeria",
-  "en-KE": "Kenya",
-  "en-GH": "Ghana",
-};
+/** Tutti i segmenti noti (attivi + dormienti) - per segment guard */
+export const allUrlSegments = getAllUrlSegments();
+
+/** Mappa locale (urlSegment) -> nome paese (per footer, metadata, ecc.) */
+export function getLocaleToCountry(): Record<string, string> {
+  return Object.fromEntries(
+    allUrlSegments.map((seg) => [seg, getMarketNameByUrlSegment(seg)])
+  );
+}
 
 /** Mappa locale -> codice paese ISO (per link bookmaker per paese) */
-export const localeToCountryCode: Record<string, string> = {
-  it: "IT",
-  fr: "FR",
-  es: "ES",
-  de: "DE",
-  en: "UK",
-  "pt-BR": "BR",
-  "en-NG": "NG",
-  "en-KE": "KE",
-  "en-GH": "GH",
-};
+export function getLocaleToCountryCode(): Record<string, string> {
+  return Object.fromEntries(
+    allUrlSegments.map((seg) => [seg, getCountryCodeByUrlSegment(seg)])
+  );
+}
 
-/** Codice locale per formattazione date (Intl) */
-export const localeToIntl: Record<string, string> = {
-  it: "it-IT",
-  fr: "fr-FR",
-  es: "es-ES",
-  de: "de-DE",
-  en: "en-GB",
-  "pt-BR": "pt-BR",
-  "en-NG": "en-NG",
-  "en-KE": "en-KE",
-  "en-GH": "en-GH",
-};
+/** Mappa locale -> Intl (per formattazione date) */
+export function getLocaleToIntl(): Record<string, string> {
+  return Object.fromEntries(
+    allUrlSegments.map((seg) => [seg, getIntlLocaleByUrlSegment(seg)])
+  );
+}
+
+/** Retrocompatibilità: oggetti statici per import diretto */
+export const localeToCountry: Record<string, string> = getLocaleToCountry();
+export const localeToCountryCode: Record<string, string> = getLocaleToCountryCode();
+export const localeToIntl: Record<string, string> = getLocaleToIntl();

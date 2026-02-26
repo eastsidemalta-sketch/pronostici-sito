@@ -6,7 +6,9 @@ import Link from "next/link";
 
 type Bookmaker = {
   id: string;
+  siteId?: string;
   name: string;
+  displayName?: string | null;
   slug: string;
   country: string;
   countries?: string[];
@@ -184,12 +186,19 @@ export default function AdminBookmakerEditPage() {
   return (
     <main className="mx-auto max-w-3xl px-6 py-10">
       <div className="mb-6 flex items-center justify-between">
-        <Link
-          href="/ad2min3k/bookmakers"
-          className="text-sm text-neutral-600 hover:text-neutral-900"
-        >
-          ← Bookmaker
-        </Link>
+        <div className="flex items-center gap-3">
+          <Link
+            href="/ad2min3k/bookmakers"
+            className="text-sm text-neutral-600 hover:text-neutral-900"
+          >
+            ← Siti di scommesse
+          </Link>
+          {bm.siteId && (
+            <span className="rounded bg-emerald-50 px-3 py-1 font-mono text-sm font-semibold text-emerald-800">
+              {bm.siteId}
+            </span>
+          )}
+        </div>
         <Link
           href={`/ad2min3k/bookmakers/${id}/matching-report`}
           className="text-sm font-medium text-emerald-600 hover:text-emerald-700"
@@ -207,6 +216,19 @@ export default function AdminBookmakerEditPage() {
       <form onSubmit={handleSubmit} className="space-y-8">
         <div className="rounded-xl border bg-white p-6">
           <h3 className="mb-4 font-semibold">Generale</h3>
+          {bm.siteId && (
+            <div className="mb-4 rounded-lg border border-emerald-200 bg-emerald-50 p-3">
+              <p className="text-xs font-medium uppercase text-emerald-700">
+                ID sito
+              </p>
+              <p className="mt-1 font-mono text-lg font-semibold text-emerald-900">
+                {bm.siteId}
+              </p>
+              <p className="mt-1 text-xs text-emerald-700">
+                Usa questo ID per bonus, API e integrazioni. Non modificabile.
+              </p>
+            </div>
+          )}
           <div className="space-y-4">
             <div>
               <label className="block text-sm font-medium text-neutral-700 mb-1">Nome</label>
@@ -217,6 +239,17 @@ export default function AdminBookmakerEditPage() {
                 className="w-full rounded-lg border border-neutral-300 px-4 py-2 focus:border-emerald-500 focus:outline-none focus:ring-1 focus:ring-emerald-500"
                 required
               />
+            </div>
+            <div>
+              <label className="block text-sm font-medium text-neutral-700 mb-1">Nome visibile sito</label>
+              <input
+                type="text"
+                value={bm.displayName ?? ""}
+                onChange={(e) => handleChange("displayName", e.target.value || null)}
+                className="w-full rounded-lg border border-neutral-300 px-4 py-2 focus:border-emerald-500 focus:outline-none focus:ring-1 focus:ring-emerald-500"
+                placeholder="Nome mostrato sul sito (se vuoto usa Nome)"
+              />
+              <p className="mt-1 text-xs text-neutral-500">Es: Bet365, Bet 365, PMU Sport…</p>
             </div>
             <div>
               <label className="block text-sm font-medium text-neutral-700 mb-1">Logo</label>

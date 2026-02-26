@@ -9,6 +9,7 @@ import {
 } from "./homeMenu";
 import { getEnabledLeagueIds } from "./leaguesConfig";
 import { getSportsPerCountry } from "./sportsPerCountryData";
+import { SUPPORTED_MARKETS } from "./markets";
 
 const DATA_PATH = path.join(process.cwd(), "data", "homeMenu.json");
 
@@ -40,7 +41,7 @@ function applyLeaguesConfigToCalcio(items: MenuItem[], country: string): MenuIte
   );
 }
 
-const DEFAULT_COUNTRIES = ["IT", "FR", "ES", "DE", "UK", "BR", "NG", "KE", "GH"];
+const DEFAULT_COUNTRIES = Object.keys(SUPPORTED_MARKETS);
 
 function buildDefaultConfig(): HomeMenuConfig {
   try {

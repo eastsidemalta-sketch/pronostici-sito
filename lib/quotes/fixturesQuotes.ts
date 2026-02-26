@@ -1,6 +1,6 @@
 import { getMultiMarketQuotes } from "./quotesEngine";
 import { getSportKeyForLeague } from "./leagueToSportKey";
-import { getBookmakers } from "./bookmakers";
+import { getBookmakers, getBookmakerDisplayName } from "./bookmakers";
 import { getBookmakerUrl } from "./bookmakerUrls";
 import { matchTeamNames } from "@/lib/teamAliases";
 
@@ -60,10 +60,12 @@ export async function getQuotesForFixtures(
   const bookmakers = getBookmakers();
   const logoByKey = new Map<string, string>();
   const faviconByKey = new Map<string, string>();
+  const displayNameByKey = new Map<string, string>();
   bookmakers.forEach((bm) => {
     const key = (bm.apiBookmakerKey ?? bm.id).toLowerCase();
     if (bm.logoUrl) logoByKey.set(key, bm.logoUrl);
     if (bm.faviconUrl) faviconByKey.set(key, bm.faviconUrl);
+    displayNameByKey.set(key, getBookmakerDisplayName(bm));
   });
 
   const bySportKey = new Map<string, typeof fixtures>();
@@ -121,7 +123,7 @@ export async function getQuotesForFixtures(
         bookmaker1: q1
           ? {
               key: q1.bookmakerKey || "",
-              name: q1.bookmaker || "",
+              name: displayNameByKey.get((q1.bookmakerKey || "").toLowerCase()) || q1.bookmaker || "",
               logoUrl: logoByKey.get((q1.bookmakerKey || "").toLowerCase()),
               faviconUrl: faviconByKey.get((q1.bookmakerKey || "").toLowerCase()),
               url: getBookmakerUrl(q1.bookmakerKey || "", country) ?? undefined,
@@ -130,7 +132,7 @@ export async function getQuotesForFixtures(
         bookmakerX: qX
           ? {
               key: qX.bookmakerKey || "",
-              name: qX.bookmaker || "",
+              name: displayNameByKey.get((qX.bookmakerKey || "").toLowerCase()) || qX.bookmaker || "",
               logoUrl: logoByKey.get((qX.bookmakerKey || "").toLowerCase()),
               faviconUrl: faviconByKey.get((qX.bookmakerKey || "").toLowerCase()),
               url: getBookmakerUrl(qX.bookmakerKey || "", country) ?? undefined,
@@ -139,7 +141,7 @@ export async function getQuotesForFixtures(
         bookmaker2: q2
           ? {
               key: q2.bookmakerKey || "",
-              name: q2.bookmaker || "",
+              name: displayNameByKey.get((q2.bookmakerKey || "").toLowerCase()) || q2.bookmaker || "",
               logoUrl: logoByKey.get((q2.bookmakerKey || "").toLowerCase()),
               faviconUrl: faviconByKey.get((q2.bookmakerKey || "").toLowerCase()),
               url: getBookmakerUrl(q2.bookmakerKey || "", country) ?? undefined,

@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import { getTranslations } from "next-intl/server";
-import { getBookmakers } from "@/lib/quotes/bookmakers";
+import { getBookmakers, getBookmakerDisplayName } from "@/lib/quotes/bookmakers";
 import { BookmakerLink } from "@/lib/components/BookmakerLink";
 import {
   getBookmakerUrl,
@@ -82,7 +82,7 @@ export default async function SitiScommessePage({
                 {bm.logoUrl && (
                     <img src={bm.logoUrl} alt="" className="h-10 w-10 object-contain md:h-12 md:w-12" />
                 )}
-                <h2 className="text-base font-bold text-[var(--foreground)] md:text-lg">{bm.name}</h2>
+                <h2 className="text-base font-bold text-[var(--foreground)] md:text-lg">{getBookmakerDisplayName(bm)}</h2>
               </div>
 
               <div className="mt-3">
@@ -98,7 +98,7 @@ export default async function SitiScommessePage({
                     href={siteUrl}
                     target="_blank"
                     rel="noopener noreferrer"
-                    bookmakerName={bm.name}
+                    bookmakerName={getBookmakerDisplayName(bm)}
                     locale={locale}
                     className="inline-flex min-h-[36px] items-center justify-center rounded-lg bg-[var(--accent)] px-4 py-2 text-sm font-semibold text-white transition hover:bg-[var(--accent-hover)]"
                   >
@@ -110,7 +110,7 @@ export default async function SitiScommessePage({
                     href={bonusUrl || siteUrl}
                     target="_blank"
                     rel="noopener noreferrer"
-                    bookmakerName={bm.name}
+                    bookmakerName={getBookmakerDisplayName(bm)}
                     locale={locale}
                     className="inline-flex min-h-[36px] items-center justify-center rounded-lg border border-[var(--accent)] px-4 py-2 text-sm font-semibold text-[var(--accent)] transition hover:bg-[var(--accent-light)]"
                   >

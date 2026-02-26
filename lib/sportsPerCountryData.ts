@@ -1,6 +1,7 @@
 import { readFileSync, writeFileSync, mkdirSync, existsSync } from "fs";
 import path from "path";
-import { routing, localeToCountryCode } from "@/i18n/routing";
+import { routing } from "@/i18n/routing";
+import { SUPPORTED_MARKETS } from "./markets";
 import type {
   SportsPerCountry,
   SportKey,
@@ -10,29 +11,26 @@ import type {
 
 const DATA_PATH = path.join(process.cwd(), "data", "sportsPerCountry.json");
 
-const DEFAULT_SPORTS: SportsPerCountry = {
-  IT: ["calcio", "basket", "tennis", "rugby"],
-  FR: ["calcio", "basket", "tennis", "rugby"],
-  ES: ["calcio", "basket", "tennis", "rugby"],
-  DE: ["calcio", "basket", "tennis", "rugby"],
-  UK: ["calcio", "basket", "tennis", "rugby"],
-  BR: ["calcio", "basket", "tennis", "rugby"],
-  NG: ["calcio", "basket", "tennis", "rugby"],
-  KE: ["calcio", "basket", "tennis", "rugby"],
-  GH: ["calcio", "basket", "tennis", "rugby"],
-};
+const DEFAULT_SPORT_KEYS = ["calcio", "basket", "tennis", "rugby"] as const;
 
-const DEFAULT_LOCALE_PER_COUNTRY: LocalePerCountry = {
-  IT: "it",
-  FR: "fr",
-  ES: "es",
-  DE: "de",
-  UK: "en",
-  BR: "pt-BR",
-  NG: "en-NG",
-  KE: "en-KE",
-  GH: "en-GH",
-};
+function buildDefaultSports(): SportsPerCountry {
+  const result: SportsPerCountry = {};
+  for (const code of Object.keys(SUPPORTED_MARKETS)) {
+    result[code] = [...DEFAULT_SPORT_KEYS];
+  }
+  return result;
+}
+
+function buildDefaultLocalePerCountry(): LocalePerCountry {
+  const result: LocalePerCountry = {};
+  for (const [code, config] of Object.entries(SUPPORTED_MARKETS)) {
+    result[code] = config.urlSegment;
+  }
+  return result;
+}
+
+const DEFAULT_SPORTS = buildDefaultSports();
+const DEFAULT_LOCALE_PER_COUNTRY = buildDefaultLocalePerCountry();
 
 function parseConfig(raw: unknown): SportsConfig {
   if (raw && typeof raw === "object") {
@@ -113,6 +111,7 @@ export function getLocaleForCountry(country: string): string {
   const locale = getSportsConfig().localePerCountry[country];
   if (locale && (routing.locales as readonly string[]).includes(locale))
     return locale;
-  const found = Object.entries(localeToCountryCode).find(([, c]) => c === country);
-  return found?.[0] ?? routing.defaultLocale;
+  const config = SUPPORTED_MARKETS[country];
+  if (config) return config.urlSegment;
+  return routing.defaultLocale;
 }

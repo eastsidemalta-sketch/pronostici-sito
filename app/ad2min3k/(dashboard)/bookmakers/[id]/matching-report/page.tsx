@@ -160,7 +160,7 @@ export default function BookmakerMatchingReportPage() {
       .then((r) => r.json())
       .then((d) => {
         const bm = d.bookmakers?.find((b: { id: string }) => b.id === id);
-        setBookmaker(bm ? { name: bm.name } : null);
+        setBookmaker(bm ? { name: bm.displayName || bm.name } : null);
         setIsDirectBookmaker(bm?.apiProvider === "direct");
       })
       .catch(() => {});

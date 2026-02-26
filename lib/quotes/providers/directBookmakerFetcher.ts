@@ -3,6 +3,7 @@
  * Applica il mapping configurato e restituisce formato normalizzato.
  */
 import type { Bookmaker } from "../bookmaker.types";
+import { getBookmakerDisplayName } from "../bookmakers";
 import { getByPath, getNumber, getString } from "@/lib/jsonPath";
 
 export type DirectQuote = {
@@ -156,7 +157,7 @@ export async function fetchDirectBookmakerQuotes(
         away: odds2 || 0,
       },
       bookmakerKey: bm.id,
-      bookmaker: bm.name,
+      bookmaker: getBookmakerDisplayName(bm),
     });
   }
 

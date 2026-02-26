@@ -27,7 +27,11 @@ export type BookmakerCountryConfig = {
 
 export type Bookmaker = {
   id: string;
+  /** ID univoco per integrazioni: {ISO2}-{4 cifre} es. IT-0001, BR-0002 */
+  siteId?: string;
   name: string;
+  /** Nome visibile sul sito (se vuoto usa name) */
+  displayName?: string | null;
   slug: string;
   country: string; // paese principale/sede
   countries?: string[]; // paesi in cui il bookmaker è presente (es. ["IT", "DE", "ES"])

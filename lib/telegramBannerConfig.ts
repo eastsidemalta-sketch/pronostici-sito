@@ -1,6 +1,6 @@
 import { readFileSync, writeFileSync, mkdirSync, existsSync } from "fs";
 import path from "path";
-import { localeToCountryCode } from "@/i18n/routing";
+import { getActiveMarketCodes, getDefaultMarketCode } from "@/lib/markets";
 
 const DATA_PATH = path.join(process.cwd(), "data", "telegramBannerConfig.json");
 
@@ -50,10 +50,11 @@ export function saveTelegramBannerConfig(config: TelegramBannerConfig): void {
   writeFileSync(DATA_PATH, JSON.stringify(config, null, 2));
 }
 
-/** Restituisce la config per un paese. Fallback a IT se non configurato. */
+/** Restituisce la config per un paese. Fallback al mercato di default se non configurato. */
 export function getTelegramBannerForCountry(country: string): TelegramBannerCountryConfig | null {
   const config = getRawConfig();
-  const cc = config.byCountry?.[country] ?? config.byCountry?.IT ?? (country === "IT" ? DEFAULT_IT : null);
+  const defaultMarket = getDefaultMarketCode();
+  const cc = config.byCountry?.[country] ?? config.byCountry?.[defaultMarket] ?? (country === defaultMarket ? DEFAULT_IT : null);
   if (!cc?.channelUrl?.trim()) return null;
   return {
     text: cc.text?.trim() || DEFAULT_IT.text,
@@ -63,5 +64,5 @@ export function getTelegramBannerForCountry(country: string): TelegramBannerCoun
 }
 
 export function getSupportedCountries(): string[] {
-  return [...new Set(Object.values(localeToCountryCode))];
+  return getActiveMarketCodes();
 }

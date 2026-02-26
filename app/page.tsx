@@ -1,12 +1,12 @@
 import { redirect } from "next/navigation";
+import { getDefaultLocale } from "@/lib/markets";
 
 /**
- * Root page: redirect to default locale.
- * With localePrefix "always", the middleware redirects / to /it. This fallback
- * handles edge cases where the middleware might not run (e.g. matcher miss).
+ * Root page: redirect to default market locale.
+ * Config-driven: deriva da SUPPORTED_MARKETS (primo mercato attivo).
  */
 export default function RootPage() {
-  redirect("/it");
+  redirect(`/${getDefaultLocale()}`);
 }
 
 

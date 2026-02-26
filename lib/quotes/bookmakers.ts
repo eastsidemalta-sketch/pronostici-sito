@@ -1,10 +1,23 @@
-import { getBookmakers as loadBookmakers } from "./bookmakersData";
+import {
+  getBookmakers as loadBookmakers,
+  getBookmakerBySiteId as getBySiteId,
+} from "./bookmakersData";
 import type { Bookmaker } from "./bookmaker.types";
 import { getBookmakerUrlByUseCase } from "./bookmakerUrls";
+
+/** Nome visibile sul sito: displayName se impostato, altrimenti name */
+export function getBookmakerDisplayName(bm: { name: string; displayName?: string | null }): string {
+  return (bm.displayName?.trim() || bm.name) || "";
+}
 
 /** Bookmakers caricati da data/bookmakers.json (o default). Chiama ogni volta per dati aggiornati. */
 export function getBookmakers() {
   return loadBookmakers();
+}
+
+/** Trova bookmaker per siteId (es. IT-0001). Per bonus, API, integrazioni. */
+export function getBookmakerBySiteId(siteId: string) {
+  return getBySiteId(siteId);
 }
 
 /** ID del bookmaker in evidenza (da env FEATURED_BOOKMAKER_ID) o null per usare il primo con bonus */
@@ -87,6 +100,7 @@ export function getFeaturedBookmaker(country: string): FeaturedBookmaker | null 
 
   return {
     ...chosen,
+    name: getBookmakerDisplayName(chosen),
     bonusDescription: chosen.bonusDescription,
     bonusUrl: chosen.bonusUrl,
     buttonText: chosen.buttonText,

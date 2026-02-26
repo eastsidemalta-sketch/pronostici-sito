@@ -2,6 +2,7 @@ import { hasLocale } from "next-intl";
 import { notFound } from "next/navigation";
 import { getTranslations } from "next-intl/server";
 import { routing, localeToCountry } from "@/i18n/routing";
+import { getDefaultLocale } from "@/lib/markets";
 import { Link } from "@/i18n/navigation";
 import { getLegalLinkAndTitle } from "@/lib/legalData";
 import { getFooterDisclaimerLines } from "@/lib/footerDisclaimerConfig";
@@ -37,7 +38,7 @@ export default async function LocaleLayout({ children, params }: Props) {
 
   return (
     <MobileMenuWrapper>
-      {locale === "it" && <BaseSchemaJsonLd />}
+      {locale === getDefaultLocale() && <BaseSchemaJsonLd />}
       <header className="sticky top-0 z-50 border-b border-[var(--card-border)] bg-white shadow-sm">
         <div className="mx-auto flex max-w-6xl items-center justify-between gap-3 px-3 py-0.5 sm:px-4 sm:py-2 md:px-5">
           {/* Mobile: hamburger a sinistra */}

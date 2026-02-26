@@ -1,7 +1,7 @@
 import { readFileSync, writeFileSync, mkdirSync, existsSync } from "fs";
 import path from "path";
 import { CALCIO_COMPETITIONS } from "./homeMenu";
-import { localeToCountryCode } from "@/i18n/routing";
+import { getActiveMarketCodes } from "./markets";
 import { getCompetitionsForSport } from "./sportsCompetitions";
 import { isHiddenCompetition } from "./hiddenCompetitions";
 
@@ -96,7 +96,7 @@ export function getEnabledCompetitionIds(
   return filterHidden(ids as (number | string)[]) as number[] | string[];
 }
 
-/** Lista paesi supportati (da routing) */
+/** Lista paesi supportati (da markets config) */
 export function getSupportedCountries(): string[] {
-  return [...new Set(Object.values(localeToCountryCode))];
+  return getActiveMarketCodes();
 }

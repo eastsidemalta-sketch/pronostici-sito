@@ -1,4 +1,4 @@
-import { getBookmakers } from "@/lib/quotes/bookmakers";
+import { getBookmakers, getBookmakerDisplayName } from "@/lib/quotes/bookmakers";
 import { getBookmakerUrlByUseCase } from "@/lib/quotes/bookmakerUrls";
 import { BookmakerLink } from "@/lib/components/BookmakerLink";
 
@@ -42,7 +42,7 @@ export default async function HomeBonusSidebar({ country, locale }: HomeBonusSid
               href={bm.bonusUrl || "#"}
               target="_blank"
               rel="noopener noreferrer"
-              bookmakerName={bm.name}
+              bookmakerName={getBookmakerDisplayName(bm)}
               locale={locale}
               className="flex min-h-[52px] items-center gap-2 rounded-lg border border-[var(--card-border)] bg-[var(--card-bg)] p-2.5 shadow-sm transition hover:border-[var(--accent)]/40 hover:shadow-md sm:min-h-[56px] lg:p-3"
             >
@@ -50,7 +50,7 @@ export default async function HomeBonusSidebar({ country, locale }: HomeBonusSid
                 <img src={bm.logoUrl} alt="" className="h-10 w-10 shrink-0 object-contain lg:h-11 lg:w-11" />
               )}
               <div className="min-w-0 flex-1">
-                <div className="text-xs font-semibold text-[var(--foreground)] lg:text-sm">{bm.name}</div>
+                <div className="text-xs font-semibold text-[var(--foreground)] lg:text-sm">{getBookmakerDisplayName(bm)}</div>
                 <div className="mt-0.5 truncate text-[11px] text-[var(--foreground-muted)] lg:text-xs">
                   {bm.bonusDescription}
                 </div>

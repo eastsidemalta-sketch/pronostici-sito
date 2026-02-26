@@ -38,7 +38,13 @@ export function useLiveMatches(): Record<number, LiveMatchPayload> {
 
         const next: Record<number, LiveMatchPayload> = {};
         for (const m of matches) {
-          next[m.fixture_id] = m;
+          next[m.fixture_id] = {
+            fixture_id: m.fixture_id,
+            status: m.status,
+            minute: m.minute,
+            score: { home: m.score.home, away: m.score.away },
+            last_updated_at: m.last_updated_at,
+          };
         }
         setLiveMap(next);
       } catch {

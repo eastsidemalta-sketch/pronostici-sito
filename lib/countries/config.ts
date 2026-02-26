@@ -1,64 +1,80 @@
 /**
- * Configurazione multi-country.
- * Usato per: attivazione country, hreflang, Coming Soon.
+ * Configurazione multi-country - DERIVATA da SUPPORTED_MARKETS.
+ * Retrocompatibilità per consumer esistenti (sitemap, hreflang, ecc.).
  *
- * Compatibile con [locale] attuale e futuro [country].
+ * Single source of truth: lib/markets/config.ts
  */
 
+import {
+  SUPPORTED_MARKETS,
+  getActiveMarkets,
+  getActiveLocales,
+  getDefaultLocale,
+  getMarketConfig,
+  isMarketActive,
+} from "@/lib/markets";
+
 export type CountryConfig = {
-  /** Codice URL (locale o country) */
   code: string;
-  /** Locale Intl (it-IT, pt-BR, en-NG...) */
   locale: string;
-  /** Nome paese */
   name: string;
-  /** Pubblicato e indicizzabile */
   active: boolean;
-  /** Se attivo ma in beta: noindex */
   noindex?: boolean;
 };
 
-/** Tutti i country configurati (attivi e dormienti) */
-export const COUNTRIES: CountryConfig[] = [
-  { code: "it", locale: "it-IT", name: "Italia", active: true },
-  { code: "br", locale: "pt-BR", name: "Brasil", active: false },
-  { code: "ng", locale: "en-NG", name: "Nigeria", active: false },
-  { code: "ke", locale: "en-KE", name: "Kenya", active: false },
-  { code: "gh", locale: "en-GH", name: "Ghana", active: false },
-];
+/** Tutti i country configurati - derivato da SUPPORTED_MARKETS */
+export const COUNTRIES: CountryConfig[] = Object.entries(SUPPORTED_MARKETS).map(
+  ([code, m]) => ({
+    code: m.urlSegment,
+    locale: m.defaultLocale,
+    name: m.name,
+    active: m.active,
+    noindex: m.noindex,
+  })
+);
 
-/** Locales attuali (it, fr, es...) con flag active per hreflang */
-export const LOCALE_ACTIVE: Record<string, boolean> = {
-  it: true,
-  fr: false,
-  es: false,
-  de: false,
-  en: false,
-  "pt-BR": false,
-};
+/** Locales attivi per hreflang - derivato da mercati attivi */
+export const LOCALE_ACTIVE: Record<string, boolean> = Object.fromEntries(
+  Object.entries(SUPPORTED_MARKETS).map(([, m]) => [m.urlSegment, m.active])
+);
 
 export const ACTIVE_COUNTRIES = COUNTRIES.filter((c) => c.active);
-export const DEFAULT_COUNTRY = "it";
+export const DEFAULT_COUNTRY = getDefaultLocale();
 
 export function getCountryConfig(code: string): CountryConfig | undefined {
-  return COUNTRIES.find((c) => c.code === code);
+  const upper = code.toUpperCase();
+  const m = getMarketConfig(upper);
+  if (!m) return undefined;
+  return {
+    code: m.urlSegment,
+    locale: m.defaultLocale,
+    name: m.name,
+    active: m.active,
+    noindex: m.noindex,
+  };
 }
 
 export function isCountryActive(code: string): boolean {
-  return getCountryConfig(code)?.active ?? false;
+  return isMarketActive(code);
 }
 
-/** Country attivi (per sitemap, hreflang, IA signals) */
+/** Country attivi (per sitemap, hreflang) */
 export function getActiveCountries(): CountryConfig[] {
-  return COUNTRIES.filter((c) => c.active);
+  return getActiveMarkets().map((m) => ({
+    code: m.urlSegment,
+    locale: m.defaultLocale,
+    name: m.name,
+    active: m.active,
+    noindex: m.noindex,
+  }));
 }
 
-/** Codici attivi (per generateStaticParams, hreflang) */
+/** Codici attivi (urlSegment) - per sitemap, hreflang */
 export function getActiveCountryCodes(): string[] {
-  return getActiveCountries().map((c) => c.code);
+  return getActiveLocales();
 }
 
-/** Locales attivi per hreflang (compatibile con routing.locales attuale) */
+/** Locales attivi per hreflang */
 export function getActiveLocalesForHreflang(locales: string[]): string[] {
   return locales.filter((l) => LOCALE_ACTIVE[l] === true);
 }

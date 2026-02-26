@@ -1,4 +1,4 @@
-import { getBookmakers } from "@/lib/quotes/bookmakers";
+import { getBookmakers, getBookmakerDisplayName } from "@/lib/quotes/bookmakers";
 import Link from "next/link";
 
 export default function AdminBookmakersPage() {
@@ -7,13 +7,21 @@ export default function AdminBookmakersPage() {
   return (
     <main className="mx-auto max-w-6xl px-6 py-10">
       <div className="mb-6 flex items-center justify-between">
-        <h2 className="text-2xl font-semibold">Bookmaker</h2>
-        <Link
-          href="/ad2min3k"
-          className="text-sm text-neutral-600 hover:text-neutral-900"
-        >
-          ← Dashboard
-        </Link>
+        <h2 className="text-2xl font-semibold">Siti di scommesse</h2>
+        <div className="flex items-center gap-3">
+          <Link
+            href="/ad2min3k/bookmakers/new"
+            className="rounded-lg bg-emerald-600 px-4 py-2 text-sm font-medium text-white hover:bg-emerald-700"
+          >
+            + Nuovo sito
+          </Link>
+          <Link
+            href="/ad2min3k"
+            className="text-sm text-neutral-600 hover:text-neutral-900"
+          >
+            ← Dashboard
+          </Link>
+        </div>
       </div>
 
       <div className="rounded-xl border bg-white p-6">
@@ -37,8 +45,15 @@ export default function AdminBookmakersPage() {
                     className="h-10 w-10 object-contain"
                   />
                 )}
-                <div>
-                  <h3 className="font-semibold">{bm.name}</h3>
+                <div className="min-w-0 flex-1">
+                  <div className="flex items-center gap-2">
+                    <h3 className="font-semibold">{getBookmakerDisplayName(bm)}</h3>
+                    {bm.siteId && (
+                      <span className="rounded bg-neutral-100 px-2 py-0.5 font-mono text-xs font-medium text-neutral-600">
+                        {bm.siteId}
+                      </span>
+                    )}
+                  </div>
                   <p className="mt-1 text-sm text-neutral-600">
                     Paesi: {bm.countries?.join(", ") || bm.country}
                   </p>

@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import { getTranslations } from "next-intl/server";
-import { getBookmakers } from "@/lib/quotes/bookmakers";
+import { getBookmakers, getBookmakerDisplayName } from "@/lib/quotes/bookmakers";
 import { BookmakerLink } from "@/lib/components/BookmakerLink";
 import { getBookmakerUrlByUseCase } from "@/lib/quotes/bookmakerUrls";
 import { localeToCountryCode } from "@/i18n/routing";
@@ -82,7 +82,7 @@ export default async function BonusPage({
                     <img src={bm.logoUrl} alt="" className="h-10 w-10 object-contain md:h-12 md:w-12" />
                   )}
                   <div>
-                    <h2 className="text-base font-bold text-[var(--foreground)] md:text-lg">{bm.name}</h2>
+                    <h2 className="text-base font-bold text-[var(--foreground)] md:text-lg">{getBookmakerDisplayName(bm)}</h2>
                     <p className="mt-1 text-sm leading-relaxed text-[var(--foreground-muted)] md:text-base">{bonusDescription}</p>
                   </div>
                 </div>
@@ -91,7 +91,7 @@ export default async function BonusPage({
                     href={bonusUrl}
                     target="_blank"
                     rel="noopener noreferrer"
-                    bookmakerName={bm.name}
+                    bookmakerName={getBookmakerDisplayName(bm)}
                     locale={locale}
                     className="shrink-0 rounded-lg bg-[var(--accent)] px-4 py-2 text-sm font-semibold text-white transition hover:bg-[var(--accent-hover)]"
                   >

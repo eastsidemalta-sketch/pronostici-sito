@@ -3,6 +3,7 @@
  * Analizza cosa è stato matchato, cosa no, e suggerisce correzioni.
  */
 import { getUpcomingFixtures } from "./apiFootball";
+import { getBookmakerDisplayName } from "./quotes/bookmakers";
 import { getMultiMarketQuotes } from "./quotes/quotesEngine";
 import { getSportKeyForLeague } from "./quotes/leagueToSportKey";
 import { getBookmakers } from "./quotes/bookmakers";
@@ -226,7 +227,7 @@ export async function runMatchingReport(bookmakerId?: string): Promise<MatchingR
               leagueId,
               leagueName: leagueName ?? "",
               bookmakerId: bm.id,
-              bookmakerName: bm.name,
+              bookmakerName: getBookmakerDisplayName(bm),
               suggestedValue: leagueName?.toLowerCase().replace(/\s+/g, "_"),
               reason: "no_mapping",
             });
@@ -246,7 +247,7 @@ export async function runMatchingReport(bookmakerId?: string): Promise<MatchingR
               apiHome,
               apiAway,
               bookmakerKey: bm.id,
-              bookmakerName: bm.name,
+              bookmakerName: getBookmakerDisplayName(bm),
               bmHome: q.homeTeam,
               bmAway: q.awayTeam,
               odds: q.outcomes,
@@ -269,7 +270,7 @@ export async function runMatchingReport(bookmakerId?: string): Promise<MatchingR
                   apiFootball: apiHome,
                   bookmakerVariant: q.homeTeam,
                   bookmakerId: bm.id,
-                  bookmakerName: bm.name,
+                  bookmakerName: getBookmakerDisplayName(bm),
                   fixtureId,
                   match: "home",
                 });
@@ -279,7 +280,7 @@ export async function runMatchingReport(bookmakerId?: string): Promise<MatchingR
                   apiFootball: apiAway,
                   bookmakerVariant: q.awayTeam,
                   bookmakerId: bm.id,
-                  bookmakerName: bm.name,
+                  bookmakerName: getBookmakerDisplayName(bm),
                   fixtureId,
                   match: "away",
                 });
