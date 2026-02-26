@@ -31,7 +31,7 @@ export default function TelegramBanner({ text, buttonText, channelUrl }: Props) 
       <RichText
         as="p"
         text={text}
-        className="mb-3 text-sm leading-relaxed text-[var(--foreground-muted)] md:text-base"
+        className="mb-3 text-xs leading-relaxed text-[var(--foreground-muted)] md:text-sm"
       />
       <a
         href={channelUrl}
