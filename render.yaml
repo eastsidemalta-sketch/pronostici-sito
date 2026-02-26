@@ -42,7 +42,7 @@ services:
     branch: main
     schedule: "* * * * *"
     buildCommand: npm install
-    startCommand: node --version && node -e "fetch(process.env.SITE_URL+'/api/cron/live-matches',{headers:{'Authorization':'Bearer '+process.env.CRON_SECRET}}).then(r=>r.json()).then(d=>{console.log(JSON.stringify(d));process.exit(0)}).catch(e=>{console.error(e);process.exit(1)})"
+    startCommand: node scripts/render-cron.mjs
     envVars:
       - key: SITE_URL
         value: https://playsignal.io
