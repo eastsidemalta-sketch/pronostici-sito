@@ -1,4 +1,5 @@
 import { getEnabledLeagueIds } from "./leaguesConfig";
+import { getTeamFixturesWithFallback } from "./teamFixturesCache";
 
 /**
  * Ottiene i dettagli completi di una partita usando il fixture ID
@@ -256,31 +257,31 @@ export async function getTeamLastFixtures(teamId: number, last = 30) {
   const key = process.env.API_FOOTBALL_KEY;
   if (!key) throw new Error("API_FOOTBALL_KEY mancante. Controlla .env.local");
 
-  const today = new Date();
-  const fromDate = new Date(today);
-  fromDate.setDate(fromDate.getDate() - 180);
-  const toDate = new Date(today);
-  toDate.setFullYear(toDate.getFullYear() + 1);
-  const fromStr = fromDate.toISOString().split("T")[0];
-  const toStr = toDate.toISOString().split("T")[0];
-  const season = today.getMonth() >= 7 ? today.getFullYear() : today.getFullYear() - 1;
+  return getTeamFixturesWithFallback(teamId, async () => {
+    const today = new Date();
+    const fromDate = new Date(today);
+    fromDate.setDate(fromDate.getDate() - 180);
+    const toDate = new Date(today);
+    toDate.setFullYear(toDate.getFullYear() + 1);
+    const fromStr = fromDate.toISOString().split("T")[0];
+    const toStr = toDate.toISOString().split("T")[0];
+    const season = today.getMonth() >= 7 ? today.getFullYear() : today.getFullYear() - 1;
 
-  const [main, byDateRange, coppaItalia] = await Promise.all([
-    fetchTeamFixtures(key, teamId, { last }),
-    fetchTeamFixtures(key, teamId, { from: fromStr, to: toStr }),
-    fetchTeamFixtures(key, teamId, { league: 137, last: 10, season }),
-  ]);
+    const [main, byDateRange, coppaItalia] = await Promise.all([
+      fetchTeamFixtures(key, teamId, { last }),
+      fetchTeamFixtures(key, teamId, { from: fromStr, to: toStr }),
+      fetchTeamFixtures(key, teamId, { league: 137, last: 10, season }),
+    ]);
 
-  const byId = new Map<number, any>();
-  for (const f of main) if (f.fixture?.id) byId.set(f.fixture.id, f);
-  for (const f of byDateRange) if (f.fixture?.id) byId.set(f.fixture.id, f);
-  for (const f of coppaItalia) if (f.fixture?.id) byId.set(f.fixture.id, f);
+    const byId = new Map<number, any>();
+    for (const f of main) if (f.fixture?.id) byId.set(f.fixture.id, f);
+    for (const f of byDateRange) if (f.fixture?.id) byId.set(f.fixture.id, f);
+    for (const f of coppaItalia) if (f.fixture?.id) byId.set(f.fixture.id, f);
 
-  const merged = Array.from(byId.values()).sort(
-    (a, b) =>
-      new Date(b.fixture?.date || 0).getTime() -
-      new Date(a.fixture?.date || 0).getTime()
-  );
-
-  return merged;
+    return Array.from(byId.values()).sort(
+      (a, b) =>
+        new Date(b.fixture?.date || 0).getTime() -
+        new Date(a.fixture?.date || 0).getTime()
+    );
+  });
 }
