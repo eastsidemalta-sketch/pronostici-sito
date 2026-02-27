@@ -40,7 +40,7 @@ services:
     region: frankfurt
     plan: starter
     branch: main
-    schedule: "*/2 * * * *"
+    schedule: "* * * * *"
     buildCommand: npm install
     startCommand: node scripts/render-cron.mjs
     envVars:
