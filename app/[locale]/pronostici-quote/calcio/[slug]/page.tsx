@@ -310,6 +310,7 @@ export async function generateMetadata({
 }: {
   params: Promise<{ locale: string; slug: string }>;
 }): Promise<Metadata> {
+  try {
   const { locale, slug } = await params;
   const fixtureId = extractFixtureId(slug);
   const fixture = await getFixtureDetails(fixtureId);
@@ -350,6 +351,9 @@ export async function generateMetadata({
       ),
     },
   };
+  } catch {
+    return { title: "Partita non trovata" };
+  }
 }
 
 export default async function MatchPage({
