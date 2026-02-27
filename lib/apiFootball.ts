@@ -1,5 +1,5 @@
 import { getEnabledLeagueIds } from "./leaguesConfig";
-import { getTeamFixturesWithFallback } from "./teamFixturesCache";
+import { getTeamFixturesWithFallback, getCachedFixtureDetail, setCachedFixtureDetail } from "./teamFixturesCache";
 
 /**
  * Ottiene i dettagli completi di una partita usando il fixture ID
@@ -11,26 +11,51 @@ export async function getFixtureDetails(fixtureId: string | number) {
     throw new Error("API_FOOTBALL_KEY mancante. Controlla .env.local");
   }
 
-  const url = `https://v3.football.api-sports.io/fixtures?id=${fixtureId}`;
-  const res = await fetch(url, {
-    headers: {
-      "x-apisports-key": key,
-    },
-    next: { revalidate: 30 }, // dettaglio partita: 30 sec se live (risultati aggiornati)
-  });
+  const id = Number(fixtureId);
 
-  if (!res.ok) {
-    const text = await res.text();
-    throw new Error(`API-Football error ${res.status}: ${text}`);
-  }
+  try {
+    const url = `https://v3.football.api-sports.io/fixtures?id=${fixtureId}`;
+    const res = await fetch(url, {
+      headers: { "x-apisports-key": key },
+      next: { revalidate: 30 },
+    });
 
-  const data = await res.json();
-  
-  if (data.errors && Object.keys(data.errors).length > 0) {
-    console.warn("Errori API:", data.errors);
+    if (!res.ok) {
+      throw new Error(`API-Football error ${res.status}`);
+    }
+
+    const data = await res.json();
+
+    if (data.errors && Object.keys(data.errors).length > 0) {
+      console.warn("Errori API:", data.errors);
+    }
+
+    const fixture = data.response?.[0] ?? null;
+
+    if (fixture) {
+      // Salva in cache ogni volta che l'API risponde correttamente
+      await setCachedFixtureDetail(id, fixture).catch(() => {});
+      return fixture;
+    }
+
+    // API ha risposto ma senza dati → prova cache
+    const cached = await getCachedFixtureDetail(id);
+    if (cached) {
+      console.warn(`[getFixtureDetails] API vuota per ${id}, uso cache`);
+      return cached;
+    }
+
+    return null;
+  } catch (err) {
+    // Errore di rete o HTTP → prova cache
+    console.warn(`[getFixtureDetails] Errore API per ${id}:`, err);
+    const cached = await getCachedFixtureDetail(id);
+    if (cached) {
+      console.warn(`[getFixtureDetails] Uso cache fallback per ${id}`);
+      return cached;
+    }
+    return null;
   }
-  
-  return data.response?.[0] || null;
 }
 
 /** Come getFixtureDetails ma senza cache (per fallback partite mancanti) */

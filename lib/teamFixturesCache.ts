@@ -1,11 +1,13 @@
 /**
- * Cache persistente delle ultime fixture valide per squadra.
+ * Cache persistente delle ultime fixture valide per squadra + dettagli singola partita.
  * Salva in Redis (se disponibile) o in memoria.
- * Usata come fallback quando l'API restituisce meno di MIN_VALID partite.
+ * Usata come fallback quando l'API restituisce dati incompleti o fallisce.
  */
 
 const CACHE_TTL_SEC = 7 * 24 * 60 * 60; // 7 giorni
+const FIXTURE_DETAIL_TTL_SEC = 30 * 24 * 60 * 60; // 30 giorni
 const KEY_PREFIX = "team:fixtures:";
+const KEY_FIXTURE_PREFIX = "fixture:detail:";
 const MIN_VALID = 6;
 
 let redisClient: import("ioredis").default | null = null;
@@ -52,6 +54,39 @@ export async function setCachedTeamFixtures(teamId: number, fixtures: any[]): Pr
     memCache[teamId] = fixtures;
   }
 }
+
+// ─── Cache dettagli singola partita ──────────────────────────────────────────
+
+const memFixtureCache: Record<number, any> = {};
+
+export async function getCachedFixtureDetail(fixtureId: number): Promise<any | null> {
+  const redis = getRedis();
+  if (redis) {
+    try {
+      const raw = await redis.get(`${KEY_FIXTURE_PREFIX}${fixtureId}`);
+      if (!raw) return null;
+      return JSON.parse(raw);
+    } catch {
+      return null;
+    }
+  }
+  return memFixtureCache[fixtureId] ?? null;
+}
+
+export async function setCachedFixtureDetail(fixtureId: number, fixture: any): Promise<void> {
+  const redis = getRedis();
+  if (redis) {
+    try {
+      await redis.set(`${KEY_FIXTURE_PREFIX}${fixtureId}`, JSON.stringify(fixture), "EX", FIXTURE_DETAIL_TTL_SEC);
+    } catch {
+      // ignore
+    }
+  } else {
+    memFixtureCache[fixtureId] = fixture;
+  }
+}
+
+// ─── Cache ultime fixture per squadra ────────────────────────────────────────
 
 /**
  * Ritorna le fixture valide per una squadra.
