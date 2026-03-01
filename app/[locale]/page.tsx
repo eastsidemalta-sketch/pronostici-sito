@@ -49,7 +49,8 @@ export async function generateMetadata({
   });
 }
 
-export const dynamic = "force-dynamic";
+/** Cache 30 secondi: riduce carico API e velocizza il caricamento */
+export const revalidate = 30;
 
 export default async function HomePage({
   params,

@@ -153,20 +153,25 @@ export async function getUpcomingFixtures(leagueIds?: number[]) {
         ? configIds
         : DEFAULT_LEAGUE_IDS;
 
-  for (const leagueId of leagues) {
-    const url = `https://v3.football.api-sports.io/fixtures?from=${fromDate}&to=${toDate}&league=${leagueId}&season=${season}`;
-    try {
-      const res = await fetch(url, {
-        headers: { "x-apisports-key": key },
-        next: { revalidate: 60 },
-      });
-      if (!res.ok) continue;
-      const data = await res.json();
-      if (data.errors && Object.keys(data.errors).length > 0) continue;
-      if (data.response?.length) allFixtures.push(...data.response);
-    } catch {
-      continue;
-    }
+  const results = await Promise.all(
+    leagues.map(async (leagueId) => {
+      const url = `https://v3.football.api-sports.io/fixtures?from=${fromDate}&to=${toDate}&league=${leagueId}&season=${season}`;
+      try {
+        const res = await fetch(url, {
+          headers: { "x-apisports-key": key },
+          next: { revalidate: 60 },
+        });
+        if (!res.ok) return [];
+        const data = await res.json();
+        if (data.errors && Object.keys(data.errors).length > 0) return [];
+        return data.response ?? [];
+      } catch {
+        return [];
+      }
+    })
+  );
+  for (const arr of results) {
+    if (arr.length) allFixtures.push(...arr);
   }
 
   const todayStr = fromDate;
