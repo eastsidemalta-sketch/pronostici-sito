@@ -6,7 +6,7 @@ export type BookmakerLinkUseCase = "scommetti" | "registrati" | "bonus" | "casin
 /** Tipo di remunerazione per affiliazione */
 export type RemunerationModel = "CPA" | "CPL" | "revenue_share";
 
-/** Configurazione remunerazione per paese */
+/** Configurazione remunerazione del bookmaker */
 export type RemunerationConfig = {
   /** Tipo di modello: CPA (costo per acquisizione), CPL (costo per lead), Revenue Share */
   model: RemunerationModel;
@@ -15,7 +15,7 @@ export type RemunerationConfig = {
   /** Valuta per CPA/CPL (default EUR) */
   currency?: string;
   /**
-   * Priority manuale per la graduatoria quote (1 = primo, 2 = secondo, ecc.)
+   * Posizione manuale nella graduatoria quote (1 = primo, 2 = secondo, ecc.)
    * Se impostato, sovrascrive il ranking automatico basato sulla remunerazione.
    * Utile per accordi speciali o gestione manuale della vetrina.
    */
@@ -111,14 +111,10 @@ export type Bookmaker = {
   };
 
   /**
-   * Remunerazione globale (fallback se non configurata per paese).
+   * Remunerazione del bookmaker (uno per paese — ogni bookmaker opera in un solo paese).
    * Es. { model: "revenue_share", value: 35 } = Revenue Share al 35%
+   * In caso di parità di quota, viene mostrato prima il bookmaker con remunerazione più alta.
+   * Se manualPriority è impostato, sovrascrive la graduatoria automatica.
    */
   remuneration?: RemunerationConfig | null;
-
-  /**
-   * Remunerazione per paese (sovrascrive quella globale).
-   * Es. { "it": { model: "CPA", value: 80 }, "br": { model: "revenue_share", value: 30 } }
-   */
-  remunerationByCountry?: Record<string, RemunerationConfig>;
 }
