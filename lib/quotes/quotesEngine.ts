@@ -61,6 +61,7 @@ export type MultiMarketQuotes = Record<
     homeTeam: string;
     awayTeam: string;
     outcomes: Record<string, number>;
+    remuneration?: RemunerationConfig | null;
   }>
 >;
 
@@ -111,7 +112,13 @@ export async function getMultiMarketQuotes(
 
       const byMarket = normalizeMultiMarket(raw);
       for (const [marketKey, quotes] of Object.entries(byMarket)) {
-        if (merged[marketKey]) merged[marketKey].push(...quotes);
+        if (!merged[marketKey]) continue;
+        // Arricchisce ogni quota con la remunerazione del suo bookmaker
+        const withRem = quotes.map((q) => ({
+          ...q,
+          remuneration: remunerationMap[q.bookmakerKey] ?? null,
+        }));
+        merged[marketKey].push(...withRem);
       }
     } else if (bookmaker.apiProvider === "direct") {
       try {
@@ -127,6 +134,7 @@ export async function getMultiMarketQuotes(
             homeTeam: q.homeTeam,
             awayTeam: q.awayTeam,
             outcomes: q.outcomes,
+            remuneration: remunerationMap[q.bookmakerKey] ?? null,
           });
         }
       } catch {
@@ -149,14 +157,11 @@ export async function getMultiMarketQuotes(
       );
     }
 
-    // Applica graduatoria: quote diverse → prima la più alta;
-    // parità di quota → tiebreak per remunerazione (Revenue Share > CPA > CPL, poi valore)
-    // oppure per posizione manuale se impostata.
-    arr = arr.sort((a, b) => {
-      const remA = remunerationMap[a.bookmakerKey] ?? null;
-      const remB = remunerationMap[b.bookmakerKey] ?? null;
-      return compareBookmakers({ remuneration: remA }, { remuneration: remB });
-    });
+    // Ordina per remunerazione (tiebreak su quota uguale gestito lato componente).
+    // Revenue Share > CPA > CPL, poi valore più alto; manualPriority sovrascrive tutto.
+    arr = arr.sort((a, b) =>
+      compareBookmakers({ remuneration: a.remuneration }, { remuneration: b.remuneration })
+    );
 
     merged[key] = arr;
   }

@@ -3,11 +3,15 @@
 import { useEffect, useState } from "react";
 import { useLocale } from "next-intl";
 import { trackEvent } from "@/lib/analytics/ga";
+import { compareBookmakers } from "@/lib/quotes/bookmakerRanking";
+import type { RemunerationConfig } from "@/lib/quotes/bookmaker.types";
 
 type Quote = {
   bookmaker: string;
+  bookmakerKey?: string;
   bookmakerUrl?: string | null;
   bonusDescription?: string | null;
+  remuneration?: RemunerationConfig | null;
   outcomes: {
     home?: number;
     draw?: number;
@@ -57,9 +61,17 @@ export default function Quotes1X2({ sportKey, homeTeam, awayTeam, country, match
   const bestDraw = Math.max(...source.map((q) => q.outcomes.draw || 0), 0);
   const bestAway = Math.max(...source.map((q) => q.outcomes.away || 0), 0);
 
-  const bestHomeQuote = source.find((q) => (q.outcomes.home || 0) === bestHome);
-  const bestDrawQuote = source.find((q) => (q.outcomes.draw || 0) === bestDraw);
-  const bestAwayQuote = source.find((q) => (q.outcomes.away || 0) === bestAway);
+  // In caso di parità di quota, sceglie il bookmaker con remunerazione migliore
+  // (Revenue Share > CPA > CPL, poi valore più alto; manualPriority sovrascrive tutto)
+  function pickBest(quotes: Quote[], outcomeKey: "home" | "draw" | "away", bestVal: number): Quote | undefined {
+    const tied = quotes.filter((q) => (q.outcomes[outcomeKey] || 0) === bestVal);
+    if (tied.length <= 1) return tied[0];
+    return [...tied].sort((a, b) => compareBookmakers(a, b))[0];
+  }
+
+  const bestHomeQuote = pickBest(source, "home", bestHome);
+  const bestDrawQuote = pickBest(source, "draw", bestDraw);
+  const bestAwayQuote = pickBest(source, "away", bestAway);
 
   const sortedQuotes = [...source].sort((a, b) => {
     if (sortBy === "bookmaker") return (a.bookmaker || "").localeCompare(b.bookmaker || "");
