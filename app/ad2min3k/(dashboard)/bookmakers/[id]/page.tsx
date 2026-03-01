@@ -5,6 +5,15 @@ import { useParams, useRouter } from "next/navigation";
 import Link from "next/link";
 import RichTextEditor from "@/app/ad2min3k/components/RichTextEditor";
 
+type RemunerationModel = "CPA" | "CPL" | "revenue_share";
+
+type RemunerationConfig = {
+  model: RemunerationModel;
+  value: number;
+  currency?: string;
+  manualPriority?: number | null;
+};
+
 type Bookmaker = {
   id: string;
   siteId?: string;
@@ -47,6 +56,8 @@ type Bookmaker = {
     queryParams?: Record<string, string>;
     bodyTemplate?: Record<string, unknown>;
   };
+  remuneration?: RemunerationConfig | null;
+  remunerationByCountry?: Record<string, RemunerationConfig>;
 };
 
 const USE_CASES = ["scommetti", "registrati", "bonus", "casino", "sport"];
@@ -805,6 +816,218 @@ export default function AdminBookmakerEditPage() {
               </div>
             </div>
           )}
+        </div>
+
+        {/* ── Sezione Remunerazione ── */}
+        <div className="rounded-xl border bg-white p-6">
+          <h3 className="mb-1 font-semibold">Remunerazione &amp; Graduatoria quote</h3>
+          <p className="mb-4 text-sm text-neutral-500">
+            Configura il modello di guadagno per questo bookmaker. In caso di parità di quota verrà mostrato prima il bookmaker con remunerazione più alta.
+            Puoi anche impostare una posizione manuale per sovrascrivere la graduatoria automatica.
+          </p>
+
+          {/* Remunerazione globale */}
+          <div className="mb-6 rounded-lg border border-neutral-200 bg-neutral-50 p-4">
+            <h4 className="mb-3 text-sm font-semibold text-neutral-700">Remunerazione globale (default)</h4>
+            <div className="grid grid-cols-1 gap-3 sm:grid-cols-3">
+              <div>
+                <label className="mb-1 block text-xs font-medium text-neutral-600">Tipo</label>
+                <select
+                  value={bm.remuneration?.model ?? ""}
+                  onChange={(e) => {
+                    const model = e.target.value as RemunerationModel;
+                    if (!model) {
+                      handleChange("remuneration", null);
+                    } else {
+                      handleChange("remuneration", {
+                        ...(bm.remuneration ?? { value: 0 }),
+                        model,
+                      });
+                    }
+                  }}
+                  className="w-full rounded-lg border border-neutral-300 px-3 py-2 text-sm focus:border-emerald-500 focus:outline-none focus:ring-1 focus:ring-emerald-500"
+                >
+                  <option value="">— Nessuno —</option>
+                  <option value="CPA">CPA (costo per acquisizione)</option>
+                  <option value="CPL">CPL (costo per lead)</option>
+                  <option value="revenue_share">Revenue Share (%)</option>
+                </select>
+              </div>
+              <div>
+                <label className="mb-1 block text-xs font-medium text-neutral-600">
+                  {bm.remuneration?.model === "revenue_share" ? "Percentuale (%)" : "Importo (€)"}
+                </label>
+                <input
+                  type="number"
+                  min={0}
+                  step={bm.remuneration?.model === "revenue_share" ? 0.1 : 1}
+                  value={bm.remuneration?.value ?? ""}
+                  disabled={!bm.remuneration?.model}
+                  onChange={(e) =>
+                    handleChange("remuneration", {
+                      ...(bm.remuneration ?? { model: "CPA" }),
+                      value: parseFloat(e.target.value) || 0,
+                    })
+                  }
+                  placeholder={bm.remuneration?.model === "revenue_share" ? "es. 35" : "es. 80"}
+                  className="w-full rounded-lg border border-neutral-300 px-3 py-2 text-sm focus:border-emerald-500 focus:outline-none focus:ring-1 focus:ring-emerald-500 disabled:bg-neutral-100 disabled:text-neutral-400"
+                />
+              </div>
+              <div>
+                <label className="mb-1 block text-xs font-medium text-neutral-600">
+                  Posizione manuale
+                  <span className="ml-1 text-neutral-400">(opz.)</span>
+                </label>
+                <input
+                  type="number"
+                  min={1}
+                  step={1}
+                  value={bm.remuneration?.manualPriority ?? ""}
+                  disabled={!bm.remuneration?.model}
+                  onChange={(e) =>
+                    handleChange("remuneration", {
+                      ...(bm.remuneration ?? { model: "CPA", value: 0 }),
+                      manualPriority: e.target.value ? parseInt(e.target.value) : null,
+                    })
+                  }
+                  placeholder="es. 1"
+                  className="w-full rounded-lg border border-neutral-300 px-3 py-2 text-sm focus:border-emerald-500 focus:outline-none focus:ring-1 focus:ring-emerald-500 disabled:bg-neutral-100 disabled:text-neutral-400"
+                />
+                <p className="mt-1 text-xs text-neutral-400">1 = primo posto. Sovrascrive la graduatoria automatica.</p>
+              </div>
+            </div>
+            {bm.remuneration?.model && (
+              <div className="mt-3 rounded-md bg-emerald-50 px-3 py-2 text-sm text-emerald-800">
+                {bm.remuneration.model === "revenue_share"
+                  ? `Revenue Share al ${bm.remuneration.value}%`
+                  : bm.remuneration.model === "CPA"
+                  ? `CPA: €${bm.remuneration.value} per acquisizione`
+                  : `CPL: €${bm.remuneration.value} per lead`}
+                {bm.remuneration.manualPriority
+                  ? ` — Posizione manuale: #${bm.remuneration.manualPriority}`
+                  : " — Graduatoria automatica"}
+              </div>
+            )}
+          </div>
+
+          {/* Remunerazione per paese */}
+          <div>
+            <div className="mb-3 flex items-center justify-between">
+              <h4 className="text-sm font-semibold text-neutral-700">
+                Remunerazione per paese
+                <span className="ml-2 text-xs font-normal text-neutral-400">(sovrascrive la globale)</span>
+              </h4>
+              <button
+                type="button"
+                onClick={() => {
+                  const code = prompt("Codice paese (es. IT, BR, CO):")?.toUpperCase().trim();
+                  if (!code) return;
+                  handleChange("remunerationByCountry", {
+                    ...(bm.remunerationByCountry ?? {}),
+                    [code]: { model: "CPA" as RemunerationModel, value: 0 },
+                  });
+                }}
+                className="rounded-lg border border-emerald-300 bg-emerald-50 px-3 py-1 text-xs font-medium text-emerald-700 hover:bg-emerald-100"
+              >
+                + Aggiungi paese
+              </button>
+            </div>
+
+            {Object.keys(bm.remunerationByCountry ?? {}).length === 0 ? (
+              <p className="text-xs text-neutral-400">Nessuna configurazione per paese. Verrà usata la remunerazione globale.</p>
+            ) : (
+              <div className="space-y-3">
+                {Object.entries(bm.remunerationByCountry ?? {}).map(([countryCode, cfg]) => (
+                  <div key={countryCode} className="rounded-lg border border-neutral-200 bg-neutral-50 p-3">
+                    <div className="mb-2 flex items-center justify-between">
+                      <span className="text-sm font-semibold text-neutral-700">{countryCode}</span>
+                      <button
+                        type="button"
+                        onClick={() => {
+                          const updated = { ...(bm.remunerationByCountry ?? {}) };
+                          delete updated[countryCode];
+                          handleChange("remunerationByCountry", updated);
+                        }}
+                        className="text-xs text-red-500 hover:text-red-700"
+                      >
+                        Rimuovi
+                      </button>
+                    </div>
+                    <div className="grid grid-cols-1 gap-3 sm:grid-cols-3">
+                      <div>
+                        <label className="mb-1 block text-xs font-medium text-neutral-600">Tipo</label>
+                        <select
+                          value={cfg.model}
+                          onChange={(e) =>
+                            handleChange("remunerationByCountry", {
+                              ...(bm.remunerationByCountry ?? {}),
+                              [countryCode]: { ...cfg, model: e.target.value as RemunerationModel },
+                            })
+                          }
+                          className="w-full rounded-lg border border-neutral-300 px-3 py-2 text-sm focus:border-emerald-500 focus:outline-none focus:ring-1 focus:ring-emerald-500"
+                        >
+                          <option value="CPA">CPA</option>
+                          <option value="CPL">CPL</option>
+                          <option value="revenue_share">Revenue Share (%)</option>
+                        </select>
+                      </div>
+                      <div>
+                        <label className="mb-1 block text-xs font-medium text-neutral-600">
+                          {cfg.model === "revenue_share" ? "Percentuale (%)" : "Importo (€)"}
+                        </label>
+                        <input
+                          type="number"
+                          min={0}
+                          step={cfg.model === "revenue_share" ? 0.1 : 1}
+                          value={cfg.value}
+                          onChange={(e) =>
+                            handleChange("remunerationByCountry", {
+                              ...(bm.remunerationByCountry ?? {}),
+                              [countryCode]: { ...cfg, value: parseFloat(e.target.value) || 0 },
+                            })
+                          }
+                          className="w-full rounded-lg border border-neutral-300 px-3 py-2 text-sm focus:border-emerald-500 focus:outline-none focus:ring-1 focus:ring-emerald-500"
+                        />
+                      </div>
+                      <div>
+                        <label className="mb-1 block text-xs font-medium text-neutral-600">
+                          Posizione manuale
+                          <span className="ml-1 text-neutral-400">(opz.)</span>
+                        </label>
+                        <input
+                          type="number"
+                          min={1}
+                          step={1}
+                          value={cfg.manualPriority ?? ""}
+                          onChange={(e) =>
+                            handleChange("remunerationByCountry", {
+                              ...(bm.remunerationByCountry ?? {}),
+                              [countryCode]: {
+                                ...cfg,
+                                manualPriority: e.target.value ? parseInt(e.target.value) : null,
+                              },
+                            })
+                          }
+                          placeholder="es. 1"
+                          className="w-full rounded-lg border border-neutral-300 px-3 py-2 text-sm focus:border-emerald-500 focus:outline-none focus:ring-1 focus:ring-emerald-500"
+                        />
+                      </div>
+                    </div>
+                    {cfg.model && (
+                      <div className="mt-2 rounded-md bg-emerald-50 px-3 py-1.5 text-xs text-emerald-800">
+                        {cfg.model === "revenue_share"
+                          ? `Revenue Share al ${cfg.value}%`
+                          : cfg.model === "CPA"
+                          ? `CPA: €${cfg.value}`
+                          : `CPL: €${cfg.value}`}
+                        {cfg.manualPriority ? ` — Posizione #${cfg.manualPriority}` : " — Graduatoria automatica"}
+                      </div>
+                    )}
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
         </div>
 
         <div className="rounded-xl border bg-white p-6">

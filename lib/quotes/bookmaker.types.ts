@@ -3,6 +3,25 @@
 /** Dove utilizzare il link: scommetti, registrati, bonus, ecc. */
 export type BookmakerLinkUseCase = "scommetti" | "registrati" | "bonus" | "casino" | "sport" | string;
 
+/** Tipo di remunerazione per affiliazione */
+export type RemunerationModel = "CPA" | "CPL" | "revenue_share";
+
+/** Configurazione remunerazione per paese */
+export type RemunerationConfig = {
+  /** Tipo di modello: CPA (costo per acquisizione), CPL (costo per lead), Revenue Share */
+  model: RemunerationModel;
+  /** Valore: importo fisso (CPA/CPL in €) o percentuale (Revenue Share es. 35 = 35%) */
+  value: number;
+  /** Valuta per CPA/CPL (default EUR) */
+  currency?: string;
+  /**
+   * Priority manuale per la graduatoria quote (1 = primo, 2 = secondo, ecc.)
+   * Se impostato, sovrascrive il ranking automatico basato sulla remunerazione.
+   * Utile per accordi speciali o gestione manuale della vetrina.
+   */
+  manualPriority?: number | null;
+};
+
 export type BookmakerCountryConfig = {
   bonusDescription?: string; // descrizione bonus per quel paese
   links: Array<{
@@ -90,4 +109,16 @@ export type Bookmaker = {
     queryParams?: Record<string, string>;
     bodyTemplate?: Record<string, unknown>;
   };
+
+  /**
+   * Remunerazione globale (fallback se non configurata per paese).
+   * Es. { model: "revenue_share", value: 35 } = Revenue Share al 35%
+   */
+  remuneration?: RemunerationConfig | null;
+
+  /**
+   * Remunerazione per paese (sovrascrive quella globale).
+   * Es. { "it": { model: "CPA", value: 80 }, "br": { model: "revenue_share", value: 30 } }
+   */
+  remunerationByCountry?: Record<string, RemunerationConfig>;
 }
