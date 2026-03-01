@@ -131,7 +131,7 @@ export default function MobileBottomNav() {
   const isSiti = pathname.includes("siti-scommesse");
 
   return (
-    <nav className="fixed bottom-0 left-0 right-0 z-50 flex items-center justify-around border-t border-[var(--card-border)] bg-[var(--nav-bar-bg)] pb-[env(safe-area-inset-bottom)] pt-1 md:hidden">
+    <nav className="fixed bottom-0 left-0 right-0 z-50 flex items-center justify-around border-t border-[var(--card-border)] bg-[var(--nav-bar-bg)] pb-[env(safe-area-inset-bottom)] pt-1 md:hidden" style={{ bottom: 0, transform: 'translateZ(0)', WebkitTransform: 'translateZ(0)' }}>
       <Link
         href="/"
         className="flex min-w-0 flex-1 flex-col items-center gap-0.5 px-0.5 py-1 active:opacity-70"

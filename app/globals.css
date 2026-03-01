@@ -42,6 +42,14 @@
   }
 }
 
+/* Fix iOS Safari bottom nav flicker durante scroll */
+@supports (-webkit-touch-callout: none) {
+  body {
+    /* Usa dvh su iOS per calcolare l'altezza corretta escludendo la barra del browser */
+    min-height: -webkit-fill-available;
+  }
+}
+
 /* Mobile-first: 16px base, touch-friendly. Desktop: più compatto */
 body {
   background: var(--background);
