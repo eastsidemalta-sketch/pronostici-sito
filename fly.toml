@@ -1,0 +1,34 @@
+app = "playsignal"
+primary_region = "fra"
+
+[build]
+  dockerfile = "Dockerfile"
+
+[env]
+  PORT = "3000"
+  NODE_ENV = "production"
+  NODE_OPTIONS = "--max-old-space-size=400"
+
+[http_service]
+  internal_port = 3000
+  force_https = true
+  auto_stop_machines = false
+  auto_start_machines = true
+  min_machines_running = 1
+
+  [http_service.concurrency]
+    type = "requests"
+    hard_limit = 250
+    soft_limit = 200
+
+[[vm]]
+  memory = "512mb"
+  cpu_kind = "shared"
+  cpus = 1
+
+# ── Regioni aggiuntive (Brasile e Colombia) ───────────────────────────────────
+# Decommentare quando pronti ad aggiungere le regioni
+# [[regions]]
+#   code = "gru"   # São Paulo - Brasile
+# [[regions]]
+#   code = "bog"   # Bogotá - Colombia
