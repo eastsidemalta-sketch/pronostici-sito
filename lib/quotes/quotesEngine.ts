@@ -4,6 +4,8 @@ import { fetchDirectBookmakerQuotes } from "./providers/directBookmakerFetcher";
 import { normalizeOdds } from "./normalizer";
 import { normalizeMultiMarket } from "./multiMarketNormalizer";
 import { matchTeamNames } from "@/lib/teamAliases";
+import { compareBookmakers } from "./bookmakerRanking";
+import type { RemunerationConfig } from "./bookmaker.types";
 
 const matchTeam = (a: string, b: string) => matchTeamNames(a, b);
 
@@ -86,6 +88,13 @@ export async function getMultiMarketQuotes(
     draw_no_bet: [],
   };
 
+  // Mappa bookmakerKey → remunerazione, usata per il tiebreak in caso di quote uguali
+  const remunerationMap: Record<string, RemunerationConfig | null | undefined> = {};
+  for (const bm of bookmakers) {
+    const key = (bm.apiBookmakerKey ?? bm.id ?? "").toLowerCase();
+    remunerationMap[key] = bm.remuneration;
+  }
+
   for (const bookmaker of filteredBms) {
     if (!bookmaker.isActive) continue;
 
@@ -139,6 +148,16 @@ export async function getMultiMarketQuotes(
         (q) => (q.bookmakerKey || "").toLowerCase() === matchKey
       );
     }
+
+    // Applica graduatoria: quote diverse → prima la più alta;
+    // parità di quota → tiebreak per remunerazione (Revenue Share > CPA > CPL, poi valore)
+    // oppure per posizione manuale se impostata.
+    arr = arr.sort((a, b) => {
+      const remA = remunerationMap[a.bookmakerKey] ?? null;
+      const remB = remunerationMap[b.bookmakerKey] ?? null;
+      return compareBookmakers({ remuneration: remA }, { remuneration: remB });
+    });
+
     merged[key] = arr;
   }
 
