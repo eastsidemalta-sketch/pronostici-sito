@@ -1,14 +1,19 @@
 import { NextResponse } from "next/server";
 import { getSession } from "@/lib/auth";
+
+export const maxDuration = 60;
 import { getChannelIdForCountry, warmTelegramChannelsConfigCache } from "@/lib/telegramChannelsConfig";
 
-/** Converte **grassetto** in <b>grassetto</b> per Telegram HTML */
+/** Converte **grassetto**, *corsivo*, [testo](url) in HTML per Telegram */
 function toTelegramHtml(text: string): string {
-  return (text ?? "")
+  let s = (text ?? "")
     .replace(/&/g, "&amp;")
     .replace(/</g, "&lt;")
-    .replace(/>/g, "&gt;")
-    .replace(/\*\*(.+?)\*\*/g, "<b>$1</b>");
+    .replace(/>/g, "&gt;");
+  s = s.replace(/\*\*(.+?)\*\*/g, "<b>$1</b>");
+  s = s.replace(/\*([^*]+)\*/g, "<i>$1</i>");
+  s = s.replace(/\[([^\]]+)\]\(([^)]+)\)/g, '<a href="$2">$1</a>');
+  return s;
 }
 
 export async function POST(req: Request) {
@@ -30,6 +35,7 @@ export async function POST(req: Request) {
     const country = formData.get("country") as string | null;
     const text = (formData.get("text") as string | null) ?? "";
     const media = formData.get("media") as File | null;
+    const imageUrl = (formData.get("imageUrl") as string | null)?.trim() ?? "";
     const mediaType = (formData.get("mediaType") as string | null) ?? ""; // "image" | "video" | ""
     const buttonsJson = (formData.get("buttons") as string | null) ?? "[]";
 
@@ -79,6 +85,33 @@ export async function POST(req: Request) {
 
     const caption = text.trim() ? toTelegramHtml(text.trim()) : undefined;
     const baseUrl = `https://api.telegram.org/bot${token}`;
+
+    if (imageUrl && mediaType === "image") {
+      const payload: Record<string, string> = {
+        chat_id: channelId,
+        photo: imageUrl,
+      };
+      if (caption) {
+        payload.caption = caption;
+        payload.parse_mode = "HTML";
+      }
+      if (replyMarkup) {
+        payload.reply_markup = JSON.stringify(replyMarkup);
+      }
+      const res = await fetch(`${baseUrl}/sendPhoto`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(payload),
+      });
+      const data = (await res.json()) as { ok?: boolean; description?: string };
+      if (!data.ok) {
+        return NextResponse.json(
+          { error: data.description ?? "Errore invio Telegram" },
+          { status: 400 }
+        );
+      }
+      return NextResponse.json({ success: true, message: "Post inviato" });
+    }
 
     if (media && media.size > 0 && mediaType === "image") {
       const form = new FormData();

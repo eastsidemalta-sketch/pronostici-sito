@@ -13,6 +13,8 @@ type Props = {
   singleLine?: boolean;
   /** Mostra preview sotto il campo */
   preview?: boolean;
+  /** Abilita corsivo (*testo*) e link [testo](url) */
+  extended?: boolean;
 };
 
 function setAlignDirective(value: string, align: RichTextAlign): string {
@@ -29,6 +31,7 @@ export default function RichTextEditor({
   placeholder,
   singleLine,
   preview = true,
+  extended = false,
 }: Props) {
   const ref = useRef<HTMLTextAreaElement | null>(null);
 
@@ -80,6 +83,58 @@ export default function RichTextEditor({
     onChange(setAlignDirective(displayValue, nextAlign));
   }
 
+  function applyItalic() {
+    const el = ref.current;
+    if (!el) return;
+    const start = el.selectionStart ?? 0;
+    const end = el.selectionEnd ?? 0;
+    const raw = displayValue;
+    if (start === end) {
+      const next = raw.slice(0, start) + "**" + raw.slice(end);
+      onChange(next);
+      requestAnimationFrame(() => {
+        const n = ref.current;
+        if (!n) return;
+        n.focus();
+        n.setSelectionRange(start + 1, start + 1);
+      });
+      return;
+    }
+    const selected = raw.slice(start, end);
+    const before = raw.slice(0, start);
+    const after = raw.slice(end);
+    const alreadyWrapped = before.endsWith("*") && !before.endsWith("**") && after.startsWith("*") && !after.startsWith("**");
+    const next = alreadyWrapped
+      ? before.slice(0, -1) + selected + after.slice(1)
+      : before + "*" + selected + "*" + after;
+    onChange(next);
+    requestAnimationFrame(() => {
+      const n = ref.current;
+      if (!n) return;
+      n.focus();
+      const delta = alreadyWrapped ? -1 : 1;
+      n.setSelectionRange(start + (alreadyWrapped ? -1 : 1), end + delta);
+    });
+  }
+
+  function applyLink() {
+    const el = ref.current;
+    if (!el) return;
+    const start = el.selectionStart ?? 0;
+    const end = el.selectionEnd ?? 0;
+    const raw = displayValue;
+    const selected = raw.slice(start, end) || "link";
+    const url = prompt("Inserisci URL:", "https://");
+    if (!url?.trim()) return;
+    const before = raw.slice(0, start);
+    const after = raw.slice(end);
+    const next = before + `[${selected}](${url.trim()})` + after;
+    onChange(next);
+    requestAnimationFrame(() => {
+      ref.current?.focus();
+    });
+  }
+
   return (
     <div className="space-y-2">
       <div className="flex items-end justify-between gap-3">
@@ -119,6 +174,26 @@ export default function RichTextEditor({
           >
             B
           </button>
+          {extended && (
+            <>
+              <button
+                type="button"
+                onClick={applyItalic}
+                className="rounded border border-neutral-300 bg-white px-2 py-1 text-xs italic text-neutral-700 hover:bg-neutral-50"
+                title="Corsivo (*testo*)"
+              >
+                I
+              </button>
+              <button
+                type="button"
+                onClick={applyLink}
+                className="rounded border border-neutral-300 bg-white px-2 py-1 text-xs text-neutral-700 hover:bg-neutral-50"
+                title="Link [testo](url)"
+              >
+                🔗
+              </button>
+            </>
+          )}
         </div>
       </div>
 
@@ -132,7 +207,7 @@ export default function RichTextEditor({
       />
 
       <p className="text-xs text-neutral-500">
-        A capo: premi Invio. Grassetto: seleziona testo e premi <span className="font-semibold">B</span> (usa sintassi <span className="font-mono">**grassetto**</span>).
+        A capo: Invio. Grassetto: <span className="font-mono">**testo**</span>.{extended && " Corsivo: *testo*. Link: [testo](url)."}
       </p>
 
       {preview && (

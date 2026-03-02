@@ -13,7 +13,12 @@ function getCountryName(code: string): string {
 const EMOJI_QUICK = [
   "⚽", "🏆", "🔥", "⭐", "✅", "❌", "📊", "💰", "🎯", "📢",
   "👍", "👏", "💪", "🏅", "📈", "🎉", "🔔", "📱", "🌍", "🇮🇹",
+  "🇫🇷", "🇪🇸", "🇩🇪", "🇬🇧", "🇧🇷", "🔄", "📥", "📤", "🔗", "⏰",
+  "📅", "🏷️", "📌", "🔒", "🔓", "💡", "🎲", "🃏", "🚀", "⚡",
+  "🛡️", "🏁", "🏳️", "🔴", "🟢", "🟡", "🔵", "💬", "📣", "🎁",
 ];
+
+const EMOJI_BUTTON = ["👉", "🔗", "✅", "📥", "🎯", "⚽", "🏆", "🔥", "⭐", "💰"];
 
 export default function AdminTelegramPostsPage() {
   const [config, setConfig] = useState<TelegramChannelsConfig>({});
@@ -22,10 +27,13 @@ export default function AdminTelegramPostsPage() {
   const [text, setText] = useState("");
   const [media, setMedia] = useState<File | null>(null);
   const [mediaType, setMediaType] = useState<"image" | "video" | "">("");
+  const [imageUrl, setImageUrl] = useState("");
+  const [uploadingImage, setUploadingImage] = useState(false);
   const [buttons, setButtons] = useState<Array<{ text: string; url: string }>>([]);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [sending, setSending] = useState(false);
+  const [testing, setTesting] = useState(false);
   const [error, setError] = useState("");
   const [success, setSuccess] = useState("");
 
@@ -62,6 +70,14 @@ export default function AdminTelegramPostsPage() {
     setText((t) => t + emoji);
   }
 
+  function insertEmojiInButton(index: number, emoji: string) {
+    setButtons((b) => {
+      const next = [...b];
+      next[index] = { ...next[index]!, text: (next[index]?.text ?? "") + emoji };
+      return next;
+    });
+  }
+
   function addButton() {
     setButtons((b) => [...b, { text: "", url: "" }]);
   }
@@ -78,24 +94,152 @@ export default function AdminTelegramPostsPage() {
     setButtons((b) => b.filter((_, i) => i !== index));
   }
 
-  function handleMediaChange(e: React.ChangeEvent<HTMLInputElement>) {
+  async function compressImage(file: File, maxSizeKB = 900): Promise<File> {
+    if (file.size <= maxSizeKB * 1024) return file;
+    return new Promise((resolve, reject) => {
+      const img = new Image();
+      const url = URL.createObjectURL(file);
+      img.onload = () => {
+        URL.revokeObjectURL(url);
+        const canvas = document.createElement("canvas");
+        let { width, height } = img;
+        const maxDim = 1920;
+        if (width > maxDim || height > maxDim) {
+          if (width > height) {
+            height = (height / width) * maxDim;
+            width = maxDim;
+          } else {
+            width = (width / height) * maxDim;
+            height = maxDim;
+          }
+        }
+        canvas.width = width;
+        canvas.height = height;
+        const ctx = canvas.getContext("2d");
+        if (!ctx) {
+          resolve(file);
+          return;
+        }
+        ctx.drawImage(img, 0, 0, width, height);
+        let quality = 0.85;
+        const tryExport = () => {
+          canvas.toBlob(
+            (blob) => {
+              if (!blob) {
+                resolve(file);
+                return;
+              }
+              if (blob.size <= maxSizeKB * 1024 || quality <= 0.3) {
+                resolve(new File([blob], file.name, { type: "image/jpeg" }));
+              } else {
+                quality -= 0.15;
+                tryExport();
+              }
+            },
+            "image/jpeg",
+            quality
+          );
+        };
+        tryExport();
+      };
+      img.onerror = () => {
+        URL.revokeObjectURL(url);
+        resolve(file);
+      };
+      img.src = url;
+    });
+  }
+
+  async function uploadImageToHosting(file: File): Promise<string | null> {
+    try {
+      const fd = new FormData();
+      fd.append("image", file);
+      const res = await fetch("/api/ad2min3k/telegram-posts/upload-image", {
+        method: "POST",
+        body: fd,
+        credentials: "same-origin",
+      });
+      const data = (await res.json()) as { url?: string };
+      if (res.ok && data.url) return data.url;
+    } catch {
+      // fallback a servizi esterni
+    }
+    const imgbbKey = process.env.NEXT_PUBLIC_IMGBB_API_KEY;
+    if (imgbbKey) {
+      try {
+        const fd = new FormData();
+        fd.append("image", file);
+        const res = await fetch(`https://api.imgbb.com/1/upload?key=${imgbbKey}&expiration=31536000`, {
+          method: "POST",
+          body: fd,
+        });
+        const data = (await res.json()) as { data?: { url?: string }; success?: boolean };
+        if (data.success && data.data?.url) return data.data.url;
+      } catch {
+        // fallback
+      }
+    }
+    try {
+      const fd = new FormData();
+      fd.append("file", file);
+      const res = await fetch("https://0x0.st", { method: "POST", body: fd });
+      if (res.ok) {
+        const url = await res.text();
+        return url?.trim() || null;
+      }
+    } catch {
+      // fallback
+    }
+    return null;
+  }
+
+  async function handleMediaChange(e: React.ChangeEvent<HTMLInputElement>) {
     const file = e.target.files?.[0];
     if (!file) {
       setMedia(null);
       setMediaType("");
+      setImageUrl("");
       return;
     }
     const type = file.type;
     if (type.startsWith("image/")) {
-      setMedia(file);
+      const compressed = await compressImage(file);
+      setMedia(compressed);
       setMediaType("image");
+      setImageUrl("");
+      setUploadingImage(true);
+      setError("");
+      try {
+        const url = await uploadImageToHosting(compressed);
+        if (url) {
+          setImageUrl(url);
+          setMedia(null);
+          setSuccess("Immagine caricata automaticamente");
+        }
+      } catch {
+        setError("Upload automatico fallito. Incolla l'URL manualmente o riprova.");
+      } finally {
+        setUploadingImage(false);
+      }
     } else if (type.startsWith("video/")) {
       setMedia(file);
       setMediaType("video");
+      setImageUrl("");
     } else {
       setMedia(null);
       setMediaType("");
+      setImageUrl("");
       setError("Formato non supportato. Usa immagine (JPEG, PNG, GIF) o video (MP4, ecc.).");
+    }
+  }
+
+  function handleImageUrlChange(url: string) {
+    setImageUrl(url);
+    if (url.trim()) {
+      setMedia(null);
+      setMediaType("image");
+    } else {
+      setMediaType("");
     }
   }
 
@@ -122,6 +266,25 @@ export default function AdminTelegramPostsPage() {
     }
   }
 
+  async function handleTestConnection() {
+    setTesting(true);
+    setError("");
+    setSuccess("");
+    try {
+      const res = await fetch("/api/ad2min3k/telegram-posts/test");
+      const data = await res.json();
+      if (res.ok && data.ok) {
+        setSuccess("Test OK: API raggiungibile, token configurato");
+      } else {
+        setError(data.error || "Test fallito");
+      }
+    } catch (e) {
+      setError(e instanceof Error ? e.message : "Impossibile raggiungere il server. Controlla la connessione (Network tab F12).");
+    } finally {
+      setTesting(false);
+    }
+  }
+
   async function handleSend() {
     setSending(true);
     setError("");
@@ -133,15 +296,30 @@ export default function AdminTelegramPostsPage() {
       formData.append("mediaType", mediaType);
       formData.append("buttons", JSON.stringify(buttons.filter((b) => b.text.trim() && b.url.trim())));
 
-      if (media && mediaType) {
+      if (imageUrl.trim() && mediaType === "image") {
+        formData.append("imageUrl", imageUrl.trim());
+      } else if (media && mediaType) {
         formData.append("media", media);
       }
+
+      const controller = new AbortController();
+      const timeout = setTimeout(() => controller.abort(), 60000);
 
       const res = await fetch("/api/ad2min3k/telegram-posts/send", {
         method: "POST",
         body: formData,
+        signal: controller.signal,
+        credentials: "same-origin",
       });
-      const data = await res.json();
+      clearTimeout(timeout);
+
+      let data: { error?: string; message?: string };
+      try {
+        data = await res.json();
+      } catch {
+        setError(res.status === 502 || res.status === 504 ? "Timeout o server non raggiungibile. Riprova." : "Risposta non valida dal server.");
+        return;
+      }
       if (!res.ok) {
         setError(data.error || "Errore nell'invio");
         return;
@@ -150,9 +328,14 @@ export default function AdminTelegramPostsPage() {
       setText("");
       setMedia(null);
       setMediaType("");
+      setImageUrl("");
       setButtons([]);
-    } catch {
-      setError("Errore di connessione");
+    } catch (e) {
+      if (e instanceof Error) {
+        setError(e.name === "AbortError" ? "Timeout (60s). Riprova o riduci la dimensione del file." : e.message);
+      } else {
+        setError("Errore di connessione");
+      }
     } finally {
       setSending(false);
     }
@@ -247,20 +430,39 @@ export default function AdminTelegramPostsPage() {
 
             <div>
               <p className="mb-2 text-xs font-medium uppercase text-neutral-500">Immagine o video</p>
+              <p className="mb-2 text-xs text-neutral-600">
+                <strong>Opzione 1 – URL immagine</strong> (consigliato se l&apos;upload fallisce): incolla l&apos;URL pubblico di un&apos;immagine.
+              </p>
+              <input
+                type="url"
+                value={imageUrl}
+                onChange={(e) => handleImageUrlChange(e.target.value)}
+                placeholder="https://esempio.com/immagine.jpg"
+                className="mb-3 w-full rounded-lg border border-neutral-300 px-3 py-2 text-sm focus:border-emerald-500 focus:outline-none focus:ring-1 focus:ring-emerald-500"
+              />
+              <p className="mb-2 text-xs text-neutral-600">
+                <strong>Opzione 2 – Carica file</strong> (le immagini vengono caricate su playsignal.io, fallback su ImgBB/0x0.st)
+              </p>
               <input
                 type="file"
                 accept="image/*,video/*"
                 onChange={handleMediaChange}
-                className="block w-full text-sm text-neutral-600 file:mr-4 file:rounded-lg file:border-0 file:bg-neutral-100 file:px-4 file:py-2 file:text-sm file:font-medium file:text-neutral-700 hover:file:bg-neutral-200"
+                disabled={uploadingImage}
+                className="block w-full text-sm text-neutral-600 file:mr-4 file:rounded-lg file:border-0 file:bg-neutral-100 file:px-4 file:py-2 file:text-sm file:font-medium file:text-neutral-700 hover:file:bg-neutral-200 disabled:opacity-50"
               />
-              {media && (
+              {uploadingImage && <p className="mt-2 text-sm text-emerald-600">Caricamento immagine…</p>}
+              <p className="mt-1 text-xs text-neutral-500">
+                Immagini compresse automaticamente. Se l&apos;upload fallisce, incolla l&apos;URL manualmente (Opzione 1).
+              </p>
+              {(media || imageUrl) && (
                 <p className="mt-2 text-sm text-neutral-600">
-                  File: {media.name} ({(media.size / 1024).toFixed(1)} KB)
+                  {media ? `File: ${media.name} (${(media.size / 1024).toFixed(1)} KB)` : `URL: ${imageUrl}`}
                   <button
                     type="button"
                     onClick={() => {
                       setMedia(null);
                       setMediaType("");
+                      setImageUrl("");
                     }}
                     className="ml-2 text-red-600 hover:underline"
                   >
@@ -276,8 +478,9 @@ export default function AdminTelegramPostsPage() {
                 value={text}
                 onChange={setText}
                 rows={6}
-                placeholder="Scrivi il messaggio... Usa **grassetto** per evidenziare."
+                placeholder="Scrivi il messaggio... **grassetto**, *corsivo*, [link](url)"
                 preview={true}
+                extended
               />
               <div className="mt-2">
                 <p className="mb-1 text-xs font-medium text-neutral-500">Emoji rapidi</p>
@@ -315,29 +518,44 @@ export default function AdminTelegramPostsPage() {
                 {buttons.map((btn, i) => (
                   <div
                     key={i}
-                    className="flex flex-wrap items-center gap-2 rounded-lg border border-neutral-200 bg-neutral-50 p-3"
+                    className="flex flex-col gap-2 rounded-lg border border-neutral-200 bg-neutral-50 p-3"
                   >
-                    <input
-                      type="text"
-                      value={btn.text}
-                      onChange={(e) => updateButton(i, "text", e.target.value)}
-                      placeholder="Testo bottone"
-                      className="flex-1 min-w-[120px] rounded border border-neutral-300 px-2 py-1.5 text-sm"
-                    />
-                    <input
-                      type="url"
-                      value={btn.url}
-                      onChange={(e) => updateButton(i, "url", e.target.value)}
-                      placeholder="https://..."
-                      className="flex-1 min-w-[180px] rounded border border-neutral-300 px-2 py-1.5 text-sm"
-                    />
-                    <button
-                      type="button"
-                      onClick={() => removeButton(i)}
-                      className="rounded border border-red-200 bg-white px-2 py-1 text-xs text-red-600 hover:bg-red-50"
-                    >
-                      Rimuovi
-                    </button>
+                    <div className="flex flex-wrap items-center gap-2">
+                      <input
+                        type="text"
+                        value={btn.text}
+                        onChange={(e) => updateButton(i, "text", e.target.value)}
+                        placeholder="Testo bottone"
+                        className="flex-1 min-w-[120px] rounded border border-neutral-300 px-2 py-1.5 text-sm"
+                      />
+                      <input
+                        type="url"
+                        value={btn.url}
+                        onChange={(e) => updateButton(i, "url", e.target.value)}
+                        placeholder="https://..."
+                        className="flex-1 min-w-[180px] rounded border border-neutral-300 px-2 py-1.5 text-sm"
+                      />
+                      <button
+                        type="button"
+                        onClick={() => removeButton(i)}
+                        className="rounded border border-red-200 bg-white px-2 py-1 text-xs text-red-600 hover:bg-red-50"
+                      >
+                        Rimuovi
+                      </button>
+                    </div>
+                    <div className="flex flex-wrap gap-1">
+                      {EMOJI_BUTTON.map((emoji) => (
+                        <button
+                          key={emoji}
+                          type="button"
+                          onClick={() => insertEmojiInButton(i, emoji)}
+                          className="rounded border border-neutral-200 bg-white px-1.5 py-0.5 text-base hover:bg-neutral-100"
+                          title={`Aggiungi ${emoji} al bottone`}
+                        >
+                          {emoji}
+                        </button>
+                      ))}
+                    </div>
                   </div>
                 ))}
               </div>
@@ -347,7 +565,15 @@ export default function AdminTelegramPostsPage() {
           {error && <p className="text-sm text-red-600">{error}</p>}
           {success && <p className="text-sm text-emerald-600">{success}</p>}
 
-          <div className="mt-6 flex gap-3">
+          <div className="mt-6 flex flex-wrap gap-3">
+            <button
+              type="button"
+              onClick={handleTestConnection}
+              disabled={testing}
+              className="rounded-lg border border-neutral-300 bg-white px-4 py-2 text-sm font-medium text-neutral-700 hover:bg-neutral-50 disabled:opacity-50"
+            >
+              {testing ? "Test…" : "Test connessione"}
+            </button>
             <button
               type="button"
               onClick={handleSend}

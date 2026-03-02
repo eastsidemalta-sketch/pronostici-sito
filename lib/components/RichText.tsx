@@ -16,11 +16,54 @@ export function extractRichTextAlign(input: string): {
   return { align, text };
 }
 
+/** Processa *italic* e [testo](url) */
+function renderInlineFormat(text: string, keyPrefix: string): React.ReactNode[] {
+  const result: React.ReactNode[] = [];
+  let lastIndex = 0;
+  const linkRe = /\[([^\]]+)\]\(([^)]+)\)/g;
+  let m;
+  while ((m = linkRe.exec(text)) !== null) {
+    if (m.index > lastIndex) {
+      result.push(...renderItalicTokens(text.slice(lastIndex, m.index), keyPrefix + "-p"));
+    }
+    result.push(
+      <a key={`${keyPrefix}-l-${m.index}`} href={m[2]} target="_blank" rel="noopener noreferrer" className="text-emerald-600 underline">
+        {m[1]}
+      </a>
+    );
+    lastIndex = linkRe.lastIndex;
+  }
+  if (lastIndex < text.length) {
+    result.push(...renderItalicTokens(text.slice(lastIndex), keyPrefix + "-s"));
+  }
+  return result.length ? result : [text];
+}
+
+function renderItalicTokens(text: string, keyPrefix: string): React.ReactNode[] {
+  const parts = text.split(/\*([^*]+)\*/);
+  if (parts.length === 1) return [text];
+  const nodes: React.ReactNode[] = [];
+  for (let i = 0; i < parts.length; i++) {
+    const chunk = parts[i] ?? "";
+    const isItalic = i % 2 === 1;
+    if (chunk) {
+      nodes.push(
+        isItalic ? (
+          <em key={`${keyPrefix}-i-${i}`} className="italic">
+            {chunk}
+          </em>
+        ) : (
+          <React.Fragment key={`${keyPrefix}-t-${i}`}>{chunk}</React.Fragment>
+        )
+      );
+    }
+  }
+  return nodes.length ? nodes : [text];
+}
+
 function renderBoldTokens(line: string): React.ReactNode[] {
-  // Minimal parser: **bold** toggles <strong>. No HTML allowed.
-  // If ** markers are unbalanced, treat remaining tokens as plain text.
   const parts = line.split("**");
-  if (parts.length === 1) return [line];
+  if (parts.length === 1) return renderInlineFormat(line, "b");
 
   const nodes: React.ReactNode[] = [];
   for (let i = 0; i < parts.length; i++) {
@@ -33,7 +76,7 @@ function renderBoldTokens(line: string): React.ReactNode[] {
           {chunk}
         </strong>
       ) : (
-        <React.Fragment key={`t-${i}`}>{chunk}</React.Fragment>
+        <React.Fragment key={`t-${i}`}>{renderInlineFormat(chunk, `f-${i}`)}</React.Fragment>
       )
     );
   }
