@@ -40,7 +40,9 @@ export async function POST(req: Request) {
     const buffer = Buffer.from(await file.arrayBuffer());
     await writeFile(filePath, buffer);
 
-    const baseUrl = process.env.NEXT_PUBLIC_SITE_URL || "https://playsignal.io";
+    const host = req.headers.get("x-forwarded-host") || req.headers.get("host") || "";
+    const proto = req.headers.get("x-forwarded-proto") || "https";
+    const baseUrl = host ? `${proto}://${host}` : process.env.NEXT_PUBLIC_SITE_URL || "https://playsignal.io";
     const url = `${baseUrl.replace(/\/$/, "")}/uploads/${name}`;
     return NextResponse.json({ url });
   } catch (err) {
