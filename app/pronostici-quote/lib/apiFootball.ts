@@ -39,25 +39,38 @@ export async function getFixturePredictions(fixtureId: string | number) {
   }
 }
 
+const PREDICTIONS_BATCH_SIZE = 10;
+const PREDICTIONS_MAX_FIXTURES = 30;
+
 /**
  * Ottiene le predizioni 1X2 per più partite.
- * Restituisce una mappa fixtureId -> { home, draw, away } percentuali.
+ * Limita a PREDICTIONS_MAX_FIXTURES e fa batch di PREDICTIONS_BATCH_SIZE per ridurre
+ * chiamate API parallele (evita rate limit e 30s di attesa).
  */
 export async function getPredictionsForFixtures(
   fixtureIds: number[]
 ): Promise<Record<number, FixturePredictions>> {
   const result: Record<number, FixturePredictions> = {};
-  await Promise.all(
-    fixtureIds.map(async (id) => {
-      const pred = await getFixturePredictions(id);
-      const pct = pred?.predictions?.percent ?? pred?.predictions?.winner?.percent;
-      result[id] = {
-        home: pct?.home != null ? parseInt(String(pct.home), 10) : null,
-        draw: pct?.draw != null ? parseInt(String(pct.draw), 10) : null,
-        away: pct?.away != null ? parseInt(String(pct.away), 10) : null,
-      };
-    })
-  );
+  const ids = fixtureIds.slice(0, PREDICTIONS_MAX_FIXTURES);
+
+  for (let i = 0; i < ids.length; i += PREDICTIONS_BATCH_SIZE) {
+    const batch = ids.slice(i, i + PREDICTIONS_BATCH_SIZE);
+    const batchResults = await Promise.all(
+      batch.map(async (id) => {
+        const pred = await getFixturePredictions(id);
+        const pct = pred?.predictions?.percent ?? pred?.predictions?.winner?.percent;
+        return {
+          id,
+          home: pct?.home != null ? parseInt(String(pct.home), 10) : null,
+          draw: pct?.draw != null ? parseInt(String(pct.draw), 10) : null,
+          away: pct?.away != null ? parseInt(String(pct.away), 10) : null,
+        };
+      })
+    );
+    for (const r of batchResults) {
+      result[r.id] = { home: r.home, draw: r.draw, away: r.away };
+    }
+  }
   return result;
 }
   

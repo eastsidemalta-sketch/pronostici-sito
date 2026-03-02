@@ -30,6 +30,11 @@ interface HomeBannerProps {
     allSports: string;
     allCompetitions: string;
   };
+  /** Modalità controllata: sport/league/callbacks (usa stato client, nessun round-trip) */
+  sport?: string;
+  league?: string;
+  onSportChange?: (s: string) => void;
+  onLeagueChange?: (l: string) => void;
   /** Quando sulla pagina calcio, sport è sempre "calcio" se non in query */
   defaultSport?: string;
 }
@@ -37,13 +42,19 @@ interface HomeBannerProps {
 export default function HomeBanner({
   menuItems,
   labels,
+  sport: controlledSport,
+  league: controlledLeague,
+  onSportChange,
+  onLeagueChange,
   defaultSport,
 }: HomeBannerProps) {
   const router = useRouter();
   const pathname = usePathname();
   const searchParams = useSearchParams();
-  const sport = searchParams.get("sport") ?? defaultSport ?? "all";
-  const league = searchParams.get("league") ?? "all";
+
+  const isControlled = controlledSport !== undefined && onSportChange && onLeagueChange;
+  const sport = isControlled ? controlledSport! : (searchParams.get("sport") ?? defaultSport ?? "all");
+  const league = isControlled ? controlledLeague! : (searchParams.get("league") ?? "all");
   const leagueScrollRef = useRef<HTMLDivElement>(null);
   const [canScrollLeft, setCanScrollLeft] = useState(false);
   const [canScrollRight, setCanScrollRight] = useState(false);
@@ -76,18 +87,26 @@ export default function HomeBanner({
   };
 
   function setSport(s: string) {
-    const next = new URLSearchParams(searchParams.toString());
-    next.set("sport", s);
-    if (s !== "calcio") next.delete("league");
-    const targetPath = pathname.replace(/\/calcio\/?$/, "") || pathname;
-    router.push(`${targetPath}?${next.toString()}`);
+    if (isControlled && onSportChange) {
+      onSportChange(s);
+      return;
+    }
+    const params = new URLSearchParams(searchParams.toString());
+    if (s === "all") params.delete("sport");
+    else params.set("sport", s);
+    params.delete("league");
+    router.push(`${pathname}${params.toString() ? `?${params.toString()}` : ""}`);
   }
 
   function setLeague(l: string) {
-    const next = new URLSearchParams(searchParams.toString());
-    if (l === "all") next.delete("league");
-    else next.set("league", l);
-    router.push(`${pathname}?${next.toString()}`);
+    if (isControlled && onLeagueChange) {
+      onLeagueChange(l);
+      return;
+    }
+    const params = new URLSearchParams(searchParams.toString());
+    if (l === "all") params.delete("league");
+    else params.set("league", l);
+    router.push(`${pathname}${params.toString() ? `?${params.toString()}` : ""}`);
   }
 
   const calcioItem = menuItems.find((m) => m.key === "calcio");

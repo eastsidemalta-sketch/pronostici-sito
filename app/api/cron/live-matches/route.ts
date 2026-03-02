@@ -1,10 +1,12 @@
 import { NextResponse } from "next/server";
 import { runLivePollCycle } from "@/lib/live/livePoller";
+import { warmHomePageCache } from "@/lib/homePageCache";
+import { localeToCountryCode } from "@/i18n/routing";
+import { getActiveLocales } from "@/lib/markets";
 
 /**
- * Cron endpoint for live match polling.
- * Triggered by external cron (e.g. Vercel Cron, GitHub Actions) every 2 minutes.
- * Completely independent from frontend traffic.
+ * Cron endpoint for live match polling + cache warmer.
+ * Triggered every minute. Mantiene la cache home calda così la pagina è veloce anche con 0 utenti.
  *
  * Protect with CRON_SECRET: Authorization: Bearer <CRON_SECRET>
  */
@@ -16,7 +18,12 @@ export async function GET(request: Request) {
   }
 
   try {
-    const result = await runLivePollCycle();
+    const [result, _] = await Promise.all([
+      runLivePollCycle(),
+      warmHomePageCache(
+        getActiveLocales().map((locale) => localeToCountryCode[locale] ?? "IT")
+      ),
+    ]);
     return NextResponse.json({
       ok: true,
       updated: result.updated,

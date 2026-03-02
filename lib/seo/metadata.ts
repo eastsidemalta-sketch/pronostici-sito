@@ -85,6 +85,9 @@ export function createIndexableMetadata(params: {
   const canonical = buildCanonical(countryCode, pathWithoutCountry);
   const ogType: "website" | "article" = openGraph?.type ?? "website";
 
+  const baseUrl = getSafeSiteUrl().replace(/\/$/, "");
+  const ogImage = `${baseUrl}/og-image.png`;
+
   return {
     title,
     description,
@@ -95,11 +98,13 @@ export function createIndexableMetadata(params: {
       description: openGraph?.description ?? description,
       type: ogType,
       url: canonical,
+      images: [{ url: ogImage, width: 1200, height: 630, alt: "PlaySignal - See the signal. Play it." }],
     },
     twitter: {
       card: "summary_large_image",
       title: openGraph?.title ?? title,
       description: openGraph?.description ?? description,
+      images: [ogImage],
     },
   };
 }
@@ -116,6 +121,9 @@ export function createNoindexMetadata(params: {
   const { title, description, countryCode, pathWithoutCountry } = params;
   const canonical = buildCanonical(countryCode, pathWithoutCountry);
 
+  const baseUrl = getSafeSiteUrl().replace(/\/$/, "");
+  const ogImage = `${baseUrl}/og-image.png`;
+
   return {
     title,
     description,
@@ -126,6 +134,11 @@ export function createNoindexMetadata(params: {
       description,
       type: "website",
       url: canonical,
+      images: [{ url: ogImage, width: 1200, height: 630, alt: "PlaySignal - See the signal. Play it." }],
+    },
+    twitter: {
+      card: "summary_large_image",
+      images: [ogImage],
     },
   };
 }

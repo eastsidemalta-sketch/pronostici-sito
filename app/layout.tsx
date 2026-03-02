@@ -31,11 +31,20 @@ export const metadata: Metadata = {
     siteName: "PlaySignal",
     title: "PlaySignal | Calcio, Quote e Analisi Partite",
     description: "Analisi basate su dati, probabilità e segnali intelligenti per interpretare le quote dei bookmaker. Confronta eventi sportivi e prendi decisioni più informate.",
+    images: [
+      {
+        url: "/og-image.png",
+        width: 1200,
+        height: 630,
+        alt: "PlaySignal - See the signal. Play it.",
+      },
+    ],
   },
   twitter: {
     card: "summary_large_image",
     title: "PlaySignal | Calcio, Quote e Analisi Partite",
     description: "Analisi basate su dati, probabilità e segnali intelligenti per interpretare le quote dei bookmaker. Confronta eventi sportivi e prendi decisioni più informate.",
+    images: ["/og-image.png"],
   },
   robots: { index: true, follow: true },
 };

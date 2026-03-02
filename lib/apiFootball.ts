@@ -268,14 +268,19 @@ async function fetchTeamFixtures(
   if (params.to != null) q.to = params.to;
   const search = new URLSearchParams(q);
   const url = `https://v3.football.api-sports.io/fixtures?${search}`;
-  const res = await fetch(url, {
-    headers: { "x-apisports-key": key },
-    next: { revalidate: 60 }, // ultime partite squadra: cache 60 sec
-  });
-  if (!res.ok) return [];
-  const data = await res.json();
-  if (data.errors?.["requests"] || (data.errors && Object.keys(data.errors).length > 0)) return [];
-  return (data.response || []) as any[];
+  try {
+    const res = await fetch(url, {
+      headers: { "x-apisports-key": key },
+      next: { revalidate: 60 }, // ultime partite squadra: cache 60 sec
+    });
+    if (!res.ok) return [];
+    const data = await res.json();
+    if (data.errors?.["requests"] || (data.errors && Object.keys(data.errors).length > 0)) return [];
+    return (data.response || []) as any[];
+  } catch (err) {
+    console.warn(`[fetchTeamFixtures] fetch failed per team ${teamId}:`, err);
+    return [];
+  }
 }
 
 /**

@@ -97,6 +97,15 @@ export default function AdminDashboardPage() {
           </p>
         </Link>
         <Link
+          href="/ad2min3k/telegram-posts"
+          className="rounded-xl border bg-white p-6 shadow-sm hover:border-emerald-500 hover:shadow transition"
+        >
+          <h3 className="font-semibold">Post Telegram</h3>
+          <p className="mt-2 text-sm text-neutral-600">
+            Pubblica post su canali Telegram (immagine/video, testo, bottoni) per paese
+          </p>
+        </Link>
+        <Link
           href="/ad2min3k/footer-disclaimer"
           className="rounded-xl border bg-white p-6 shadow-sm hover:border-emerald-500 hover:shadow transition"
         >

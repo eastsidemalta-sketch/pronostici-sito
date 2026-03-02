@@ -1,5 +1,6 @@
 app = "playsignal"
-primary_region = "fra"
+# cdg (Paris) invece di fra - a volte migliore routing verso API esterne
+primary_region = "cdg"
 
 [build]
   dockerfile = "Dockerfile"
@@ -7,11 +8,12 @@ primary_region = "fra"
 [env]
   PORT = "3000"
   NODE_ENV = "production"
-  NODE_OPTIONS = "--max-old-space-size=400"
+  NODE_OPTIONS = "--max-old-space-size=1536"
 
+# Solo app per test - cron disabilitato per evitare competizione risorse
 [processes]
   app = "node server.js"
-  cron = "supercronic /app/crontab"
+  # cron = "supercronic /app/crontab"
 
 [http_service]
   internal_port = 3000
@@ -26,9 +28,10 @@ primary_region = "fra"
     hard_limit = 250
     soft_limit = 200
 
+# CPU performance (dedicata) invece di shared - più veloce ma ~$32/mese
 [[vm]]
-  memory = "512mb"
-  cpu_kind = "shared"
+  memory = "2gb"
+  cpu_kind = "performance"
   cpus = 1
 
 # ── Regioni aggiuntive (Brasile e Colombia) ───────────────────────────────────
