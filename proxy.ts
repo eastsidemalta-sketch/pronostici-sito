@@ -14,6 +14,6 @@ export function proxy(request: NextRequest) {
 export const config = {
   matcher: [
     "/",
-    "/((?!api|trpc|_next|_vercel|ad2min3k|.*\\..*).*)",
+    "/((?!api|trpc|_next|_vercel|ad2min3k|share-preview|.*\\..*).*)",
   ],
 };
