@@ -1,8 +1,10 @@
+import type { Metadata } from "next";
 import { hasLocale } from "next-intl";
 import { notFound } from "next/navigation";
 import { getTranslations } from "next-intl/server";
 import { routing, localeToCountry } from "@/i18n/routing";
 import { getDefaultLocale } from "@/lib/markets";
+import { getOgMetadata } from "@/lib/seo/ogMetadata";
 import { Link } from "@/i18n/navigation";
 import { getLegalLinkAndTitle } from "@/lib/legalData";
 import { getFooterDisclaimerLines } from "@/lib/footerDisclaimerConfig";
@@ -21,6 +23,27 @@ type Props = {
 
 export function generateStaticParams() {
   return routing.locales.map((locale) => ({ locale }));
+}
+
+export async function generateMetadata({ params }: { params: Promise<{ locale: string }> }): Promise<Metadata> {
+  const { locale } = await params;
+  const og = getOgMetadata(locale);
+  const baseUrl = process.env.NEXT_PUBLIC_SITE_URL || "https://playsignal.io";
+  return {
+    title: { default: og.title, template: "%s | PlaySignal" },
+    description: og.description,
+    openGraph: {
+      title: og.title,
+      description: og.description,
+      images: [{ url: `${baseUrl}/og-image.png`, width: 1200, height: 630, alt: "PlaySignal - See the signal. Play it." }],
+    },
+    twitter: {
+      card: "summary_large_image",
+      title: og.title,
+      description: og.description,
+      images: ["/og-image.png"],
+    },
+  };
 }
 
 export default async function LocaleLayout({ children, params }: Props) {
@@ -82,7 +105,7 @@ export default async function LocaleLayout({ children, params }: Props) {
         </div>
       </header>
 
-      <div className="pb-[calc(2.75rem+env(safe-area-inset-bottom))] md:pb-0">
+      <div className="pb-[calc(4rem+max(env(safe-area-inset-bottom),10px))] md:pb-0">
         {children}
       </div>
 

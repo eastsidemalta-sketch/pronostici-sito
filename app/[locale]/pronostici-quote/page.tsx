@@ -10,6 +10,7 @@ import { getFeaturedBookmaker } from "@/lib/quotes/bookmakers";
 import { localeToCountryCode } from "@/i18n/routing";
 import PronosticiQuoteContent from "./PronosticiQuoteContent";
 import HomeBonusSidebar from "../HomeBonusSidebar";
+import { getOgMetadata } from "@/lib/seo/ogMetadata";
 import {
   createIndexableMetadata,
   createNoindexMetadata,
@@ -26,21 +27,20 @@ export async function generateMetadata({
   const sp = await searchParams;
   const hasFilters = Object.keys(sp).length > 0;
 
+  const og = getOgMetadata(locale);
   const t = await getTranslations("pronosticiQuote");
-  const title = t("title");
-  const description = t("description");
 
   if (hasFilters) {
     return createNoindexMetadata({
-      title,
-      description,
+      title: t("title"),
+      description: t("description"),
       countryCode: locale,
       pathWithoutCountry: "pronostici-quote",
     });
   }
   return createIndexableMetadata({
-    title,
-    description,
+    title: og.title,
+    description: og.description,
     countryCode: locale,
     pathWithoutCountry: "pronostici-quote",
   });
