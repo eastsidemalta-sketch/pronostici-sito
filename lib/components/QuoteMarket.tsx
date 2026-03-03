@@ -3,11 +3,13 @@
 import { useEffect, useState } from "react";
 import { useLocale } from "next-intl";
 import { trackEvent } from "@/lib/analytics/ga";
+import { BookmakerLink } from "@/lib/components/BookmakerLink";
 
 type Quote = {
   bookmaker: string;
   bookmakerKey?: string;
   bookmakerUrl?: string | null;
+  bookmakerLogoUrl?: string | null;
   outcomes: Record<string, number>;
 };
 
@@ -84,23 +86,16 @@ export default function QuoteMarket({
               {bestQuote?.bookmaker ?? "-"}
             </div>
             {bestQuote?.bookmakerUrl && (
-              <a
+              <BookmakerLink
                 href={bestQuote.bookmakerUrl}
-                target="_blank"
-                rel="noopener noreferrer"
-                onClick={() =>
-                  trackEvent("bookmaker_click", {
-                    bookmaker_name: bestQuote.bookmaker ?? "",
-                    sport: sportKey,
-                    country: locale,
-                    ...(matchSlug && { match_slug: matchSlug }),
-                    page_path: typeof window !== "undefined" ? window.location.pathname : "",
-                  })
-                }
+                bookmakerName={bestQuote.bookmaker ?? ""}
+                locale={locale}
+                logoUrl={bestQuote.bookmakerLogoUrl}
+                matchSlug={matchSlug}
                 className="mt-2 inline-block rounded-lg bg-emerald-600 px-3 py-1.5 text-xs font-medium text-white hover:bg-emerald-700"
               >
                 Scommetti
-              </a>
+              </BookmakerLink>
             )}
           </div>
         ))}
@@ -141,23 +136,16 @@ export default function QuoteMarket({
                   ))}
                   <td className="px-4 py-3 text-center">
                     {q.bookmakerUrl ? (
-                      <a
+                      <BookmakerLink
                         href={q.bookmakerUrl}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        onClick={() =>
-                          trackEvent("bookmaker_click", {
-                            bookmaker_name: q.bookmaker ?? "",
-                            sport: sportKey,
-                            country: locale,
-                            ...(matchSlug && { match_slug: matchSlug }),
-                            page_path: typeof window !== "undefined" ? window.location.pathname : "",
-                          })
-                        }
+                        bookmakerName={q.bookmaker ?? ""}
+                        locale={locale}
+                        logoUrl={q.bookmakerLogoUrl}
+                        matchSlug={matchSlug}
                         className="inline-flex items-center justify-center rounded-lg bg-emerald-600 px-3 py-1.5 text-xs font-medium text-white hover:bg-emerald-700"
                       >
                         Scommetti
-                      </a>
+                      </BookmakerLink>
                     ) : (
                       <span className="text-gray-400 text-xs">-</span>
                     )}

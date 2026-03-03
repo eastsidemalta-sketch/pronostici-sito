@@ -109,6 +109,7 @@ export default async function SitiScommessePage({
                     rel="noopener noreferrer"
                     bookmakerName={getBookmakerDisplayName(bm)}
                     locale={locale}
+                    logoUrl={bm.logoUrl}
                     className="inline-flex min-h-[36px] items-center justify-center rounded-lg bg-[var(--accent)] px-4 py-2 text-sm font-semibold text-white transition hover:bg-[var(--accent-hover)]"
                   >
                     Vai al sito
@@ -121,6 +122,7 @@ export default async function SitiScommessePage({
                     rel="noopener noreferrer"
                     bookmakerName={getBookmakerDisplayName(bm)}
                     locale={locale}
+                    logoUrl={bm.logoUrl}
                     className="inline-flex min-h-[36px] items-center justify-center rounded-lg border border-[var(--accent)] px-4 py-2 text-sm font-semibold text-[var(--accent)] transition hover:bg-[var(--accent-light)]"
                   >
                     Ottieni bonus

@@ -25,6 +25,7 @@ export default async function HomeFeaturedBookmaker({ country, locale }: HomeFea
       rel="noopener noreferrer"
       bookmakerName={featured.name}
       locale={locale}
+      logoUrl={featured.logoUrl}
       className={`mt-6 flex flex-col items-center gap-0.5 rounded-xl border-2 border-black/25 p-4 shadow-sm transition md:mt-8 md:flex-row md:items-center md:justify-between md:gap-6 md:p-5 ${bgClass}`}
     >
       <div className="flex items-center gap-3">

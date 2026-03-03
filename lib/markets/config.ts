@@ -78,6 +78,14 @@ export const SUPPORTED_MARKETS: Record<string, MarketConfig> = {
     urlSegment: "pt-BR",
     name: "Brasil",
   },
+  CO: {
+    active: false,
+    languages: ["es"],
+    defaultCurrency: "COP",
+    defaultLocale: "es-CO",
+    urlSegment: "es-CO",
+    name: "Colombia",
+  },
   NG: {
     active: false,
     languages: ["en"],

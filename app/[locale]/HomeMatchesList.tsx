@@ -7,6 +7,7 @@ import { useRouter } from "next/navigation";
 import { usePathname } from "@/i18n/navigation";
 import { useSearchParams } from "next/navigation";
 import { Link } from "@/i18n/navigation";
+import { BookmakerLink } from "@/lib/components/BookmakerLink";
 import { localeToIntl } from "@/i18n/routing";
 import { normalizeTeamName, buildMatchSlug } from "@/lib/textEncoding";
 import { useLiveMatches } from "@/lib/hooks/useLiveMatches";
@@ -366,19 +367,14 @@ export default function HomeMatchesList({
                                 {allQuotesLabel}
                               </Link>
                               {featuredBookmaker && (
-                                <a
+                                <BookmakerLink
                                   href={featuredBookmaker.bonusUrl}
                                   target="_blank"
                                   rel="noopener noreferrer"
-                                  onClick={() =>
-                                    trackEvent("bookmaker_click", {
-                                      bookmaker_name: featuredBookmaker.name ?? "",
-                                      sport: "calcio",
-                                      country: locale,
-                                      ...(slug && { match_slug: slug }),
-                                      page_path: typeof window !== "undefined" ? window.location.pathname : "",
-                                    })
-                                  }
+                                  bookmakerName={featuredBookmaker.name ?? ""}
+                                  locale={locale}
+                                  logoUrl={featuredBookmaker.logoUrl}
+                                  matchSlug={slug}
                                   className="flex w-full overflow-hidden rounded-lg border border-[var(--card-border)] transition hover:opacity-95"
                                 >
                                   {(featuredBookmaker.faviconUrl || featuredBookmaker.logoUrl) && (
@@ -400,7 +396,7 @@ export default function HomeMatchesList({
                                       <line x1="10" y1="14" x2="21" y2="3" />
                                     </svg>
                                   </div>
-                                </a>
+                                </BookmakerLink>
                               )}
                             </div>
                             {(pct1 != null || pctX != null || pct2 != null) && (
@@ -434,19 +430,14 @@ export default function HomeMatchesList({
                                     {fullPredictionsLabel}
                                   </Link>
                                   {featuredBookmaker?.showInPronosticiBox && (
-                                    <a
+                                    <BookmakerLink
                                       href={featuredBookmaker.pronosticiButtonUrl || featuredBookmaker.bonusUrl}
                                       target="_blank"
                                       rel="noopener noreferrer"
-                                      onClick={() =>
-                                        trackEvent("bookmaker_click", {
-                                          bookmaker_name: featuredBookmaker.name ?? "",
-                                          sport: "calcio",
-                                          country: locale,
-                                          ...(slug && { match_slug: slug }),
-                                          page_path: typeof window !== "undefined" ? window.location.pathname : "",
-                                        })
-                                      }
+                                      bookmakerName={featuredBookmaker.name ?? ""}
+                                      locale={locale}
+                                      logoUrl={featuredBookmaker.logoUrl}
+                                      matchSlug={slug}
                                       className="flex w-full overflow-hidden rounded-lg border border-[var(--card-border)] transition hover:opacity-95"
                                     >
                                       {(featuredBookmaker.faviconUrl || featuredBookmaker.logoUrl) && (
@@ -468,7 +459,7 @@ export default function HomeMatchesList({
                                           <line x1="10" y1="14" x2="21" y2="3" />
                                         </svg>
                                       </div>
-                                    </a>
+                                    </BookmakerLink>
                                   )}
                                 </div>
                               </>
@@ -482,19 +473,14 @@ export default function HomeMatchesList({
                                   {fullPredictionsLabel}
                                 </Link>
                                 {featuredBookmaker?.showInPronosticiBox && (
-                                  <a
+                                  <BookmakerLink
                                     href={featuredBookmaker.pronosticiButtonUrl || featuredBookmaker.bonusUrl}
                                     target="_blank"
                                     rel="noopener noreferrer"
-                                    onClick={() =>
-                                      trackEvent("bookmaker_click", {
-                                        bookmaker_name: featuredBookmaker.name ?? "",
-                                        sport: "calcio",
-                                        country: locale,
-                                        ...(slug && { match_slug: slug }),
-                                        page_path: typeof window !== "undefined" ? window.location.pathname : "",
-                                      })
-                                    }
+                                    bookmakerName={featuredBookmaker.name ?? ""}
+                                    locale={locale}
+                                    logoUrl={featuredBookmaker.logoUrl}
+                                    matchSlug={slug}
                                     className="flex w-full overflow-hidden rounded-lg border border-[var(--card-border)] transition hover:opacity-95"
                                   >
                                     {(featuredBookmaker.faviconUrl || featuredBookmaker.logoUrl) && (
@@ -516,7 +502,7 @@ export default function HomeMatchesList({
                                         <line x1="10" y1="14" x2="21" y2="3" />
                                       </svg>
                                     </div>
-                                  </a>
+                                  </BookmakerLink>
                                 )}
                               </div>
                             )}

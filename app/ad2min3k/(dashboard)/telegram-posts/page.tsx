@@ -10,15 +10,14 @@ function getCountryName(code: string): string {
   return getMarketConfig(code)?.name ?? code;
 }
 
-const EMOJI_QUICK = [
+const EMOJI_LIST = [
   "⚽", "🏆", "🔥", "⭐", "✅", "❌", "📊", "💰", "🎯", "📢",
   "👍", "👏", "💪", "🏅", "📈", "🎉", "🔔", "📱", "🌍", "🇮🇹",
-  "🇫🇷", "🇪🇸", "🇩🇪", "🇬🇧", "🇧🇷", "🔄", "📥", "📤", "🔗", "⏰",
-  "📅", "🏷️", "📌", "🔒", "🔓", "💡", "🎲", "🃏", "🚀", "⚡",
-  "🛡️", "🏁", "🏳️", "🔴", "🟢", "🟡", "🔵", "💬", "📣", "🎁",
+  "🇫🇷", "🇪🇸", "🇩🇪", "🇬🇧", "🇧🇷", "🇨🇴", "🇳🇬", "🇰🇪", "🇬🇭", "🔄",
+  "📥", "📤", "🔗", "⏰", "📅", "🏷️", "📌", "🔒", "🔓", "💡",
+  "🎲", "🃏", "🚀", "⚡", "🛡️", "🏁", "🏳️", "🔴", "🟢", "🟡",
+  "🔵", "💬", "📣", "🎁",
 ];
-
-const EMOJI_BUTTON = ["👉", "🔗", "✅", "📥", "🎯", "⚽", "🏆", "🔥", "⭐", "💰"];
 
 export default function AdminTelegramPostsPage() {
   const [config, setConfig] = useState<TelegramChannelsConfig>({});
@@ -485,7 +484,7 @@ export default function AdminTelegramPostsPage() {
               <div className="mt-2">
                 <p className="mb-1 text-xs font-medium text-neutral-500">Emoji rapidi</p>
                 <div className="flex flex-wrap gap-1">
-                  {EMOJI_QUICK.map((emoji) => (
+                  {EMOJI_LIST.map((emoji) => (
                     <button
                       key={emoji}
                       type="button"
@@ -544,7 +543,7 @@ export default function AdminTelegramPostsPage() {
                       </button>
                     </div>
                     <div className="flex flex-wrap gap-1">
-                      {EMOJI_BUTTON.map((emoji) => (
+                      {EMOJI_LIST.map((emoji) => (
                         <button
                           key={emoji}
                           type="button"

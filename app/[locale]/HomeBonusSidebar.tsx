@@ -45,6 +45,7 @@ export default async function HomeBonusSidebar({ country, locale }: HomeBonusSid
               rel="noopener noreferrer"
               bookmakerName={getBookmakerDisplayName(bm)}
               locale={locale}
+              logoUrl={bm.logoUrl}
               className="flex min-h-[52px] items-center gap-2 rounded-lg border border-[var(--card-border)] bg-[var(--card-bg)] p-2.5 shadow-sm transition hover:border-[var(--accent)]/40 hover:shadow-md sm:min-h-[56px] lg:p-3"
             >
               {bm.logoUrl && (

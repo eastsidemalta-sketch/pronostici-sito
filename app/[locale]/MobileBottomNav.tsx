@@ -5,6 +5,8 @@ import { Link } from "@/i18n/navigation";
 import { useSearchParams } from "next/navigation";
 import { useTranslations } from "next-intl";
 import { useMobileMenu } from "./MobileMenuContext";
+import { useEffect, useState } from "react";
+import { createPortal } from "react-dom";
 
 function HomeIcon({ active }: { active: boolean }) {
   return (
@@ -130,11 +132,19 @@ export default function MobileBottomNav() {
   const isBonus = pathname.includes("bonus");
   const isSiti = pathname.includes("siti-scommesse");
 
-  return (
-    <nav className="fixed bottom-0 left-0 right-0 z-50 flex items-center justify-around border-t border-[var(--card-border)] bg-[var(--nav-bar-bg)] pb-[env(safe-area-inset-bottom)] pt-1 md:hidden" style={{ bottom: 0, transform: 'translateZ(0)', WebkitTransform: 'translateZ(0)' }}>
+  const navContent = (
+    <nav
+      className="fixed inset-x-0 bottom-0 z-50 flex min-h-[56px] items-center justify-around border-t border-[var(--card-border)] bg-[var(--nav-bar-bg)] pb-[max(env(safe-area-inset-bottom),10px)] pt-2 md:hidden"
+      style={{
+        transform: "translateZ(0)",
+        WebkitTransform: "translateZ(0)",
+        WebkitBackfaceVisibility: "hidden",
+        unicodeBidi: "isolate",
+      }}
+    >
       <Link
         href="/"
-        className="flex min-w-0 flex-1 flex-col items-center gap-0.5 px-0.5 py-1 active:opacity-70"
+        className="flex min-w-0 flex-1 flex-col items-center gap-0.5 px-0.5 py-2 active:opacity-70"
       >
         <HomeIcon active={isHome} />
         <span className={`text-[9px] font-medium ${isHome ? "text-[var(--nav-bar-active)]" : "text-[var(--nav-bar-inactive)]"}`}>
@@ -144,7 +154,7 @@ export default function MobileBottomNav() {
       <button
         type="button"
         onClick={() => openMenu("sports")}
-        className="flex min-w-0 flex-1 flex-col items-center gap-0.5 px-0.5 py-1 active:opacity-70"
+        className="flex min-w-0 flex-1 flex-col items-center gap-0.5 px-0.5 py-2 active:opacity-70"
       >
         <OddsIcon active={isQuote} />
         <span className={`text-[9px] font-medium ${isQuote ? "text-[var(--nav-bar-active)]" : "text-[var(--nav-bar-inactive)]"}`}>
@@ -154,7 +164,7 @@ export default function MobileBottomNav() {
       <button
         type="button"
         onClick={() => openMenu("sports")}
-        className="flex min-w-0 flex-1 flex-col items-center gap-0.5 px-0.5 py-1 active:opacity-70"
+        className="flex min-w-0 flex-1 flex-col items-center gap-0.5 px-0.5 py-2 active:opacity-70"
       >
         <PredictionsIcon active={isPronostici} />
         <span className={`text-[9px] font-medium ${isPronostici ? "text-[var(--nav-bar-active)]" : "text-[var(--nav-bar-inactive)]"}`}>
@@ -164,7 +174,7 @@ export default function MobileBottomNav() {
       <button
         type="button"
         onClick={() => openMenu("main")}
-        className="flex min-w-0 flex-1 flex-col items-center gap-0.5 px-0.5 py-1 active:opacity-70"
+        className="flex min-w-0 flex-1 flex-col items-center gap-0.5 px-0.5 py-2 active:opacity-70"
       >
         <BonusIcon active={isBonus} />
         <span className={`text-[9px] font-medium ${isBonus ? "text-[var(--nav-bar-active)]" : "text-[var(--nav-bar-inactive)]"}`}>
@@ -173,7 +183,7 @@ export default function MobileBottomNav() {
       </button>
       <Link
         href="/siti-scommesse"
-        className="flex min-w-0 flex-1 flex-col items-center gap-0.5 px-0.5 py-1 active:opacity-70"
+        className="flex min-w-0 flex-1 flex-col items-center gap-0.5 px-0.5 py-2 active:opacity-70"
       >
         <SitesIcon active={isSiti} />
         <span className={`text-[9px] font-medium ${isSiti ? "text-[var(--nav-bar-active)]" : "text-[var(--nav-bar-inactive)]"}`}>
@@ -182,4 +192,10 @@ export default function MobileBottomNav() {
       </Link>
     </nav>
   );
+
+  const [mounted, setMounted] = useState(false);
+  useEffect(() => setMounted(true), []);
+
+  if (!mounted || typeof document === "undefined") return navContent;
+  return createPortal(navContent, document.body);
 }

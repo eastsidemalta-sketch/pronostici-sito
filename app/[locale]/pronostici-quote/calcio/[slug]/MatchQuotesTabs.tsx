@@ -3,11 +3,13 @@
 import { useState, useEffect } from "react";
 import { useParams, useSearchParams } from "next/navigation";
 import { trackEvent } from "@/lib/analytics/ga";
+import { BookmakerLink } from "@/lib/components/BookmakerLink";
 
 type QuoteRow = {
   bookmaker: string;
   bookmakerKey: string;
   bookmakerUrl?: string | null;
+  bookmakerLogoUrl?: string | null;
   outcomes: Record<string, number>;
 };
 
@@ -222,23 +224,16 @@ export default function MatchQuotesTabs({ sportKey, homeTeam, awayTeam, country,
                         })}
                         <td className="px-3 py-2 text-center md:px-4 md:py-2.5">
                           {q.bookmakerUrl ? (
-                            <a
+                            <BookmakerLink
                               href={q.bookmakerUrl}
-                              target="_blank"
-                              rel="noopener noreferrer"
-                              onClick={() =>
-                                trackEvent("bookmaker_click", {
-                                  bookmaker_name: q.bookmaker,
-                                  sport: sportKey,
-                                  country: locale,
-                                  ...(matchSlug && { match_slug: matchSlug }),
-                                  page_path: typeof window !== "undefined" ? window.location.pathname : "",
-                                })
-                              }
+                              bookmakerName={q.bookmaker}
+                              locale={locale}
+                              logoUrl={q.bookmakerLogoUrl}
+                              matchSlug={matchSlug}
                               className="inline-flex min-h-[32px] items-center justify-center rounded-lg bg-[var(--accent)] px-3 py-1.5 text-xs font-semibold text-white transition hover:bg-[var(--accent-hover)] md:min-h-[36px] md:px-4 md:py-2 md:text-sm"
                             >
                               Scommetti
-                            </a>
+                            </BookmakerLink>
                           ) : (
                             <span className="text-[var(--foreground-muted)]">-</span>
                           )}

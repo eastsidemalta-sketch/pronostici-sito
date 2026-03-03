@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import { useLocale } from "next-intl";
 import { trackEvent } from "@/lib/analytics/ga";
+import { BookmakerLink } from "@/lib/components/BookmakerLink";
 import { compareBookmakers } from "@/lib/quotes/bookmakerRanking";
 import type { RemunerationConfig } from "@/lib/quotes/bookmaker.types";
 
@@ -10,6 +11,7 @@ type Quote = {
   bookmaker: string;
   bookmakerKey?: string;
   bookmakerUrl?: string | null;
+  bookmakerLogoUrl?: string | null;
   bonusDescription?: string | null;
   remuneration?: RemunerationConfig | null;
   outcomes: {
@@ -91,23 +93,16 @@ export default function Quotes1X2({ sportKey, homeTeam, awayTeam, country, match
           <div className="text-2xl font-bold">{bestHome > 0 ? bestHome.toFixed(2) : "-"}</div>
           <div className="text-xs text-gray-500 mt-1">{bestHomeQuote?.bookmaker ?? "-"}</div>
           {bestHomeQuote?.bookmakerUrl && (
-            <a
+            <BookmakerLink
               href={bestHomeQuote.bookmakerUrl}
-              target="_blank"
-              rel="noopener noreferrer"
-              onClick={() =>
-                trackEvent("bookmaker_click", {
-                  bookmaker_name: bestHomeQuote.bookmaker ?? "",
-                  sport: sportKey,
-                  country: locale,
-                  ...(matchSlug && { match_slug: matchSlug }),
-                  page_path: typeof window !== "undefined" ? window.location.pathname : "",
-                })
-              }
+              bookmakerName={bestHomeQuote.bookmaker ?? ""}
+              locale={locale}
+              logoUrl={bestHomeQuote.bookmakerLogoUrl}
+              matchSlug={matchSlug}
               className="mt-2 inline-block rounded-lg bg-emerald-600 px-3 py-1.5 text-xs font-medium text-white hover:bg-emerald-700"
             >
               Scommetti
-            </a>
+            </BookmakerLink>
           )}
         </div>
 
@@ -116,23 +111,16 @@ export default function Quotes1X2({ sportKey, homeTeam, awayTeam, country, match
           <div className="text-2xl font-bold">{bestDraw > 0 ? bestDraw.toFixed(2) : "-"}</div>
           <div className="text-xs text-gray-500 mt-1">{bestDrawQuote?.bookmaker ?? "-"}</div>
           {bestDrawQuote?.bookmakerUrl && (
-            <a
+            <BookmakerLink
               href={bestDrawQuote.bookmakerUrl}
-              target="_blank"
-              rel="noopener noreferrer"
-              onClick={() =>
-                trackEvent("bookmaker_click", {
-                  bookmaker_name: bestDrawQuote.bookmaker ?? "",
-                  sport: sportKey,
-                  country: locale,
-                  ...(matchSlug && { match_slug: matchSlug }),
-                  page_path: typeof window !== "undefined" ? window.location.pathname : "",
-                })
-              }
+              bookmakerName={bestDrawQuote.bookmaker ?? ""}
+              locale={locale}
+              logoUrl={bestDrawQuote.bookmakerLogoUrl}
+              matchSlug={matchSlug}
               className="mt-2 inline-block rounded-lg bg-emerald-600 px-3 py-1.5 text-xs font-medium text-white hover:bg-emerald-700"
             >
               Scommetti
-            </a>
+            </BookmakerLink>
           )}
         </div>
 
@@ -141,23 +129,16 @@ export default function Quotes1X2({ sportKey, homeTeam, awayTeam, country, match
           <div className="text-2xl font-bold">{bestAway > 0 ? bestAway.toFixed(2) : "-"}</div>
           <div className="text-xs text-gray-500 mt-1">{bestAwayQuote?.bookmaker ?? "-"}</div>
           {bestAwayQuote?.bookmakerUrl && (
-            <a
+            <BookmakerLink
               href={bestAwayQuote.bookmakerUrl}
-              target="_blank"
-              rel="noopener noreferrer"
-              onClick={() =>
-                trackEvent("bookmaker_click", {
-                  bookmaker_name: bestAwayQuote.bookmaker ?? "",
-                  sport: sportKey,
-                  country: locale,
-                  ...(matchSlug && { match_slug: matchSlug }),
-                  page_path: typeof window !== "undefined" ? window.location.pathname : "",
-                })
-              }
+              bookmakerName={bestAwayQuote.bookmaker ?? ""}
+              locale={locale}
+              logoUrl={bestAwayQuote.bookmakerLogoUrl}
+              matchSlug={matchSlug}
               className="mt-2 inline-block rounded-lg bg-emerald-600 px-3 py-1.5 text-xs font-medium text-white hover:bg-emerald-700"
             >
               Scommetti
-            </a>
+            </BookmakerLink>
           )}
         </div>
       </div>
@@ -213,23 +194,16 @@ export default function Quotes1X2({ sportKey, homeTeam, awayTeam, country, match
                     </td>
                     <td className="px-4 py-3 text-center">
                       {q.bookmakerUrl ? (
-                        <a
+                        <BookmakerLink
                           href={q.bookmakerUrl}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          onClick={() =>
-                            trackEvent("bookmaker_click", {
-                              bookmaker_name: q.bookmaker ?? "",
-                              sport: sportKey,
-                              country: locale,
-                              ...(matchSlug && { match_slug: matchSlug }),
-                              page_path: typeof window !== "undefined" ? window.location.pathname : "",
-                            })
-                          }
+                          bookmakerName={q.bookmaker ?? ""}
+                          locale={locale}
+                          logoUrl={q.bookmakerLogoUrl}
+                          matchSlug={matchSlug}
                           className="inline-flex items-center justify-center rounded-lg bg-emerald-600 px-3 py-1.5 text-xs font-medium text-white hover:bg-emerald-700"
                         >
                           Scommetti
-                        </a>
+                        </BookmakerLink>
                       ) : (
                         <span className="text-gray-400 text-xs">-</span>
                       )}

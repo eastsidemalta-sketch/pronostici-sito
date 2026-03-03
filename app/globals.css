@@ -42,6 +42,11 @@
   }
 }
 
+/* Fix viewport su Chrome mobile: layout si adatta quando la barra del browser si nasconde */
+html {
+  min-height: 100dvh;
+}
+
 /* Fix iOS Safari bottom nav flicker durante scroll */
 @supports (-webkit-touch-callout: none) {
   body {

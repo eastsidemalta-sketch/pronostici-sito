@@ -1,4 +1,5 @@
 import { NextResponse } from "next/server";
+import { getBookmakers } from "@/lib/quotes/bookmakers";
 import {
   getBookmakerBonusDescription,
   getBookmakerUrl,
@@ -7,12 +8,20 @@ import { getMultiMarketQuotes } from "@/lib/quotes/quotesEngine";
 import { matchTeamNames } from "@/lib/teamAliases";
 
 function addBookmakerUrls(
-  quotes: Array<{ bookmakerKey?: string; [k: string]: unknown }>,
+  quotes: Array<{ bookmakerKey?: string; bookmaker?: string; [k: string]: unknown }>,
   country?: string | null
 ) {
+  const bookmakers = getBookmakers();
+  const logoByKey = new Map<string, string>();
+  bookmakers.forEach((bm) => {
+    const key = (bm.apiBookmakerKey ?? bm.id).toLowerCase();
+    if (bm.logoUrl) logoByKey.set(key, bm.logoUrl);
+  });
+
   return quotes.map((q) => ({
     ...q,
     bookmakerUrl: getBookmakerUrl(q.bookmakerKey || "", country || undefined),
+    bookmakerLogoUrl: logoByKey.get((q.bookmakerKey || "").toLowerCase()) ?? null,
     bonusDescription: country
       ? getBookmakerBonusDescription(q.bookmakerKey || "", country)
       : null,

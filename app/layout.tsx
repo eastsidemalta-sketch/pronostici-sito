@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import Script from "next/script";
 import { NextIntlClientProvider } from "next-intl";
 import { getLocale, getMessages } from "next-intl/server";
+import ViewportSync from "./ViewportSync";
 import "./globals.css";
 
 const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL || "https://playsignal.io";
@@ -10,7 +11,9 @@ export const viewport = {
   width: "device-width",
   initialScale: 1,
   maximumScale: 5,
+  minimumScale: 1,
   viewportFit: "cover",
+  interactiveWidget: "resizes-content" as const,
 };
 
 export const metadata: Metadata = {
@@ -60,6 +63,7 @@ export default async function RootLayout({
   return (
     <html lang={locale}>
       <body className="bg-[var(--background)] text-[var(--foreground)]">
+        <ViewportSync />
         <NextIntlClientProvider messages={messages}>
           {children}
         </NextIntlClientProvider>

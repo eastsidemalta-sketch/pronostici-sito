@@ -98,6 +98,7 @@ export default async function BonusPage({
                     rel="noopener noreferrer"
                     bookmakerName={getBookmakerDisplayName(bm)}
                     locale={locale}
+                    logoUrl={bm.logoUrl}
                     className="shrink-0 rounded-lg bg-[var(--accent)] px-4 py-2 text-sm font-semibold text-white transition hover:bg-[var(--accent-hover)]"
                   >
                     Ottieni bonus
