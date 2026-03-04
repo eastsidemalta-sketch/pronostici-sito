@@ -71,7 +71,7 @@ export default function BookmakerListClient({
               <img
                 src={bm.logoUrl}
                 alt=""
-                className="h-10 w-10 shrink-0 object-contain"
+                className="h-14 w-14 shrink-0 object-contain md:h-16 md:w-16"
               />
             )}
             <div className="min-w-0 flex-1">
@@ -80,7 +80,7 @@ export default function BookmakerListClient({
                   <img
                     src={bm.faviconUrl || bm.logoUrl}
                     alt=""
-                    className="h-6 w-6 shrink-0 rounded object-contain"
+                    className="h-8 w-8 shrink-0 rounded object-contain md:h-9 md:w-9"
                   />
                 )}
                 <h3 className={`font-semibold ${!bm.isActive ? "text-neutral-500" : ""}`}>

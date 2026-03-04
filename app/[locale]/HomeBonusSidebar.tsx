@@ -49,7 +49,7 @@ export default async function HomeBonusSidebar({ country, locale }: HomeBonusSid
               className="flex min-h-[52px] items-center gap-2 rounded-lg border border-[var(--card-border)] bg-[var(--card-bg)] p-2.5 shadow-sm transition hover:border-[var(--accent)]/40 hover:shadow-md sm:min-h-[56px] lg:p-3"
             >
               {bm.logoUrl && (
-                <img src={bm.logoUrl} alt="" className="h-10 w-10 shrink-0 object-contain lg:h-11 lg:w-11" />
+                <img src={bm.logoUrl} alt="" className="h-12 w-12 shrink-0 object-contain lg:h-14 lg:w-14" />
               )}
               <div className="min-w-0 flex-1">
                 <div className="text-xs font-semibold text-[var(--foreground)] lg:text-sm">{getBookmakerDisplayName(bm)}</div>

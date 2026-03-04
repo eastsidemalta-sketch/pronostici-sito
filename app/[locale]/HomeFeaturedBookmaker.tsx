@@ -33,7 +33,7 @@ export default async function HomeFeaturedBookmaker({ country, locale }: HomeFea
           <img
             src={featured.faviconUrl || featured.logoUrl!}
             alt=""
-            className="h-10 w-10 shrink-0 object-contain md:h-12 md:w-12"
+            className="h-12 w-12 shrink-0 object-contain md:h-14 md:w-14"
           />
         )}
         <div>
@@ -58,7 +58,7 @@ export default async function HomeFeaturedBookmaker({ country, locale }: HomeFea
             <img
               src={featured.faviconUrl || featured.logoUrl!}
               alt=""
-              className="h-6 w-6 object-contain md:h-7 md:w-7"
+              className="h-8 w-8 object-contain md:h-9 md:w-9"
             />
           </div>
         )}

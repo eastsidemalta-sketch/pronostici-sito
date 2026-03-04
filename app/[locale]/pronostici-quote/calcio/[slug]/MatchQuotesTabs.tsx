@@ -193,7 +193,7 @@ export default function MatchQuotesTabs({ sportKey, homeTeam, awayTeam, country,
                                   src={faviconByKey.get((q.bookmakerKey || "").toLowerCase()) || logoByKey.get((q.bookmakerKey || "").toLowerCase())!}
                                   alt={q.bookmaker}
                                   title={q.bookmaker}
-                                  className="h-6 w-6 shrink-0 object-contain md:h-8 md:w-8"
+                                  className="h-8 w-8 shrink-0 object-contain md:h-10 md:w-10"
                                 />
                               </div>
                               <span className="text-xs font-medium text-[var(--foreground)] md:text-sm">{q.bookmaker}</span>

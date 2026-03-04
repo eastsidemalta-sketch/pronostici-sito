@@ -80,7 +80,7 @@ export default async function BonusPage({
               <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
                 <div className="flex items-center gap-4">
                   {bm.logoUrl && (
-                    <img src={bm.logoUrl} alt="" className="h-10 w-10 object-contain md:h-12 md:w-12" />
+                    <img src={bm.logoUrl} alt="" className="h-14 w-14 object-contain md:h-16 md:w-16" />
                   )}
                   <div>
                     <h2 className="text-base font-bold text-[var(--foreground)] md:text-lg">{getBookmakerDisplayName(bm)}</h2>

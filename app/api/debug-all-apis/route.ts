@@ -2,6 +2,7 @@
  * Debug endpoint: testa TUTTE le API quote (The Odds API + Direct).
  * GET /api/debug-all-apis
  * GET /api/debug-all-apis?leagueId=135 (opzionale: filtra per lega)
+ * GET /api/debug-all-apis?probe=1 (quando quotesCount=0, mostra struttura raw risposta API)
  */
 import { NextResponse } from "next/server";
 import { getBookmakers } from "@/lib/quotes/bookmakers";
@@ -14,6 +15,7 @@ export async function GET(req: Request) {
   const leagueIdParam = searchParams.get("leagueId");
   const leagueId = leagueIdParam ? parseInt(leagueIdParam, 10) : 135; // default Serie A
   const sportKey = LEAGUE_ID_TO_SPORT_KEY[leagueId] ?? "soccer_italy_serie_a";
+  const probe = searchParams.get("probe") === "1";
 
   const bookmakers = getBookmakers();
   const active = bookmakers.filter((b) => b.isActive);
@@ -30,6 +32,7 @@ export async function GET(req: Request) {
       quotesCount: number;
       sampleTeams?: string[];
       error?: string;
+      rawProbe?: { keys: string[]; firstEventKeys?: string[]; eventsPathHint: string; sample?: unknown };
     }>;
     combinedTest?: { h2hQuotesCount: number; sampleBookmakers: string[] };
   } = {
@@ -77,6 +80,45 @@ export async function GET(req: Request) {
         entry.sampleTeams = quotes
           .slice(0, 3)
           .map((q) => `${q.homeTeam} vs ${q.awayTeam}`);
+      } else if (probe && bm.apiEndpoint && bm.apiRequestConfig?.queryParams) {
+        // Probe: fetch raw per capire la struttura
+        const params = new URLSearchParams(bm.apiRequestConfig.queryParams as Record<string, string>);
+        const url = `${bm.apiEndpoint}?${params}`;
+        const res = await fetch(url, {
+          headers: bm.apiAuthType === "header" && bm.apiKey
+            ? { "X-Api-Key": bm.apiKey, Accept: "application/json" }
+            : { Accept: "application/json" },
+        });
+        if (res.ok) {
+          const data = (await res.json()) as unknown;
+          const keys = typeof data === "object" && data !== null ? Object.keys(data as object) : [];
+          let firstEvent: unknown = null;
+          let eventsPathHint = bm.apiMappingConfig?.eventsPath ?? "$";
+          if (Array.isArray(data)) {
+            firstEvent = data[0];
+            eventsPathHint = "$ (root è array, len=" + data.length + ")";
+          } else if (data && typeof data === "object") {
+            const obj = data as Record<string, unknown>;
+            const arr = obj.data ?? obj.events ?? obj.eventi ?? obj.risultati;
+            if (Array.isArray(arr) && arr.length > 0) {
+              firstEvent = arr[0];
+              const key = obj.data ? "data" : obj.events ? "events" : obj.eventi ? "eventi" : "risultati";
+              eventsPathHint = `${key} (len=${arr.length})`;
+            } else if (keys.length > 0) {
+              const val = obj[keys[0]];
+              if (Array.isArray(val) && val.length > 0) {
+                firstEvent = val[0];
+                eventsPathHint = `${keys[0]} (len=${val.length})`;
+              }
+            }
+          }
+          entry.rawProbe = {
+            keys,
+            firstEventKeys: firstEvent && typeof firstEvent === "object" ? Object.keys(firstEvent as object) : undefined,
+            eventsPathHint,
+            sample: firstEvent ? JSON.stringify(firstEvent).slice(0, 800) : undefined,
+          };
+        }
       }
     } catch (e) {
       entry.error = e instanceof Error ? e.message : String(e);
