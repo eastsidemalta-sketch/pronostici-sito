@@ -65,7 +65,7 @@ export default async function RootLayout({
     <html lang={locale}>
       <body className="bg-[var(--background)] text-[var(--foreground)]">
         <Script id="viewport-init" strategy="beforeInteractive">
-          {`(function(){var h=window.visualViewport?.height??window.innerHeight;document.documentElement.style.setProperty('--vvh',Math.round(h)+'px');})();`}
+          {`(function(){var vv=window.visualViewport;var h=vv?.height??window.innerHeight;var o=vv?.offsetTop??0;document.documentElement.style.setProperty('--vvh',Math.round(h)+'px');document.documentElement.style.setProperty('--vvo',Math.round(o)+'px');})();`}
         </Script>
         <ViewportSync />
         <NextIntlClientProvider messages={messages}>
