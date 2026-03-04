@@ -21,6 +21,7 @@ export type FixturePredictions = {
 /**
  * Ottiene le predizioni per una partita (API-Football predictions).
  * Restituisce la risposta raw per la pagina dettaglio.
+ * cache: no-store evita che risposta vuota venga cachata ("a volte sì a volte no").
  */
 export async function getFixturePredictions(fixtureId: string | number) {
   const key = process.env.API_FOOTBALL_KEY;
@@ -29,7 +30,7 @@ export async function getFixturePredictions(fixtureId: string | number) {
   try {
     const res = await fetch(url, {
       headers: { "x-apisports-key": key },
-      next: { revalidate: 60 },
+      cache: "no-store",
     });
     if (!res.ok) return null;
     const data = await res.json();

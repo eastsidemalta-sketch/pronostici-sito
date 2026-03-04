@@ -1,10 +1,10 @@
 /**
- * ID competizioni da nascondere nella pagina Leghe admin.
- * Nessun checkbox, non usate per le partite.
- * Aggiungi gli ID che non vuoi mostrare (es. 136 per Serie B, 4 per Conference League).
+ * ID competizioni da nascondere nella pagina Leghe admin e dalle partite.
+ * API-Football predictions non copre Serie B (136), Conference (4), ecc.
+ * Aggiungi qui le leghe senza pronostici se non vuoi mostrarle.
  */
 export const HIDDEN_COMPETITION_IDS = new Set<number | string>([
-  // Esempio: 136, 4
+  // 136, // Serie B - nessun pronostico API-Football
 ]);
 
 export function isHiddenCompetition(id: number | string): boolean {

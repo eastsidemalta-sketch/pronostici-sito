@@ -135,6 +135,7 @@ export async function getUpcomingFixtures(leagueIds?: number[]) {
     console.warn("API_FOOTBALL_KEY mancante. Controlla .env.local");
     return [];
   }
+  const apiKey = key;
 
   const fromDate = getTodayInSiteTz();
   const from = new Date(fromDate + "T00:00:00Z");
@@ -153,23 +154,28 @@ export async function getUpcomingFixtures(leagueIds?: number[]) {
         ? configIds
         : DEFAULT_LEAGUE_IDS;
 
-  const results = await Promise.all(
-    leagues.map(async (leagueId) => {
-      const url = `https://v3.football.api-sports.io/fixtures?from=${fromDate}&to=${toDate}&league=${leagueId}&season=${season}`;
-      try {
-        const res = await fetch(url, {
-          headers: { "x-apisports-key": key },
-          next: { revalidate: 60 },
-        });
-        if (!res.ok) return [];
-        const data = await res.json();
-        if (data.errors && Object.keys(data.errors).length > 0) return [];
-        return data.response ?? [];
-      } catch {
-        return [];
-      }
-    })
-  );
+  async function fetchLeague(leagueId: number): Promise<any[]> {
+    const url = `https://v3.football.api-sports.io/fixtures?from=${fromDate}&to=${toDate}&league=${leagueId}&season=${season}`;
+    try {
+      const res = await fetch(url, {
+        headers: { "x-apisports-key": apiKey },
+        next: { revalidate: 60 },
+      });
+      if (!res.ok) return [];
+      const data = await res.json();
+      if (data.errors && Object.keys(data.errors).length > 0) return [];
+      return data.response ?? [];
+    } catch {
+      return [];
+    }
+  }
+
+  let results = await Promise.all(leagues.map(fetchLeague));
+  const totalFirst = results.reduce((s, arr) => s + arr.length, 0);
+  if (totalFirst === 0 && leagues.length > 0) {
+    await new Promise((r) => setTimeout(r, 800));
+    results = await Promise.all(leagues.map(fetchLeague));
+  }
   for (const arr of results) {
     if (arr.length) allFixtures.push(...arr);
   }
