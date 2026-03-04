@@ -64,6 +64,9 @@ export async function POST(req: Request) {
     const body = (await req.json()) as Partial<Bookmaker>;
     const country = (body.country || "IT").toUpperCase().slice(0, 2) || "IT";
     const name = (body.name || "Nuovo sito").trim() || "Nuovo sito";
+    const countries = Array.isArray(body.countries) && body.countries.length > 0
+      ? body.countries
+      : [country];
 
     const bookmakers = getBookmakers();
     const siteId = generateSiteId(country, bookmakers);
@@ -84,18 +87,30 @@ export async function POST(req: Request) {
       id,
       siteId,
       name,
+      displayName: body.displayName || null,
       slug: id,
       country,
-      countries: [country],
-      logoUrl: "",
-      affiliateUrl: "",
+      countries,
+      logoUrl: body.logoUrl || "",
+      affiliateUrl: body.affiliateUrl || "",
       isActive: false,
-      apiProvider: "the_odds_api",
-      apiKey: "",
+      apiProvider: body.apiProvider || "the_odds_api",
+      apiKey: body.apiKey || "",
       apiConfig: { markets: ["h2h"] },
+      apiDocumentationUrl: body.apiDocumentationUrl || null,
+      apiEndpoint: body.apiEndpoint || null,
+      apiAuthType: body.apiAuthType || undefined,
     };
 
-    const updated = [...bookmakers, newBm];
+    let updated = [...bookmakers, newBm];
+
+    // Se richiesto, metti in pausa tutti i bookmaker The Odds API
+    if (body.pauseOddsApi === true) {
+      updated = updated.map((b) =>
+        b.apiProvider === "the_odds_api" ? { ...b, isActive: false } : b
+      );
+    }
+
     saveBookmakers(updated);
 
     return NextResponse.json({

@@ -1,5 +1,6 @@
-import { getBookmakers, getBookmakerDisplayName } from "@/lib/quotes/bookmakers";
+import { getBookmakers } from "@/lib/quotes/bookmakers";
 import Link from "next/link";
+import BookmakerListClient from "./BookmakerListClient";
 
 export default function AdminBookmakersPage() {
   const bookmakers = getBookmakers();
@@ -27,44 +28,10 @@ export default function AdminBookmakersPage() {
       <div className="rounded-xl border bg-white p-6">
         <p className="mb-4 text-sm text-neutral-600">
           Clicca su un bookmaker per modificare Nome, Logo, URL, API e link per
-          il bottone quote.
+          il bottone quote. Puoi mettere in pausa (nascondere dal sito) o eliminare.
         </p>
 
-        <div className="space-y-4">
-          {bookmakers.map((bm) => (
-            <Link
-              key={bm.id}
-              href={`/ad2min3k/bookmakers/${bm.id}`}
-              className="block rounded-lg border p-4 hover:border-emerald-500 hover:bg-neutral-50/50 transition"
-            >
-              <div className="flex items-center gap-4">
-                {bm.logoUrl && (
-                  <img
-                    src={bm.logoUrl}
-                    alt=""
-                    className="h-10 w-10 object-contain"
-                  />
-                )}
-                <div className="min-w-0 flex-1">
-                  <div className="flex items-center gap-2">
-                    <h3 className="font-semibold">{getBookmakerDisplayName(bm)}</h3>
-                    {bm.siteId && (
-                      <span className="rounded bg-neutral-100 px-2 py-0.5 font-mono text-xs font-medium text-neutral-600">
-                        {bm.siteId}
-                      </span>
-                    )}
-                  </div>
-                  <p className="mt-1 text-sm text-neutral-600">
-                    Paesi: {bm.countries?.join(", ") || bm.country}
-                  </p>
-                  <p className="mt-1 text-xs text-neutral-500">
-                    {bm.affiliateUrl}
-                  </p>
-                </div>
-              </div>
-            </Link>
-          ))}
-        </div>
+        <BookmakerListClient bookmakers={bookmakers} />
       </div>
     </main>
   );

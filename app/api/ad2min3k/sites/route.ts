@@ -8,28 +8,29 @@ import {
 import type { SitesOrderConfig } from "@/lib/sitesOrderConfig";
 import { getBookmakers, getBookmakerDisplayName } from "@/lib/quotes/bookmakers";
 
-function getBookmakersByCountry(): Record<
-  string,
-  { id: string; siteId?: string; name: string }[]
-> {
+type BookmakerForCountry = {
+  id: string;
+  siteId?: string;
+  name: string;
+  isActive: boolean;
+};
+
+function getBookmakersByCountry(): Record<string, BookmakerForCountry[]> {
   const bookmakers = getBookmakers();
   const countries = getSupportedCountries();
-  const result: Record<
-    string,
-    { id: string; siteId?: string; name: string }[]
-  > = {};
+  const result: Record<string, BookmakerForCountry[]> = {};
   for (const country of countries) {
     const forCountry = bookmakers.filter(
       (bm) =>
-        bm.isActive &&
-        (bm.countries?.includes(country) ||
-          bm.country === country ||
-          bm.countryConfig?.[country])
+        bm.countries?.includes(country) ||
+        bm.country === country ||
+        bm.countryConfig?.[country]
     );
     result[country] = forCountry.map((b) => ({
       id: b.id,
       siteId: b.siteId,
       name: getBookmakerDisplayName(b),
+      isActive: b.isActive,
     }));
   }
   return result;
