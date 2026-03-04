@@ -2,8 +2,6 @@
 
 /* Design tokens - Oddschecker (verde/blu) + SportyTrader (pulizia, dimensioni) */
 :root {
-  --vvh: 100vh;
-  --vvo: 0px;
   --background: #f5f5f5;
   --foreground: #000000;
   --foreground-muted: #1a1a1a;
@@ -56,11 +54,6 @@ html {
     max-height: 90px;
     -webkit-min-logical-height: 66px;
     -webkit-max-logical-height: 90px;
-  }
-  /* Chrome iOS: barra si nasconde durante scroll, usa visual viewport per posizionamento */
-  [data-chrome-ios] [data-mobile-bottom-nav] {
-    top: calc(var(--vvo) + var(--vvh) + env(safe-area-inset-bottom) - 6.5rem);
-    bottom: auto;
   }
 }
 
