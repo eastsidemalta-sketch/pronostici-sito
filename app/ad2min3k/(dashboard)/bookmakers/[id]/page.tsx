@@ -562,7 +562,7 @@ export default function AdminBookmakerEditPage() {
                   setLoadingProfile(true);
                   setError("");
                   try {
-                    const res = await fetch(`/api/ad2min3k/client-profiles?siteId=${encodeURIComponent(bm.siteId)}`);
+                    const res = await fetch(`/api/ad2min3k/client-profiles?siteId=${encodeURIComponent(bm.siteId ?? "")}`);
                     const data = await res.json();
                     const profile = data.profile as { api?: { enabled?: boolean; endpoint?: string; documentationUrl?: string; params?: Record<string, string>; mapping?: Record<string, string>; method?: string }; logoPath?: string; faviconPath?: string } | null;
                     if (profile && bm) {
