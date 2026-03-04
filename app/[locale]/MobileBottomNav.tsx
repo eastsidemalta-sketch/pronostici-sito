@@ -134,10 +134,9 @@ export default function MobileBottomNav() {
 
   const navContent = (
     <nav
-      className="fixed inset-x-0 bottom-0 z-50 flex min-h-[56px] items-center justify-around border-t border-[var(--card-border)] bg-[var(--nav-bar-bg)] pb-[max(env(safe-area-inset-bottom),10px)] pt-2 md:hidden"
+      data-mobile-bottom-nav
+      className="fixed inset-x-0 bottom-0 z-50 flex min-h-[66px] max-h-[90px] items-center justify-around border-t border-[var(--card-border)] bg-[var(--nav-bar-bg)] pb-[max(env(safe-area-inset-bottom),10px)] pt-2 md:hidden"
       style={{
-        top: "calc(var(--vvo) + var(--vvh) + env(safe-area-inset-bottom) - 6.5rem)",
-        bottom: "auto",
         transform: "translateZ(0)",
         WebkitTransform: "translateZ(0)",
         WebkitBackfaceVisibility: "hidden",

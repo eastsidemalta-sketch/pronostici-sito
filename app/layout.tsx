@@ -2,7 +2,6 @@ import type { Metadata } from "next";
 import Script from "next/script";
 import { NextIntlClientProvider } from "next-intl";
 import { getLocale, getMessages } from "next-intl/server";
-import ViewportSync from "./ViewportSync";
 import "./globals.css";
 
 const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL || "https://playsignal.io";
@@ -64,10 +63,6 @@ export default async function RootLayout({
   return (
     <html lang={locale}>
       <body className="bg-[var(--background)] text-[var(--foreground)]">
-        <Script id="viewport-init" strategy="beforeInteractive">
-          {`(function(){var vv=window.visualViewport;var h=vv?.height??window.innerHeight;var o=vv?.offsetTop??0;document.documentElement.style.setProperty('--vvh',Math.round(h)+'px');document.documentElement.style.setProperty('--vvo',Math.round(o)+'px');})();`}
-        </Script>
-        <ViewportSync />
         <NextIntlClientProvider messages={messages}>
           {children}
         </NextIntlClientProvider>
