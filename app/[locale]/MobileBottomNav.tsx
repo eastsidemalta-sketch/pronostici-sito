@@ -134,8 +134,10 @@ export default function MobileBottomNav() {
 
   const navContent = (
     <nav
-      className="fixed inset-x-0 bottom-0 z-50 flex min-h-[56px] items-center justify-around border-t border-[var(--card-border)] bg-[var(--nav-bar-bg)] pb-[max(env(safe-area-inset-bottom),10px)] pt-2 md:hidden"
+      className="fixed inset-x-0 z-50 flex min-h-[56px] items-center justify-around border-t border-[var(--card-border)] bg-[var(--nav-bar-bg)] pb-[max(env(safe-area-inset-bottom),10px)] pt-2 md:hidden"
       style={{
+        /* Sempre in basso rispetto al visual viewport (fix Chrome iOS quando la barra si nasconde) */
+        top: "calc(var(--vvh, 100vh) - 6.5rem)",
         transform: "translateZ(0)",
         WebkitTransform: "translateZ(0)",
         WebkitBackfaceVisibility: "hidden",
