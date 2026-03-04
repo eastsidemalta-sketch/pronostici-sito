@@ -7,9 +7,10 @@ module.exports = {
   apps: [
     {
       name: "pronostici-test",
-      cwd: "/var/www/pronostici-sito-test",
-      script: "npm",
-      args: "run start:test",
+      cwd: "/var/www/pronostici-sito-test/.next/standalone",
+      script: "node",
+      args: "server.js",
+      env: { PORT: 3001 },
     },
     {
       name: "pronostici",
