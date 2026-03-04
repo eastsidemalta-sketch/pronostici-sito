@@ -575,7 +575,7 @@ export default function AdminBookmakerEditPage() {
                         updates.apiAuthType = "header";
                         updates.apiMappingConfig = profile.api.mapping || bm.apiMappingConfig;
                         updates.apiRequestConfig = {
-                          method: profile.api.method || "GET",
+                          method: (profile.api.method === "POST" ? "POST" : "GET") as "GET" | "POST",
                           queryParams: { ...profile.api.params },
                         };
                       }
