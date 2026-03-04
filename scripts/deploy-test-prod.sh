@@ -8,7 +8,7 @@ set -e
 wait_for_app() {
   local name=$1
   local port=$2
-  local max=30
+  local max=60
   local n=0
   echo -n "Attendo avvio $name sulla porta $port..."
   while [ $n -lt $max ]; do
@@ -31,7 +31,7 @@ mkdir -p public/uploads
 npm ci
 npm run build
 node scripts/apply-netwin-config.mjs 2>/dev/null || true
-pm2 restart pronostici-test 2>/dev/null || (cd /var/www/pronostici-sito-test && pm2 start npm --name pronostici-test -- start)
+pm2 delete pronostici-test 2>/dev/null; pm2 start ecosystem.config.cjs --only pronostici-test
 wait_for_app "pronostici-test" 3001 || true
 echo ""
 echo "=== Deploy TEST completato ==="
