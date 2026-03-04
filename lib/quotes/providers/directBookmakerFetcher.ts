@@ -1,10 +1,21 @@
 /**
  * Fetch quote da API dirette dei bookmaker.
  * Applica il mapping configurato e restituisce formato normalizzato.
+ * Supporta risposta JSON e XML.
  */
 import type { Bookmaker } from "../bookmaker.types";
 import { getBookmakerDisplayName } from "../bookmakers";
 import { getByPath, getNumber, getString } from "@/lib/jsonPath";
+import { XMLParser } from "fast-xml-parser";
+
+function parseApiResponse(text: string): unknown {
+  const trimmed = text.trim();
+  if (trimmed.startsWith("<")) {
+    const parser = new XMLParser({ ignoreAttributes: false });
+    return parser.parse(trimmed);
+  }
+  return JSON.parse(text) as unknown;
+}
 
 export type DirectQuote = {
   homeTeam: string;
@@ -56,12 +67,42 @@ function buildHeaders(
 }
 
 /**
+ * Cerca ricorsivamente un array di eventi nell'oggetto (per XML nested).
+ */
+function findEventsArray(obj: unknown): unknown[] | null {
+  if (Array.isArray(obj) && obj.length > 0) return obj;
+  if (obj && typeof obj === "object") {
+    const o = obj as Record<string, unknown>;
+    for (const k of ["eventi", "evento", "events", "data", "risultati", "partite"]) {
+      const v = o[k];
+      if (Array.isArray(v)) return v;
+      if (v && typeof v === "object") {
+        const inner = findEventsArray(v);
+        if (inner) return inner;
+      }
+    }
+    for (const k of Object.keys(o)) {
+      const v = o[k];
+      if (Array.isArray(v) && v.length > 0) return v;
+    }
+  }
+  return null;
+}
+
+/**
  * Estrae gli eventi dalla risposta usando eventsPath.
+ * Se eventsPath è "$" e il root non è un array, cerca ricorsivamente (per XML).
  */
 function getEventsArray(data: unknown, eventsPath: string): unknown[] {
   const val = getByPath(data, eventsPath);
   if (Array.isArray(val)) return val;
-  if (val != null && typeof val === "object") return [val];
+  if (val != null && typeof val === "object") {
+    if (eventsPath === "$" || eventsPath === "$.") {
+      const found = findEventsArray(data);
+      if (found) return found;
+    }
+    return [val];
+  }
   return [];
 }
 
@@ -131,7 +172,8 @@ export async function fetchDirectBookmakerQuotes(
 
   let data: unknown;
   try {
-    data = await res.json();
+    const text = await res.text();
+    data = parseApiResponse(text);
   } catch {
     return [];
   }
