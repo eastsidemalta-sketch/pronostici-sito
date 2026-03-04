@@ -1,11 +1,12 @@
 /**
  * GET /api/debug-netwin-feed
  * Fetch raw Netwin API e restituisce la struttura per verificare il mapping.
+ * ?explore=1 = esplora tutto il feed e lista manifestazioni + tutte le partite estratte.
  * Usa la config da bookmakers.json (Netwin IT-002).
- * Supporta risposta JSON e XML.
  */
 import { NextResponse } from "next/server";
 import { getBookmakers } from "@/lib/quotes/bookmakers";
+import { fetchDirectBookmakerQuotes } from "@/lib/quotes/providers/directBookmakerFetcher";
 import { XMLParser } from "fast-xml-parser";
 
 function parseResponse(text: string): unknown {
@@ -17,7 +18,83 @@ function parseResponse(text: string): unknown {
   return JSON.parse(text) as unknown;
 }
 
-export async function GET() {
+function toArray<T>(v: T | T[] | null | undefined): T[] {
+  if (v == null) return [];
+  return Array.isArray(v) ? v : [v];
+}
+
+function extractMatchFromNode(node: Record<string, unknown>): string | null {
+  const home = String(node.squadraCasa ?? node.squadra1 ?? node.homeTeam ?? "").trim();
+  const away = String(node.squadraOspite ?? node.squadra2 ?? node.awayTeam ?? "").trim();
+  if (home && away) return `${home} - ${away}`;
+  const descr = String(node.descr ?? "").trim();
+  if (descr.includes(" - ")) {
+    const [h, aw] = descr.split(" - ").map((s) => s.trim());
+    if (h && aw && h.length > 2 && aw.length > 2) return `${h} - ${aw}`;
+  }
+  return null;
+}
+
+/** Raccolta ricorsiva: tutte le Manifestazione e tutte le coppie home-away dal feed */
+function exploreFeed(obj: unknown, depth = 0): { manifestazioni: string[]; matchPairs: string[] } {
+  const manifestazioni = new Set<string>();
+  const matchPairs = new Set<string>();
+  if (depth > 20) return { manifestazioni: [], matchPairs: [] };
+
+  if (Array.isArray(obj)) {
+    for (const item of obj) {
+      if (item && typeof item === "object") {
+        const o = item as Record<string, unknown>;
+        if (o.Manifestazione) {
+          for (const m of toArray(o.Manifestazione)) {
+            if (m && typeof m === "object") {
+              const md = String((m as Record<string, unknown>).descr ?? "").trim();
+              if (md) manifestazioni.add(md);
+              for (const a of toArray((m as Record<string, unknown>).Avvenimento)) {
+                if (a && typeof a === "object") {
+                  const pair = extractMatchFromNode(a as Record<string, unknown>);
+                  if (pair) matchPairs.add(pair);
+                  for (const childKey of ["Partita", "Incontro", "Evento"]) {
+                    for (const c of toArray((a as Record<string, unknown>)[childKey])) {
+                      if (c && typeof c === "object") {
+                        const p = extractMatchFromNode(c as Record<string, unknown>);
+                        if (p) matchPairs.add(p);
+                      }
+                    }
+                  }
+                  const res = exploreFeed(a, depth + 1);
+                  res.manifestazioni.forEach((x) => manifestazioni.add(x));
+                  res.matchPairs.forEach((x) => matchPairs.add(x));
+                }
+              }
+            }
+          }
+        }
+        const pair = extractMatchFromNode(o);
+        if (pair) matchPairs.add(pair);
+        const res = exploreFeed(item, depth + 1);
+        res.manifestazioni.forEach((x) => manifestazioni.add(x));
+        res.matchPairs.forEach((x) => matchPairs.add(x));
+      }
+    }
+  } else if (obj && typeof obj === "object") {
+    const o = obj as Record<string, unknown>;
+    for (const v of Object.values(o)) {
+      const res = exploreFeed(v, depth + 1);
+      res.manifestazioni.forEach((x) => manifestazioni.add(x));
+      res.matchPairs.forEach((x) => matchPairs.add(x));
+    }
+  }
+  return {
+    manifestazioni: [...manifestazioni].filter(Boolean).sort(),
+    matchPairs: [...matchPairs].filter(Boolean).sort(),
+  };
+}
+
+export async function GET(req: Request) {
+  const { searchParams } = new URL(req.url);
+  const explore = searchParams.get("explore") === "1";
+  const codiceSitoOverride = searchParams.get("codiceSito");
   const bookmakers = getBookmakers();
   const netwin = bookmakers.find(
     (b) => b.siteId === "IT-002" || b.id?.toLowerCase().includes("netwin")
@@ -33,6 +110,7 @@ export async function GET() {
   const params = new URLSearchParams(
     netwin.apiRequestConfig.queryParams as Record<string, string>
   );
+  if (codiceSitoOverride) params.set("codiceSito", codiceSitoOverride);
   const url = `${netwin.apiEndpoint}?${params}`;
 
   try {
@@ -142,6 +220,19 @@ export async function GET() {
       firstAvvenimentoSample = JSON.stringify(firstAvv, null, 2).slice(0, 2000);
     }
 
+    let exploreResult: { manifestazioni: string[]; matchPairs: string[]; directQuotes: string[] } | undefined;
+    if (explore) {
+      const { manifestazioni, matchPairs } = exploreFeed(data);
+      let directQuotes: string[] = [];
+      try {
+        const quotes = await fetchDirectBookmakerQuotes(netwin!, 135);
+        directQuotes = quotes.map((q) => `${q.homeTeam} - ${q.awayTeam}`);
+      } catch {
+        directQuotes = ["(errore fetch)"];
+      }
+      exploreResult = { manifestazioni, matchPairs, directQuotes };
+    }
+
     return NextResponse.json({
       ok: true,
       httpStatus: res.status,
@@ -156,6 +247,7 @@ export async function GET() {
           : null,
       exalogicAvvenimentiCount: exalogicAvvenimenti.length,
       firstAvvenimentoSample,
+      ...(exploreResult && { explore: exploreResult }),
     });
   } catch (e) {
     return NextResponse.json({
