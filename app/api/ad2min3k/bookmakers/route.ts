@@ -101,7 +101,7 @@ export async function POST(req: Request) {
             apiAuthType = "header";
             apiMappingConfig = profile.api.mapping || apiMappingConfig;
             apiRequestConfig = {
-              method: (profile.api as { method?: string }).method || "GET",
+              method: (profile.api as { method?: string }).method === "POST" ? "POST" : "GET",
               queryParams: { ...profile.api.params },
             };
           }
