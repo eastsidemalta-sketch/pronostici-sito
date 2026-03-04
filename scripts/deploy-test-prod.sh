@@ -29,6 +29,7 @@ git pull origin main
 mkdir -p public/uploads
 npm ci
 npm run build
+node scripts/apply-netwin-config.mjs 2>/dev/null || true
 pm2 restart pronostici-test 2>/dev/null || (cd /var/www/pronostici-sito-test && pm2 start npm --name pronostici-test -- start)
 wait_for_app "pronostici-test" 3001 || true
 echo "Test OK"
@@ -40,6 +41,7 @@ git pull origin main
 mkdir -p public/uploads
 npm ci
 npm run build
+node scripts/apply-netwin-config.mjs 2>/dev/null || true
 pm2 restart pronostici || pm2 start npm --name pronostici -- start
 wait_for_app "pronostici" 3000 || true
 echo "Produzione OK"
