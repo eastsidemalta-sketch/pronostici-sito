@@ -135,12 +135,7 @@ export default function MobileBottomNav() {
   const navContent = (
     <nav
       data-mobile-bottom-nav
-      className="fixed inset-x-0 bottom-0 z-50 flex min-h-[66px] max-h-[90px] items-center justify-around border-t border-[var(--card-border)] bg-[var(--nav-bar-bg)] pb-[max(env(safe-area-inset-bottom),10px)] pt-2 md:hidden"
-      style={{
-        transform: "translateZ(0)",
-        WebkitTransform: "translateZ(0)",
-        WebkitBackfaceVisibility: "hidden",
-      }}
+      className="fixed left-0 right-0 bottom-0 z-50 flex min-h-[66px] max-h-[90px] items-center justify-around border-t border-[var(--card-border)] bg-[var(--nav-bar-bg)] pb-[max(env(safe-area-inset-bottom),10px)] pt-2 md:hidden"
     >
       <Link
         href="/"
@@ -196,6 +191,7 @@ export default function MobileBottomNav() {
   const [mounted, setMounted] = useState(false);
   useEffect(() => setMounted(true), []);
 
-  if (!mounted || typeof document === "undefined") return navContent;
+  /* Oddschecker: nav sempre in body via portal, mai nel layout tree */
+  if (!mounted || typeof document === "undefined") return null;
   return createPortal(navContent, document.body);
 }
