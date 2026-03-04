@@ -22,6 +22,7 @@
       "notes": "Quote personalizzate nei campionati principali: preferire odds*Personalized quando presenti. IP server whitelistato.",
       "mapping": {
         "eventsPath": "$",
+        "exalogic": true,
         "homeTeam": "homeTeam",
         "awayTeam": "awayTeam",
         "odds1": "odds1",

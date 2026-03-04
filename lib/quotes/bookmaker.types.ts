@@ -102,6 +102,8 @@ export type Bookmaker = {
     odds2Personalized?: string;
     /** Path per iterare sugli eventi (es. "$.events" o "data") */
     eventsPath?: string;
+    /** Feed Exalogic (Manifestazione/Avvenimento/Scommessa): usa estrattore dedicato */
+    exalogic?: boolean;
   } | null;
   /** Stato ultimo tentativo matching: pending | testing | matched | failed */
   apiDiscoveryStatus?: "pending" | "testing" | "matched" | "failed";

@@ -94,6 +94,131 @@ function findEventsArray(obj: unknown): unknown[] | null {
   return null;
 }
 
+/** Normalizza a array (XML single child = oggetto) */
+function toArray<T>(v: T | T[] | null | undefined): T[] {
+  if (v == null) return [];
+  return Array.isArray(v) ? v : [v];
+}
+
+/**
+ * Estrae quote 1X2 da Scommessa (Esito con descr "1","X","2" o cod 1,2,3).
+ * Lista=1 tipicamente indica mercato 1X2.
+ */
+function extract1X2FromScommessa(scommessa: Record<string, unknown>): {
+  odds1: number;
+  oddsX: number;
+  odds2: number;
+} {
+  const esiti = toArray(scommessa.Esito as unknown);
+  const out = { odds1: 0, oddsX: 0, odds2: 0 };
+  for (const e of esiti) {
+    if (!e || typeof e !== "object") continue;
+    const o = e as Record<string, unknown>;
+    const quota = typeof o.quota === "number" ? o.quota : parseFloat(String(o.quota ?? 0)) || 0;
+    const descr = String(o.descr ?? "").trim().toUpperCase();
+    const cod = typeof o.cod === "number" ? o.cod : parseInt(String(o.cod ?? 0), 10);
+    const qp = o.QuotePersonalizzate;
+    const quotaPers =
+      typeof qp === "string" && qp.startsWith("default=")
+        ? parseFloat(qp.replace("default=", "")) || 0
+        : 0;
+    const q = quotaPers > 0 ? quotaPers : quota;
+    if (descr === "1" || cod === 1) out.odds1 = q;
+    else if (descr === "X" || descr === "N" || cod === 2) out.oddsX = q;
+    else if (descr === "2" || cod === 3) out.odds2 = q;
+  }
+  return out;
+}
+
+/**
+ * Trova la Scommessa 1X2 (Lista=1 o Esito con 3 outcome 1,X,2).
+ */
+function find1X2Scommessa(scommesse: unknown[]): Record<string, unknown> | null {
+  for (const s of scommesse) {
+    if (!s || typeof s !== "object") continue;
+    const o = s as Record<string, unknown>;
+    if (o.Lista === 1 || o.Lista === "1") return o;
+    const esiti = toArray(o.Esito);
+    if (esiti.length >= 3) {
+      const descrs = new Set(esiti.map((e) => String((e as Record<string, unknown>)?.descr ?? "").trim().toUpperCase()));
+      if (descrs.has("1") && (descrs.has("X") || descrs.has("N")) && descrs.has("2")) return o;
+    }
+  }
+  return null;
+}
+
+/**
+ * Estrae home/away da Avvenimento o parent.
+ */
+function extractTeamsFromAvvenimento(avv: Record<string, unknown>, manifestazione?: Record<string, unknown>): { home: string; away: string } {
+  const squadraCasa = String(avv.squadraCasa ?? avv.squadra1 ?? avv.homeTeam ?? "").trim();
+  const squadraOspite = String(avv.squadraOspite ?? avv.squadra2 ?? avv.awayTeam ?? "").trim();
+  if (squadraCasa && squadraOspite) return { home: squadraCasa, away: squadraOspite };
+  const descr = String(avv.descr ?? manifestazione?.descr ?? "").trim();
+  const sep = descr.includes(" - ") ? " - " : descr.includes(" vs ") ? " vs " : null;
+  if (sep) {
+    const [a, b] = descr.split(sep).map((s) => s.trim());
+    if (a && b) return { home: a, away: b };
+  }
+  return { home: "", away: "" };
+}
+
+/**
+ * Processa un singolo Avvenimento/Partita/Incontro: se ha Scommessa 1X2, aggiunge a out.
+ */
+function processExalogicNode(
+  node: Record<string, unknown>,
+  parentManifestazione?: Record<string, unknown>,
+  out: Array<Record<string, unknown>> = []
+): void {
+  const scommesse = toArray(node.Scommessa as unknown);
+  const s1x2 = find1X2Scommessa(scommesse);
+  if (!s1x2) {
+    for (const key of ["Partita", "Incontro", "Evento", "Avvenimento"]) {
+      const children = toArray(node[key] as unknown);
+      for (const c of children) {
+        if (c && typeof c === "object") processExalogicNode(c as Record<string, unknown>, parentManifestazione ?? node as Record<string, unknown>, out);
+      }
+    }
+    return;
+  }
+  const { odds1, oddsX, odds2 } = extract1X2FromScommessa(s1x2);
+  if (odds1 <= 0 && oddsX <= 0 && odds2 <= 0) return;
+  const { home, away } = extractTeamsFromAvvenimento(node, parentManifestazione);
+  if (!home || !away) return;
+  out.push({
+    homeTeam: home,
+    awayTeam: away,
+    odds1,
+    oddsX,
+    odds2,
+  } as Record<string, unknown>);
+}
+
+/**
+ * Appiattisce Exalogic: Manifestazione[].Avvenimento → array di eventi.
+ */
+function flattenExalogicEvents(data: unknown): Array<Record<string, unknown>> {
+  const out: Array<Record<string, unknown>> = [];
+  const root = findEventsArray(data);
+  if (!root) return out;
+  for (const item of root) {
+    if (!item || typeof item !== "object") continue;
+    const o = item as Record<string, unknown>;
+    const manifestazioni = toArray(o.Manifestazione as unknown);
+    for (const man of manifestazioni) {
+      if (!man || typeof man !== "object") continue;
+      const m = man as Record<string, unknown>;
+      const avvenimenti = toArray(m.Avvenimento as unknown);
+      for (const avv of avvenimenti) {
+        if (!avv || typeof avv !== "object") continue;
+        processExalogicNode(avv as Record<string, unknown>, m, out);
+      }
+    }
+  }
+  return out;
+}
+
 /**
  * Estrae gli eventi dalla risposta usando eventsPath.
  * Se eventsPath è "$" e il root non è un array, cerca ricorsivamente (per XML).
@@ -133,6 +258,7 @@ export async function fetchDirectBookmakerQuotes(
   const odds1Personalized = mapping.odds1Personalized;
   const oddsXPersonalized = mapping.oddsXPersonalized;
   const odds2Personalized = mapping.odds2Personalized;
+  const useExalogic = mapping.exalogic === true;
 
   const authType = bm.apiAuthType ?? "query";
   const reqConfig = bm.apiRequestConfig ?? {};
@@ -183,7 +309,9 @@ export async function fetchDirectBookmakerQuotes(
     return [];
   }
 
-  const events = getEventsArray(data, eventsPath);
+  const events = useExalogic
+    ? flattenExalogicEvents(data)
+    : getEventsArray(data, eventsPath);
   const quotes: DirectQuote[] = [];
 
   for (const ev of events) {

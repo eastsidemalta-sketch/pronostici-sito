@@ -118,6 +118,30 @@ export async function GET() {
         ? Object.keys(firstEvent as object)
         : [];
 
+    function toArray<T>(v: T | T[] | null | undefined): T[] {
+      if (v == null) return [];
+      return Array.isArray(v) ? v : [v];
+    }
+
+    let exalogicAvvenimenti: unknown[] = [];
+    let firstAvvenimentoSample: string | null = null;
+    for (const ev of eventsArray) {
+      if (ev && typeof ev === "object") {
+        const o = ev as Record<string, unknown>;
+        const manifestazioni = toArray(o.Manifestazione);
+        for (const man of manifestazioni) {
+          if (man && typeof man === "object") {
+            const m = man as Record<string, unknown>;
+            exalogicAvvenimenti = exalogicAvvenimenti.concat(toArray(m.Avvenimento));
+          }
+        }
+      }
+    }
+    const firstAvv = exalogicAvvenimenti[0];
+    if (firstAvv != null) {
+      firstAvvenimentoSample = JSON.stringify(firstAvv, null, 2).slice(0, 2000);
+    }
+
     return NextResponse.json({
       ok: true,
       httpStatus: res.status,
@@ -130,6 +154,8 @@ export async function GET() {
         firstEvent != null
           ? JSON.stringify(firstEvent, null, 2).slice(0, 2000)
           : null,
+      exalogicAvvenimentiCount: exalogicAvvenimenti.length,
+      firstAvvenimentoSample,
     });
   } catch (e) {
     return NextResponse.json({
