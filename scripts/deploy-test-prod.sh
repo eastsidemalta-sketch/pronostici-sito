@@ -33,7 +33,12 @@ npm run build
 cp -r public .next/standalone/ 2>/dev/null || true
 cp -r .next/static .next/standalone/.next/ 2>/dev/null || true
 cp -r data .next/standalone/ 2>/dev/null || true
-cp .env.local .next/standalone/ 2>/dev/null || cp .env .next/standalone/ 2>/dev/null || true
+# Env per standalone (API_FOOTBALL_KEY, ecc.): prima test, poi fallback da produzione
+if [ -f .env.local ]; then cp .env.local .next/standalone/; elif [ -f .env ]; then cp .env .next/standalone/; fi
+if [ ! -f .next/standalone/.env.local ] && [ ! -f .next/standalone/.env ]; then
+  [ -f /var/www/pronostici-sito/.env.local ] && cp /var/www/pronostici-sito/.env.local .next/standalone/ || true
+  [ -f /var/www/pronostici-sito/.env ] && cp /var/www/pronostici-sito/.env .next/standalone/ || true
+fi
 node scripts/apply-netwin-config.mjs 2>/dev/null || true
 pm2 delete pronostici-test 2>/dev/null; pm2 start ecosystem.config.cjs --only pronostici-test
 wait_for_app "pronostici-test" 3001 || true
