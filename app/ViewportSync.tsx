@@ -3,29 +3,36 @@
 import { useEffect } from "react";
 
 /**
- * Sincronizza l'altezza del visual viewport in una CSS variable.
- * Aiuta Chrome mobile a posizionare correttamente elementi fixed quando
- * la barra del browser si nasconde durante lo scroll.
+ * Sincronizza visual viewport (altezza e offset) in CSS variables.
+ * Su iOS Safari/Chrome la barra degli indirizzi rende il layout viewport
+ * più alto dell'area visibile; position:fixed bottom:0 si ancora al layout
+ * e la nav finisce sotto lo schermo. Usando --vvh e --vvo posizioniamo
+ * la bottom nav in base al visual viewport reale.
  */
 export default function ViewportSync() {
   useEffect(() => {
-    const setVvh = () => {
-      const h = window.visualViewport?.height ?? window.innerHeight;
+    const sync = () => {
+      const vv = window.visualViewport;
+      const h = vv?.height ?? window.innerHeight;
+      const offsetTop = vv?.offsetTop ?? 0;
       document.documentElement.style.setProperty("--vvh", `${Math.round(h)}px`);
+      document.documentElement.style.setProperty("--vvo", `${Math.round(offsetTop)}px`);
     };
-    setVvh();
+    sync();
     const vv = window.visualViewport;
     if (vv) {
-      vv.addEventListener("resize", setVvh);
-      vv.addEventListener("scroll", setVvh);
+      vv.addEventListener("resize", sync);
+      vv.addEventListener("scroll", sync);
     }
-    window.addEventListener("resize", setVvh);
+    window.addEventListener("resize", sync);
+    window.addEventListener("scroll", sync, { passive: true });
     return () => {
       if (vv) {
-        vv.removeEventListener("resize", setVvh);
-        vv.removeEventListener("scroll", setVvh);
+        vv.removeEventListener("resize", sync);
+        vv.removeEventListener("scroll", sync);
       }
-      window.removeEventListener("resize", setVvh);
+      window.removeEventListener("resize", sync);
+      window.removeEventListener("scroll", sync);
     };
   }, []);
   return null;

@@ -2,6 +2,9 @@
 
 /* Design tokens - Oddschecker (verde/blu) + SportyTrader (pulizia, dimensioni) */
 :root {
+  /* Fallback prima che ViewportSync imposti i valori reali */
+  --vvh: 100vh;
+  --vvo: 0px;
   --background: #f5f5f5;
   --foreground: #000000;
   --foreground-muted: #1a1a1a;
@@ -42,15 +45,16 @@
   }
 }
 
-/* Fix viewport su Chrome mobile: layout si adatta quando la barra del browser si nasconde */
+/* Fix viewport mobile: 100dvh si adatta alla barra del browser (iOS Safari/Chrome) */
 html {
+  min-height: 100vh;
   min-height: 100dvh;
 }
 
-/* Fix iOS Safari bottom nav flicker durante scroll */
+/* iOS: -webkit-fill-available = area visibile reale (esclude barra indirizzi) */
 @supports (-webkit-touch-callout: none) {
+  html,
   body {
-    /* Usa dvh su iOS per calcolare l'altezza corretta escludendo la barra del browser */
     min-height: -webkit-fill-available;
   }
 }

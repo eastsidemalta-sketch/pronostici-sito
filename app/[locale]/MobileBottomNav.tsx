@@ -136,8 +136,10 @@ export default function MobileBottomNav() {
     <nav
       className="fixed inset-x-0 z-50 flex min-h-[56px] items-center justify-around border-t border-[var(--card-border)] bg-[var(--nav-bar-bg)] pb-[max(env(safe-area-inset-bottom),10px)] pt-2 md:hidden"
       style={{
-        /* Sempre in basso rispetto al visual viewport (fix Chrome iOS quando la barra si nasconde) */
-        top: "calc(var(--vvh, 100vh) - 6.5rem)",
+        /* Su iOS: posizionamento basato su visual viewport (--vvh, --vvo) invece di bottom:0,
+           così la nav resta sempre in fondo allo schermo visibile anche con barra Chrome. */
+        top: "calc(var(--vvo) + var(--vvh) - 6rem)",
+        bottom: "auto",
         transform: "translateZ(0)",
         WebkitTransform: "translateZ(0)",
         WebkitBackfaceVisibility: "hidden",
