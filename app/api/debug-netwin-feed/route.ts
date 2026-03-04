@@ -66,17 +66,22 @@ export async function GET() {
       if (Array.isArray(obj) && obj.length > 0) return obj;
       if (obj && typeof obj === "object") {
         const o = obj as Record<string, unknown>;
-        for (const k of ["eventi", "evento", "events", "data", "risultati", "partite"]) {
+        for (const k of ["eventi", "evento", "events", "data", "risultati", "partite", "Exalogic"]) {
           const v = o[k];
           if (Array.isArray(v)) return v;
-          if (v && typeof v === "object") {
+          if (v && typeof v === "object" && !Array.isArray(v)) {
             const inner = findEventsInObj(v);
             if (inner) return inner;
           }
         }
         for (const k of Object.keys(o)) {
+          if (k === "?xml") continue;
           const v = o[k];
           if (Array.isArray(v) && v.length > 0) return v;
+          if (v && typeof v === "object" && !Array.isArray(v)) {
+            const inner = findEventsInObj(v);
+            if (inner) return inner;
+          }
         }
       }
       return null;
