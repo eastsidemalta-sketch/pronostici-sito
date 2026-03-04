@@ -235,7 +235,7 @@ export async function GET(req: Request) {
       } catch {
         directQuotes = ["(errore fetch)"];
       }
-      let italiaSerieA: { avvCount: number; sampleNested?: unknown } | undefined;
+      let italiaSerieA: { avvCount: number; firstAvvKeys?: string[]; nestedCount?: number; sampleNested?: unknown } | undefined;
       for (const ev of eventsArray) {
         if (!ev || typeof ev !== "object") continue;
         const mans = toArray((ev as Record<string, unknown>).Manifestazione);
