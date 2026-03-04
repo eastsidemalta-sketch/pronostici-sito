@@ -96,6 +96,10 @@ export type Bookmaker = {
     odds1?: string;
     oddsX?: string;
     odds2?: string;
+    /** Quote personalizzate (preferite se presenti e > 0) - es. nei campionati principali */
+    odds1Personalized?: string;
+    oddsXPersonalized?: string;
+    odds2Personalized?: string;
     /** Path per iterare sugli eventi (es. "$.events" o "data") */
     eventsPath?: string;
   } | null;

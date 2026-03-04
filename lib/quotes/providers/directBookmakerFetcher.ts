@@ -84,6 +84,9 @@ export async function fetchDirectBookmakerQuotes(
   const odds1Path = mapping.odds1 ?? "odds1";
   const oddsXPath = mapping.oddsX ?? "oddsX";
   const odds2Path = mapping.odds2 ?? "odds2";
+  const odds1Personalized = mapping.odds1Personalized;
+  const oddsXPersonalized = mapping.oddsXPersonalized;
+  const odds2Personalized = mapping.odds2Personalized;
 
   const authType = bm.apiAuthType ?? "query";
   const reqConfig = bm.apiRequestConfig ?? {};
@@ -141,9 +144,15 @@ export async function fetchDirectBookmakerQuotes(
 
     const homeTeam = getString(ev, homeTeamPath);
     const awayTeam = getString(ev, awayTeamPath);
-    const odds1 = getNumber(ev, odds1Path);
-    const oddsX = getNumber(ev, oddsXPath);
-    const odds2 = getNumber(ev, odds2Path);
+    const odds1Std = getNumber(ev, odds1Path);
+    const oddsXStd = getNumber(ev, oddsXPath);
+    const odds2Std = getNumber(ev, odds2Path);
+    const odds1Pers = odds1Personalized ? getNumber(ev, odds1Personalized) : 0;
+    const oddsXPers = oddsXPersonalized ? getNumber(ev, oddsXPersonalized) : 0;
+    const odds2Pers = odds2Personalized ? getNumber(ev, odds2Personalized) : 0;
+    const odds1 = odds1Pers > 0 ? odds1Pers : odds1Std;
+    const oddsX = oddsXPers > 0 ? oddsXPers : oddsXStd;
+    const odds2 = odds2Pers > 0 ? odds2Pers : odds2Std;
 
     if (!homeTeam || !awayTeam) continue;
     if (odds1 <= 0 && oddsX <= 0 && odds2 <= 0) continue;
