@@ -13,7 +13,8 @@ export const viewport = {
   maximumScale: 5,
   minimumScale: 1,
   viewportFit: "cover",
-  interactiveWidget: "resizes-content" as const,
+  /* resizes-visual = default: su iOS Safari/Chrome interactive-widget non è supportato, evitiamo valori che potrebbero dare comportamenti strani */
+  interactiveWidget: "resizes-visual" as const,
 };
 
 export const metadata: Metadata = {
@@ -63,6 +64,9 @@ export default async function RootLayout({
   return (
     <html lang={locale}>
       <body className="bg-[var(--background)] text-[var(--foreground)]">
+        <Script id="viewport-init" strategy="beforeInteractive">
+          {`(function(){var h=window.visualViewport?.height??window.innerHeight;document.documentElement.style.setProperty('--vvh',Math.round(h)+'px');})();`}
+        </Script>
         <ViewportSync />
         <NextIntlClientProvider messages={messages}>
           {children}

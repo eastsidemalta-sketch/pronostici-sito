@@ -133,19 +133,23 @@ export default function MobileBottomNav() {
   const isSiti = pathname.includes("siti-scommesse");
 
   const navContent = (
-    <nav
-      className="fixed inset-x-0 z-50 flex min-h-[56px] items-center justify-around border-t border-[var(--card-border)] bg-[var(--nav-bar-bg)] pb-[max(env(safe-area-inset-bottom),10px)] pt-2 md:hidden"
+    <div
+      className="fixed inset-x-0 top-0 z-50 flex flex-col justify-end md:hidden"
       style={{
-        /* Su iOS: posizionamento basato su visual viewport (--vvh, --vvo) invece di bottom:0,
-           così la nav resta sempre in fondo allo schermo visibile anche con barra Chrome. */
-        top: "calc(var(--vvo) + var(--vvh) - 6rem)",
-        bottom: "auto",
-        transform: "translateZ(0)",
-        WebkitTransform: "translateZ(0)",
-        WebkitBackfaceVisibility: "hidden",
-        unicodeBidi: "isolate",
+        height: "calc(var(--vvh, 100vh) + env(safe-area-inset-bottom))",
+        minHeight: "100vh",
+        pointerEvents: "none",
       }}
     >
+      <nav
+        className="flex min-h-[56px] items-center justify-around border-t border-[var(--card-border)] bg-[var(--nav-bar-bg)] pb-[max(env(safe-area-inset-bottom),10px)] pt-2"
+        style={{
+          pointerEvents: "auto",
+          transform: "translateZ(0)",
+          WebkitTransform: "translateZ(0)",
+          WebkitBackfaceVisibility: "hidden",
+        }}
+      >
       <Link
         href="/"
         className="flex min-w-0 flex-1 flex-col items-center gap-0.5 px-0.5 py-2 active:opacity-70"
@@ -194,7 +198,8 @@ export default function MobileBottomNav() {
           {t("sitiScommesse")}
         </span>
       </Link>
-    </nav>
+      </nav>
+    </div>
   );
 
   const [mounted, setMounted] = useState(false);
