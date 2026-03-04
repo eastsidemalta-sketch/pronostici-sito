@@ -9,8 +9,7 @@ module.exports = {
       name: "pronostici-test",
       cwd: "/var/www/pronostici-sito-test",
       script: "npm",
-      args: "start",
-      env: { PORT: 3001 },
+      args: "run start:test",
     },
     {
       name: "pronostici",

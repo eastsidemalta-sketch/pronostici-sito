@@ -6,6 +6,7 @@
     "dev": "next dev --hostname 127.0.0.1",
     "build": "next build --webpack",
     "start": "next start",
+    "start:test": "next start -p 3001",
     "lint": "eslint",
     "seed-legal": "node scripts/seed-legal-admin.mjs",
     "live-poller": "tsx scripts/live-poller.ts",
