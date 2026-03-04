@@ -33,6 +33,7 @@ npm run build
 cp -r public .next/standalone/ 2>/dev/null || true
 cp -r .next/static .next/standalone/.next/ 2>/dev/null || true
 cp -r data .next/standalone/ 2>/dev/null || true
+cp .env.local .next/standalone/ 2>/dev/null || cp .env .next/standalone/ 2>/dev/null || true
 node scripts/apply-netwin-config.mjs 2>/dev/null || true
 pm2 delete pronostici-test 2>/dev/null; pm2 start ecosystem.config.cjs --only pronostici-test
 wait_for_app "pronostici-test" 3001 || true
