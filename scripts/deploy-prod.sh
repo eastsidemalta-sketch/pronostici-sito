@@ -1,7 +1,6 @@
 #!/bin/bash
-# Deploy SOLO sito TEST. Produzione non viene toccata.
-# Eseguire sul droplet: bash scripts/deploy-test-prod.sh
-# Per produzione (quando tutto è verificato): bash scripts/deploy-prod.sh
+# Deploy PRODUZIONE. Eseguire solo dopo aver verificato che tutto funziona su test.
+# Sul droplet: bash scripts/deploy-prod.sh
 
 set -e
 
@@ -24,16 +23,15 @@ wait_for_app() {
   return 1
 }
 
-echo "=== Deploy TEST (produzione non toccata) ==="
-cd /var/www/pronostici-sito-test
+echo "=== Deploy PRODUZIONE ==="
+cd /var/www/pronostici-sito
 git pull origin main
 mkdir -p public/uploads
 npm ci
 npm run build
 node scripts/apply-netwin-config.mjs 2>/dev/null || true
-pm2 restart pronostici-test 2>/dev/null || (cd /var/www/pronostici-sito-test && pm2 start npm --name pronostici-test -- start)
-wait_for_app "pronostici-test" 3001 || true
+pm2 restart pronostici || pm2 start npm --name pronostici -- start
+wait_for_app "pronostici" 3000 || true
 echo ""
-echo "=== Deploy TEST completato ==="
-echo "Verifica il sito test. Quando tutto ok: bash scripts/deploy-prod.sh"
+echo "=== Deploy produzione completato ==="
 echo "Se vedi 502: bash scripts/debug-502.sh"
