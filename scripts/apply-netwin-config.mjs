@@ -28,10 +28,6 @@ function main() {
     console.error("data/bookmakers.json non trovato. Crea prima Netwin_IT dall'admin.");
     process.exit(1);
   }
-  if (!existsSync(DATA_PATH)) {
-    console.error("data/bookmakers.json non trovato. Crea prima Netwin_IT dall'admin.");
-    process.exit(1);
-  }
 
   const raw = readFileSync(BOOKMAKERS_PATH, "utf-8");
   const bookmakers = JSON.parse(raw);
