@@ -61,7 +61,7 @@ export async function POST(req: Request) {
   }
 
   try {
-    const body = (await req.json()) as Partial<Bookmaker>;
+    const body = (await req.json()) as Partial<Bookmaker> & { pauseOddsApi?: boolean };
     const country = (body.country || "IT").toUpperCase().slice(0, 2) || "IT";
     const name = (body.name || "Nuovo sito").trim() || "Nuovo sito";
     const countries = Array.isArray(body.countries) && body.countries.length > 0
