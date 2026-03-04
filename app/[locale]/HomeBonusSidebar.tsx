@@ -1,6 +1,7 @@
 import { getBookmakers, getBookmakerDisplayName } from "@/lib/quotes/bookmakers";
 import { getBookmakerUrlByUseCase } from "@/lib/quotes/bookmakerUrls";
 import { BookmakerLink } from "@/lib/components/BookmakerLink";
+import { BookmakerLogo } from "@/lib/components/BookmakerLogo";
 import { RichText } from "@/lib/components/RichText";
 
 interface HomeBonusSidebarProps {
@@ -38,29 +39,33 @@ export default async function HomeBonusSidebar({ country, locale }: HomeBonusSid
         </h3>
         <div className="space-y-3">
           {withBonus.map((bm) => (
-            <BookmakerLink
+            <div
               key={bm.id}
-              href={bm.bonusUrl || "#"}
-              target="_blank"
-              rel="noopener noreferrer"
-              bookmakerName={getBookmakerDisplayName(bm)}
-              locale={locale}
-              logoUrl={bm.logoUrl}
-              className="flex min-h-[52px] items-center gap-2 rounded-lg border border-[var(--card-border)] bg-[var(--card-bg)] p-2.5 shadow-sm transition hover:border-[var(--accent)]/40 hover:shadow-md sm:min-h-[56px] lg:p-3"
+              className="flex flex-col gap-3 rounded-lg border border-[var(--card-border)] bg-[var(--card-bg)] p-2.5 shadow-sm transition hover:border-[var(--accent)]/40 hover:shadow-md lg:p-3"
             >
-              {bm.logoUrl && (
-                <img src={bm.logoUrl} alt="" className="h-12 w-12 shrink-0 object-contain lg:h-14 lg:w-14" />
-              )}
-              <div className="min-w-0 flex-1">
-                <div className="text-xs font-semibold text-[var(--foreground)] lg:text-sm">{getBookmakerDisplayName(bm)}</div>
-                <div className="mt-0.5 truncate text-[11px] text-[var(--foreground-muted)] lg:text-xs">
-                  <RichText as="span" text={bm.bonusDescription as string} singleLine />
+              <div className="flex flex-row gap-2">
+                {(bm.faviconUrl || bm.logoUrl) && (
+                  <BookmakerLogo src={bm.faviconUrl || bm.logoUrl!} size="sm" title={getBookmakerDisplayName(bm)} className="shrink-0" />
+                )}
+                <div className="min-w-0 flex-1 overflow-hidden">
+                  <div className="text-xs font-semibold text-[var(--foreground)] lg:text-sm">{getBookmakerDisplayName(bm)}</div>
+                  <div className="mt-0.5 text-[11px] leading-snug text-[var(--foreground-muted)] lg:text-xs">
+                    <RichText as="span" text={bm.bonusDescription as string} />
+                  </div>
                 </div>
               </div>
-              <span className="shrink-0 text-[11px] font-semibold text-[var(--accent)] lg:text-xs">
-                Ottieni →
-              </span>
-            </BookmakerLink>
+              <BookmakerLink
+                href={bm.bonusUrl || "#"}
+                target="_blank"
+                rel="noopener noreferrer"
+                bookmakerName={getBookmakerDisplayName(bm)}
+                locale={locale}
+                logoUrl={bm.logoUrl}
+                className="inline-flex w-full items-center justify-center rounded-lg bg-[var(--accent)] px-3 py-2 text-xs font-semibold text-white transition hover:bg-[var(--accent-hover)] lg:text-sm"
+              >
+                Ottieni bonus
+              </BookmakerLink>
+            </div>
           ))}
         </div>
       </div>

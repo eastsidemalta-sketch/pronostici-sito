@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { getTranslations } from "next-intl/server";
 import { getBookmakers, getBookmakerDisplayName } from "@/lib/quotes/bookmakers";
 import { BookmakerLink } from "@/lib/components/BookmakerLink";
+import { BookmakerLogo } from "@/lib/components/BookmakerLogo";
 import {
   getBookmakerUrl,
   getBookmakerUrlByUseCase,
@@ -79,26 +80,25 @@ export default async function SitiScommessePage({
               key={bm.id}
               className="rounded-lg border border-[var(--card-border)] bg-[var(--card-bg)] p-4 shadow-sm transition hover:shadow-md md:p-5"
             >
-              <div className="flex items-center gap-4">
-                {bm.logoUrl && (
-                    <img src={bm.logoUrl} alt="" className="h-14 w-14 object-contain md:h-16 md:w-16" />
+              <div className="mt-3 flex flex-row gap-3">
+                {(bm.faviconUrl || bm.logoUrl) && (
+                  <BookmakerLogo src={bm.faviconUrl || bm.logoUrl!} size="sm" title={getBookmakerDisplayName(bm)} className="shrink-0" />
                 )}
-                <h2 className="text-base font-bold text-[var(--foreground)] md:text-lg">{getBookmakerDisplayName(bm)}</h2>
-              </div>
-
-              <div className="mt-3">
-                <h3 className="text-xs font-semibold text-[var(--foreground)] md:text-sm">Bonus</h3>
-                {bonusDescription ? (
-                  <RichText
-                    as="p"
-                    text={bonusDescription}
-                    className="mt-1 text-sm leading-relaxed text-[var(--foreground-muted)] md:text-base"
-                  />
-                ) : (
-                  <p className="mt-1 text-sm leading-relaxed text-[var(--foreground-muted)] md:text-base">
-                    —
-                  </p>
-                )}
+                <div className="min-w-0 flex-1">
+                  <div className="text-base font-bold text-[var(--foreground)] md:text-lg">{getBookmakerDisplayName(bm)}</div>
+                  <h3 className="mt-1 text-xs font-semibold text-[var(--foreground)] md:text-sm">Bonus</h3>
+                  {bonusDescription ? (
+                    <RichText
+                      as="p"
+                      text={bonusDescription}
+                      className="mt-1 text-sm leading-relaxed text-[var(--foreground-muted)] md:text-base"
+                    />
+                  ) : (
+                    <p className="mt-1 text-sm leading-relaxed text-[var(--foreground-muted)] md:text-base">
+                      —
+                    </p>
+                  )}
+                </div>
               </div>
 
               <div className="mt-3 flex flex-wrap gap-2">
