@@ -70,6 +70,8 @@ export default function AdminSitesPage() {
     apiKey: "",
     apiAuthType: "query" as "query" | "header" | "bearer",
     pauseOddsApi: false,
+    /** Se impostato, carica API e dati dalla scheda cliente (es. IT-002 per Netwin) */
+    profileSiteId: "" as string,
   });
 
   const bookmakersForCountry = bookmakersByCountry[selectedCountry] || [];
@@ -183,6 +185,7 @@ export default function AdminSitesPage() {
           apiKey: createForm.apiKey || undefined,
           apiAuthType: createForm.apiAuthType,
           pauseOddsApi: createForm.pauseOddsApi,
+          profileSiteId: createForm.profileSiteId || undefined,
         }),
       });
       const data = await res.json();
@@ -204,6 +207,7 @@ export default function AdminSitesPage() {
         apiKey: "",
         apiAuthType: "query",
         pauseOddsApi: false,
+        profileSiteId: "",
       });
       router.push(`/ad2min3k/bookmakers/${data.bookmaker.id}`);
       router.refresh();
@@ -232,6 +236,7 @@ export default function AdminSitesPage() {
       countries: ["IT"],
       apiProvider: "direct",
       pauseOddsApi: true,
+      profileSiteId: "IT-002",
     }));
   }
 

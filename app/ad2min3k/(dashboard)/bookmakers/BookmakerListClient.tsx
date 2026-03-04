@@ -13,6 +13,7 @@ type Bookmaker = {
   name: string;
   displayName?: string | null;
   logoUrl: string;
+  faviconUrl?: string | null;
   countries?: string[];
   country: string;
   affiliateUrl: string;
@@ -75,6 +76,13 @@ export default function BookmakerListClient({
             )}
             <div className="min-w-0 flex-1">
               <div className="flex flex-wrap items-center gap-2">
+                {(bm.faviconUrl || bm.logoUrl) && (
+                  <img
+                    src={bm.faviconUrl || bm.logoUrl}
+                    alt=""
+                    className="h-6 w-6 shrink-0 rounded object-contain"
+                  />
+                )}
                 <h3 className={`font-semibold ${!bm.isActive ? "text-neutral-500" : ""}`}>
                   {getDisplayName(bm)}
                 </h3>

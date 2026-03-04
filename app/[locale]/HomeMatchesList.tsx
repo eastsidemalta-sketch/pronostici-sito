@@ -16,8 +16,6 @@ import TelegramBanner from "./TelegramBanner";
 import type { FixtureQuoteSummary } from "@/lib/quotes/fixturesQuotes";
 import type { FixturePredictions } from "@/app/pronostici-quote/lib/apiFootball";
 
-type DesignPreviewFavicon = { url: string; name: string };
-
 interface HomeMatchesListProps {
   fixtures: any[];
   locale: string;
@@ -32,12 +30,6 @@ interface HomeMatchesListProps {
   quotesMap?: Record<number, FixtureQuoteSummary>;
   /** Pronostici da API-Football (percentuali 1X2) - usati al posto del calcolo da quote */
   predictionsMap?: Record<number, FixturePredictions>;
-  /** Un favicon per colonna (1, X, 2) per anteprima design */
-  designPreviewFavicons?: {
-    favicon1?: DesignPreviewFavicon;
-    faviconX?: DesignPreviewFavicon;
-    favicon2?: DesignPreviewFavicon;
-  };
   /** Bookmaker in evidenza: bottone bonus dentro ogni box partita */
   featuredBookmaker?: {
     bonusUrl: string;
@@ -73,7 +65,6 @@ export default function HomeMatchesList({
   predictionsTabLabel = "Pronostici",
   quotesMap = {},
   predictionsMap = {},
-  designPreviewFavicons,
   featuredBookmaker,
   telegramBanner,
 }: HomeMatchesListProps) {
@@ -96,7 +87,6 @@ export default function HomeMatchesList({
     }
   };
 
-  const hasDesignPreview = designPreviewFavicons && (designPreviewFavicons.favicon1 || designPreviewFavicons.faviconX || designPreviewFavicons.favicon2);
   const intlLocale = localeToIntl[locale] ?? "it-IT";
 
   const byDate = new Map<string, any[]>();
@@ -118,7 +108,7 @@ export default function HomeMatchesList({
   return (
     <div className="space-y-4 sm:space-y-5 md:space-y-6">
       {/* Tab mobile: Quote / Pronostici - dimensioni ridotte per evitare overlap con sotto-menu */}
-      {hasDesignPreview || Object.keys(quotesMap).length > 0 ? (
+      {Object.keys(quotesMap).length > 0 ? (
       <div className="mt-1.5 flex gap-1.5 sm:hidden">
         <button
           type="button"
@@ -180,17 +170,17 @@ export default function HomeMatchesList({
                 );
                 const q = quotesMap[match.fixture.id];
                 const pred = predictionsMap[match.fixture.id];
-                const best1 = q?.best1 || (hasDesignPreview ? 2.1 : 0);
-                const bestX = q?.bestX || (hasDesignPreview ? 3.4 : 0);
-                const best2 = q?.best2 || (hasDesignPreview ? 3.2 : 0);
+                const best1 = q?.best1 || 0;
+                const bestX = q?.bestX || 0;
+                const best2 = q?.best2 || 0;
                 const totalImplied = best1 > 0 && bestX > 0 && best2 > 0
                   ? 100 / best1 + 100 / bestX + 100 / best2
                   : 0;
                 const fromQuote = totalImplied > 0;
                 const fromAllOdds = q?.oddsBasedPct1 != null || q?.oddsBasedPctX != null || q?.oddsBasedPct2 != null;
-                const pct1 = fromAllOdds ? (q?.oddsBasedPct1 ?? null) : (pred?.home != null ? pred.home : (fromQuote ? Math.round((100 / best1) / totalImplied * 100) : (hasDesignPreview ? 38 : null)));
-                const pctX = fromAllOdds ? (q?.oddsBasedPctX ?? null) : (pred?.draw != null ? pred.draw : (fromQuote ? Math.round((100 / bestX) / totalImplied * 100) : (hasDesignPreview ? 25 : null)));
-                const pct2 = fromAllOdds ? (q?.oddsBasedPct2 ?? null) : (pred?.away != null ? pred.away : (fromQuote ? Math.round((100 / best2) / totalImplied * 100) : (hasDesignPreview ? 37 : null)));
+                const pct1 = fromAllOdds ? (q?.oddsBasedPct1 ?? null) : (pred?.home != null ? pred.home : (fromQuote ? Math.round((100 / best1) / totalImplied * 100) : null));
+                const pctX = fromAllOdds ? (q?.oddsBasedPctX ?? null) : (pred?.draw != null ? pred.draw : (fromQuote ? Math.round((100 / bestX) / totalImplied * 100) : null));
+                const pct2 = fromAllOdds ? (q?.oddsBasedPct2 ?? null) : (pred?.away != null ? pred.away : (fromQuote ? Math.round((100 / best2) / totalImplied * 100) : null));
                 const maxPct = Math.max(pct1 ?? 0, pctX ?? 0, pct2 ?? 0);
                 const isMax1 = pct1 != null && pct1 === maxPct;
                 const isMaxX = pctX != null && pctX === maxPct;
@@ -304,7 +294,7 @@ export default function HomeMatchesList({
 
                       {/* Quote 1X2 + Pronostici */}
                       <div className="flex shrink-0 flex-col items-stretch gap-2 border-t-2 border-[var(--card-border)] pt-3 sm:gap-1.5 sm:pt-2 lg:border-t-0 lg:border-l-2 lg:gap-1.5 lg:pl-4 lg:pt-0">
-                        {(hasDesignPreview || (q && (q.best1 > 0 || q.bestX > 0 || q.best2 > 0))) ? (
+                        {(q && (q.best1 > 0 || q.bestX > 0 || q.best2 > 0)) ? (
                           <div className="flex w-full flex-col gap-3 sm:flex-row sm:items-stretch sm:gap-x-4 sm:justify-end">
                             <div className={`flex flex-col items-center gap-2 ${mobileTab === "pronostici" ? "hidden sm:flex" : ""}`}>
                               <div className="flex items-center justify-center gap-2 sm:gap-2">
@@ -312,15 +302,13 @@ export default function HomeMatchesList({
                                   <span className="mb-1 text-[10px] font-medium text-[var(--foreground-muted)] sm:text-[10px]">1</span>
                                   <div className="flex min-h-[40px] min-w-[4.5rem] overflow-hidden rounded-lg border border-[var(--card-border)] sm:min-h-0 sm:min-w-0 md:min-w-[5rem]">
                                     <div className="flex shrink-0 items-center justify-center border-r border-gray-200 bg-white px-2 py-2 sm:px-1.5 sm:py-1.5">
-                                      {designPreviewFavicons?.favicon1 ? (
-                                        <Image src={designPreviewFavicons.favicon1.url} alt="" width={28} height={28} className="h-6 w-6 shrink-0 object-contain md:h-7 md:w-7" title={designPreviewFavicons.favicon1.name} />
-                                      ) : (q.bookmaker1?.faviconUrl || q.bookmaker1?.logoUrl) ? (
+                                      {(q.bookmaker1?.faviconUrl || q.bookmaker1?.logoUrl) ? (
                                         <Image src={q.bookmaker1.faviconUrl || q.bookmaker1.logoUrl!} alt="" width={28} height={28} className="h-6 w-6 shrink-0 object-contain md:h-7 md:w-7" title={q.bookmaker1.name} />
                                       ) : null}
                                     </div>
                                     <div className="flex flex-1 items-center justify-center bg-slate-100 px-1.5 py-1.5 sm:px-1 sm:py-1">
                                       <span className="text-[10px] font-bold text-[var(--best-odds)] md:text-xs">
-                                        {q?.best1 ? q.best1.toFixed(2) : hasDesignPreview ? "2.10" : "-"}
+                                        {q?.best1 ? q.best1.toFixed(2) : "-"}
                                       </span>
                                     </div>
                                   </div>
@@ -329,15 +317,13 @@ export default function HomeMatchesList({
                                   <span className="mb-1 text-[10px] font-medium text-[var(--foreground-muted)] sm:text-[10px]">X</span>
                                   <div className="flex min-h-[40px] min-w-[4.5rem] overflow-hidden rounded-lg border border-[var(--card-border)] sm:min-h-0 sm:min-w-0 md:min-w-[5rem]">
                                     <div className="flex shrink-0 items-center justify-center border-r border-gray-200 bg-white px-2 py-2 sm:px-1.5 sm:py-1.5">
-                                      {designPreviewFavicons?.faviconX ? (
-                                        <Image src={designPreviewFavicons.faviconX.url} alt="" width={28} height={28} className="h-6 w-6 shrink-0 object-contain md:h-7 md:w-7" title={designPreviewFavicons.faviconX.name} />
-                                      ) : (q.bookmakerX?.faviconUrl || q.bookmakerX?.logoUrl) ? (
+                                      {(q.bookmakerX?.faviconUrl || q.bookmakerX?.logoUrl) ? (
                                         <Image src={q.bookmakerX.faviconUrl || q.bookmakerX.logoUrl!} alt="" width={28} height={28} className="h-6 w-6 shrink-0 object-contain md:h-7 md:w-7" title={q.bookmakerX.name} />
                                       ) : null}
                                     </div>
                                     <div className="flex flex-1 items-center justify-center bg-slate-100 px-1.5 py-1.5 sm:px-1 sm:py-1">
                                       <span className="text-[10px] font-bold text-[var(--best-odds)] md:text-xs">
-                                        {q?.bestX ? q.bestX.toFixed(2) : hasDesignPreview ? "3.40" : "-"}
+                                        {q?.bestX ? q.bestX.toFixed(2) : "-"}
                                       </span>
                                     </div>
                                   </div>
@@ -346,15 +332,13 @@ export default function HomeMatchesList({
                                   <span className="mb-1 text-[10px] font-medium text-[var(--foreground-muted)] sm:text-[10px]">2</span>
                                   <div className="flex min-h-[40px] min-w-[4.5rem] overflow-hidden rounded-lg border border-[var(--card-border)] sm:min-h-0 sm:min-w-0 md:min-w-[5rem]">
                                     <div className="flex shrink-0 items-center justify-center border-r border-gray-200 bg-white px-2 py-2 sm:px-1.5 sm:py-1.5">
-                                      {designPreviewFavicons?.favicon2 ? (
-                                        <Image src={designPreviewFavicons.favicon2.url} alt="" width={28} height={28} className="h-6 w-6 shrink-0 object-contain md:h-7 md:w-7" title={designPreviewFavicons.favicon2.name} />
-                                      ) : (q.bookmaker2?.faviconUrl || q.bookmaker2?.logoUrl) ? (
+                                      {(q.bookmaker2?.faviconUrl || q.bookmaker2?.logoUrl) ? (
                                         <Image src={q.bookmaker2.faviconUrl || q.bookmaker2.logoUrl!} alt="" width={28} height={28} className="h-6 w-6 shrink-0 object-contain md:h-7 md:w-7" title={q.bookmaker2.name} />
                                       ) : null}
                                     </div>
                                     <div className="flex flex-1 items-center justify-center bg-slate-100 px-1.5 py-1.5 sm:px-1 sm:py-1">
                                       <span className="text-[10px] font-bold text-[var(--best-odds)] md:text-xs">
-                                        {q?.best2 ? q.best2.toFixed(2) : hasDesignPreview ? "3.20" : "-"}
+                                        {q?.best2 ? q.best2.toFixed(2) : "-"}
                                       </span>
                                     </div>
                                   </div>

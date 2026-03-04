@@ -143,11 +143,6 @@ export default function CalcioContent({
                 predictionsTabLabel={labels.predictionsTab}
                 quotesMap={quotesMap}
                 predictionsMap={predictionsMap}
-                designPreviewFavicons={{
-                  favicon1: { url: "/logos/unibet.webp", name: "Unibet" },
-                  faviconX: { url: "/logos/parions.webp", name: "Parions Sport" },
-                  favicon2: { url: "/logos/circular.svg", name: "Bet" },
-                }}
                 featuredBookmaker={featuredBookmaker}
                 telegramBanner={telegramBanner}
               />

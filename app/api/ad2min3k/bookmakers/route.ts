@@ -6,6 +6,10 @@ import {
   generateSiteId,
 } from "@/lib/quotes/bookmakersData";
 import type { Bookmaker } from "@/lib/quotes/bookmaker.types";
+import { readFileSync, existsSync } from "fs";
+import path from "path";
+
+const PROFILES_PATH = path.join(process.cwd(), "data", "clientProfiles.json");
 
 export async function GET() {
   const isAuth = await getSession();
@@ -61,15 +65,54 @@ export async function POST(req: Request) {
   }
 
   try {
-    const body = (await req.json()) as Partial<Bookmaker> & { pauseOddsApi?: boolean };
+    const body = (await req.json()) as Partial<Bookmaker> & { pauseOddsApi?: boolean; profileSiteId?: string };
     const country = (body.country || "IT").toUpperCase().slice(0, 2) || "IT";
-    const name = (body.name || "Nuovo sito").trim() || "Nuovo sito";
-    const countries = Array.isArray(body.countries) && body.countries.length > 0
+    let name = (body.name || "Nuovo sito").trim() || "Nuovo sito";
+    let countries = Array.isArray(body.countries) && body.countries.length > 0
       ? body.countries
       : [country];
+    let logoUrl = body.logoUrl || "";
+    let affiliateUrl = body.affiliateUrl || "";
+    let apiProvider = body.apiProvider || "the_odds_api";
+    let apiKey = body.apiKey || "";
+    let apiDocumentationUrl = body.apiDocumentationUrl || null;
+    let apiEndpoint = body.apiEndpoint || null;
+    let apiAuthType = body.apiAuthType || undefined;
+    let apiSecret = body.apiSecret ?? null;
+    let apiMappingConfig = body.apiMappingConfig ?? null;
+    let apiRequestConfig = body.apiRequestConfig ?? undefined;
+
+    // Se profileSiteId è fornito, carica la scheda cliente e merge la config API
+    const profileSiteId = body.profileSiteId;
+    if (profileSiteId && existsSync(PROFILES_PATH)) {
+      try {
+        const raw = readFileSync(PROFILES_PATH, "utf-8");
+        const profiles = JSON.parse(raw) as Record<string, { api?: { enabled?: boolean; endpoint?: string; documentationUrl?: string; params?: Record<string, string>; mapping?: Record<string, string> }; name?: string; affiliateUrl?: string; logoPath?: string; faviconPath?: string }>;
+        const profile = profiles[profileSiteId];
+        if (profile) {
+          if (profile.name) name = profile.name;
+          if (profile.affiliateUrl) affiliateUrl = profile.affiliateUrl;
+          if (profile.logoPath) logoUrl = profile.logoPath;
+          if (profile.api?.enabled) {
+            apiProvider = "direct";
+            apiEndpoint = profile.api.endpoint || apiEndpoint;
+            apiDocumentationUrl = profile.api.documentationUrl || apiDocumentationUrl;
+            apiKey = profile.api.params?.system_code || apiKey;
+            apiAuthType = "header";
+            apiMappingConfig = profile.api.mapping || apiMappingConfig;
+            apiRequestConfig = {
+              method: (profile.api as { method?: string }).method || "GET",
+              queryParams: { ...profile.api.params },
+            };
+          }
+        }
+      } catch {
+        // ignora errori lettura profilo
+      }
+    }
 
     const bookmakers = getBookmakers();
-    const siteId = generateSiteId(country, bookmakers);
+    const siteId = profileSiteId || generateSiteId(country, bookmakers);
 
     const slug = (name || "nuovo")
       .toLowerCase()
@@ -91,15 +134,18 @@ export async function POST(req: Request) {
       slug: id,
       country,
       countries,
-      logoUrl: body.logoUrl || "",
-      affiliateUrl: body.affiliateUrl || "",
+      logoUrl,
+      affiliateUrl,
       isActive: false,
-      apiProvider: body.apiProvider || "the_odds_api",
-      apiKey: body.apiKey || "",
+      apiProvider: apiProvider as "the_odds_api" | "direct",
+      apiKey,
       apiConfig: { markets: ["h2h"] },
-      apiDocumentationUrl: body.apiDocumentationUrl || null,
-      apiEndpoint: body.apiEndpoint || null,
-      apiAuthType: body.apiAuthType || undefined,
+      apiDocumentationUrl,
+      apiEndpoint,
+      apiAuthType,
+      apiSecret,
+      apiMappingConfig,
+      apiRequestConfig,
     };
 
     let updated = [...bookmakers, newBm];

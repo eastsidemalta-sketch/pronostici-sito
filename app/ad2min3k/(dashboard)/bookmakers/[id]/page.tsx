@@ -79,6 +79,7 @@ export default function AdminBookmakerEditPage() {
     mapping?: Record<string, string>;
     error?: string;
   } | null>(null);
+  const [loadingProfile, setLoadingProfile] = useState(false);
 
   useEffect(() => {
     fetch(`/api/ad2min3k/bookmakers`)
@@ -194,6 +195,8 @@ export default function AdminBookmakerEditPage() {
     );
   }
 
+  const displayName = (bm.displayName?.trim() || bm.name) || "";
+
   return (
     <main className="mx-auto max-w-3xl px-6 py-10">
       <div className="mb-6 flex items-center justify-between">
@@ -216,6 +219,35 @@ export default function AdminBookmakerEditPage() {
         >
           Report matching →
         </Link>
+      </div>
+
+      <div className="mb-8 flex items-center gap-4 rounded-xl border bg-white p-4">
+        {(bm.logoUrl || bm.faviconUrl) && (
+          <div className="flex shrink-0 items-center gap-3">
+            {bm.logoUrl && (
+              <img
+                src={bm.logoUrl}
+                alt=""
+                className="h-14 w-14 object-contain"
+              />
+            )}
+            {bm.faviconUrl && bm.faviconUrl !== bm.logoUrl && (
+              <img
+                src={bm.faviconUrl}
+                alt=""
+                className="h-8 w-8 rounded object-contain"
+              />
+            )}
+          </div>
+        )}
+        <div>
+          <h1 className="text-xl font-semibold text-neutral-900">{displayName}</h1>
+          {!bm.isActive && (
+            <span className="mt-1 inline-block rounded bg-amber-100 px-2 py-0.5 text-xs font-medium text-amber-800">
+              In pausa
+            </span>
+          )}
+        </div>
       </div>
 
       {error && (
@@ -520,7 +552,49 @@ export default function AdminBookmakerEditPage() {
         </div>
 
         <div className="rounded-xl border bg-white p-6">
-          <h3 className="mb-4 font-semibold">Fonte dati quote</h3>
+          <div className="mb-4 flex flex-wrap items-center justify-between gap-3">
+            <h3 className="font-semibold">Fonte dati quote</h3>
+            {bm.siteId && (
+              <button
+                type="button"
+                disabled={loadingProfile}
+                onClick={async () => {
+                  setLoadingProfile(true);
+                  setError("");
+                  try {
+                    const res = await fetch(`/api/ad2min3k/client-profiles?siteId=${encodeURIComponent(bm.siteId)}`);
+                    const data = await res.json();
+                    const profile = data.profile as { api?: { enabled?: boolean; endpoint?: string; documentationUrl?: string; params?: Record<string, string>; mapping?: Record<string, string>; method?: string }; logoPath?: string; faviconPath?: string } | null;
+                    if (profile && bm) {
+                      const updates: Partial<Bookmaker> = { ...bm };
+                      if (profile.api?.enabled) {
+                        updates.apiProvider = "direct";
+                        updates.apiEndpoint = profile.api.endpoint || bm.apiEndpoint;
+                        updates.apiDocumentationUrl = profile.api.documentationUrl || bm.apiDocumentationUrl;
+                        updates.apiKey = profile.api.params?.system_code || bm.apiKey;
+                        updates.apiAuthType = "header";
+                        updates.apiMappingConfig = profile.api.mapping || bm.apiMappingConfig;
+                        updates.apiRequestConfig = {
+                          method: profile.api.method || "GET",
+                          queryParams: { ...profile.api.params },
+                        };
+                      }
+                      if (profile.logoPath && !bm.logoUrl) updates.logoUrl = profile.logoPath;
+                      if (profile.faviconPath && !bm.faviconUrl) updates.faviconUrl = profile.faviconPath;
+                      setBm({ ...bm, ...updates });
+                    }
+                  } catch {
+                    setError("Errore nel caricamento della scheda cliente");
+                  } finally {
+                    setLoadingProfile(false);
+                  }
+                }}
+                className="rounded-lg border border-blue-600 bg-blue-50 px-3 py-1.5 text-sm font-medium text-blue-700 hover:bg-blue-100 disabled:opacity-50"
+              >
+                {loadingProfile ? "Caricamento…" : "Carica da scheda cliente"}
+              </button>
+            )}
+          </div>
           <div className="mb-4">
             <label className="block text-sm font-medium text-neutral-700 mb-2">Provider</label>
             <select

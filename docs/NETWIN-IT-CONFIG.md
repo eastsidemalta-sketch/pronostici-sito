@@ -16,6 +16,19 @@ pm2 restart pronostici
 
 Lo script legge da `data/clientProfiles.json` e applica a `data/bookmakers.json`.
 
+## Test integrazione API
+
+Per verificare che tutte le API quote funzionino (The Odds API + Direct/Netwin):
+
+```bash
+# Da browser o curl sul sito di test
+curl "https://tuo-sito-test/api/debug-all-apis"
+# Con lega specifica (es. 135 = Serie A)
+curl "https://tuo-sito-test/api/debug-all-apis?leagueId=135"
+```
+
+Risposta: `ok: true` se tutto ok. `report.direct` mostra per ogni API diretta: `quotesCount`, `sampleTeams`, eventuali errori.
+
 ## Modifica configurazione
 
 Modificare `data/clientProfiles.json` → chiave `IT-002`. Poi rieseguire lo script.
