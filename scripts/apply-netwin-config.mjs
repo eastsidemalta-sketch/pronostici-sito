@@ -46,6 +46,9 @@ function main() {
   const bm = bookmakers[idx];
   const id = bm.id;
 
+  // Attivo sul sito (non in pausa)
+  bm.isActive = true;
+
   // URL per tutti i link e bottoni (dalla scheda cliente)
   bm.affiliateUrl = profile.affiliateUrl;
   bm.quoteButtonUrl = profile.affiliateUrl;
