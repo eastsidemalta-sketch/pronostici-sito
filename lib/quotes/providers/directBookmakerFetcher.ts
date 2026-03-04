@@ -174,7 +174,7 @@ function processExalogicNode(
   const scommesse = toArray(node.Scommessa as unknown);
   const s1x2 = find1X2Scommessa(scommesse);
   if (!s1x2) {
-    for (const key of ["Partita", "Incontro", "Evento", "Avvenimento"]) {
+    for (const key of ["Partita", "Incontro", "Evento", "Avvenimento", "Palinsesto", "Giornata"]) {
       const children = toArray(node[key] as unknown);
       for (const c of children) {
         if (c && typeof c === "object") processExalogicNode(c as Record<string, unknown>, parentManifestazione ?? node as Record<string, unknown>, out);

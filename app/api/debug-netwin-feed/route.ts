@@ -54,7 +54,7 @@ function exploreFeed(obj: unknown, depth = 0): { manifestazioni: string[]; match
                 if (a && typeof a === "object") {
                   const pair = extractMatchFromNode(a as Record<string, unknown>);
                   if (pair) matchPairs.add(pair);
-                  for (const childKey of ["Partita", "Incontro", "Evento"]) {
+                  for (const childKey of ["Partita", "Incontro", "Evento", "Avvenimento", "Palinsesto", "Giornata"]) {
                     for (const c of toArray((a as Record<string, unknown>)[childKey])) {
                       if (c && typeof c === "object") {
                         const p = extractMatchFromNode(c as Record<string, unknown>);
@@ -220,7 +220,12 @@ export async function GET(req: Request) {
       firstAvvenimentoSample = JSON.stringify(firstAvv, null, 2).slice(0, 2000);
     }
 
-    let exploreResult: { manifestazioni: string[]; matchPairs: string[]; directQuotes: string[] } | undefined;
+    let exploreResult: {
+      manifestazioni: string[];
+      matchPairs: string[];
+      directQuotes: string[];
+      italiaSerieA?: { avvCount: number; firstAvvKeys?: string[]; nestedCount?: number; sampleNested?: unknown };
+    } | undefined;
     if (explore) {
       const { manifestazioni, matchPairs } = exploreFeed(data);
       let directQuotes: string[] = [];
@@ -230,7 +235,37 @@ export async function GET(req: Request) {
       } catch {
         directQuotes = ["(errore fetch)"];
       }
-      exploreResult = { manifestazioni, matchPairs, directQuotes };
+      let italiaSerieA: { avvCount: number; sampleNested?: unknown } | undefined;
+      for (const ev of eventsArray) {
+        if (!ev || typeof ev !== "object") continue;
+        const mans = toArray((ev as Record<string, unknown>).Manifestazione);
+        for (const man of mans) {
+          if (!man || typeof man !== "object") continue;
+          const m = man as Record<string, unknown>;
+          if (String(m.descr ?? "").includes("ITALIA") && String(m.descr ?? "").includes("I DIVISIONE")) {
+            const avv = toArray(m.Avvenimento);
+            let nested: unknown[] = [];
+            for (const a of avv) {
+              if (a && typeof a === "object") {
+                const aa = a as Record<string, unknown>;
+                for (const k of ["Partita", "Incontro", "Evento", "Avvenimento", "Palinsesto", "Giornata"]) {
+                  nested = nested.concat(toArray(aa[k]));
+                }
+              }
+            }
+            const firstAvvKeys = avv[0] && typeof avv[0] === "object" ? Object.keys(avv[0] as object) : [];
+            italiaSerieA = {
+              avvCount: avv.length,
+              firstAvvKeys,
+              nestedCount: nested.length,
+              sampleNested: nested.length > 0 ? nested.slice(0, 3).map((n) => (n && typeof n === "object" ? { keys: Object.keys(n as object), descr: (n as Record<string, unknown>).descr, scommessaCount: toArray((n as Record<string, unknown>).Scommessa).length } : n)) : (firstAvvKeys.length ? "nessun Partita/Incontro/Avvenimento annidato" : undefined),
+            };
+            break;
+          }
+        }
+        if (italiaSerieA) break;
+      }
+      exploreResult = { manifestazioni, matchPairs, directQuotes, italiaSerieA };
     }
 
     return NextResponse.json({
