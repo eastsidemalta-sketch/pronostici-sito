@@ -2,7 +2,10 @@
 
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { getBookmakerDisplayName } from "@/lib/quotes/bookmakers";
+
+function getDisplayName(bm: { name: string; displayName?: string | null }): string {
+  return (bm.displayName?.trim() || bm.name) || "";
+}
 
 type Bookmaker = {
   id: string;
@@ -73,7 +76,7 @@ export default function BookmakerListClient({
             <div className="min-w-0 flex-1">
               <div className="flex flex-wrap items-center gap-2">
                 <h3 className={`font-semibold ${!bm.isActive ? "text-neutral-500" : ""}`}>
-                  {getBookmakerDisplayName(bm)}
+                  {getDisplayName(bm)}
                 </h3>
                 {bm.siteId && (
                   <span className="rounded bg-neutral-100 px-2 py-0.5 font-mono text-xs font-medium text-neutral-600">
