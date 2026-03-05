@@ -72,12 +72,24 @@ async function fetchFreshData(country: string): Promise<CachedHomeData> {
 
 /**
  * Ottiene i dati home: da cache Redis se disponibili, altrimenti fetch e cache.
+ * @param bypassCache - se true, ignora la cache e fetch sempre dati freschi
  */
-export async function getCachedHomeData(country: string): Promise<CachedHomeData> {
+export async function getCachedHomeData(
+  country: string,
+  bypassCache = false
+): Promise<CachedHomeData> {
   const redis = getRedis();
   const key = `${KEY_PREFIX}${country}`;
 
-  if (redis) {
+  if (bypassCache && redis) {
+    try {
+      await redis.del(key);
+    } catch {
+      // Ignora
+    }
+  }
+
+  if (redis && !bypassCache) {
     try {
       const raw = await redis.get(key);
       if (raw) {
@@ -102,6 +114,25 @@ export async function getCachedHomeData(country: string): Promise<CachedHomeData
   }
 
   return data;
+}
+
+/**
+ * Invalida la cache per un paese (o tutti se country === "*").
+ * Utile per debug o dopo deploy quando la cache potrebbe essere stale.
+ */
+export async function invalidateHomeCache(country: string): Promise<void> {
+  const redis = getRedis();
+  if (!redis) return;
+  try {
+    if (country === "*") {
+      const keys = await redis.keys(`${KEY_PREFIX}*`);
+      if (keys.length > 0) await redis.del(...keys);
+    } else {
+      await redis.del(`${KEY_PREFIX}${country}`);
+    }
+  } catch {
+    // Ignora errori
+  }
 }
 
 /**

@@ -15,6 +15,7 @@ export const LEAGUE_ID_TO_SPORT_KEY: Record<number, string> = {
   148: "soccer_germany_dfb_pokal",
   66: "soccer_france_coupe_de_france",
   71: "soccer_brazil_campeonato",
+  72: "soccer_brazil_serie_b",
 };
 
 /** Mappa league name -> sport_key (fallback) */
@@ -35,6 +36,8 @@ export const LEAGUE_NAME_TO_SPORT_KEY: Record<string, string> = {
   "Coupe de France": "soccer_france_coupe_de_france",
   "Brasileirão Serie A": "soccer_brazil_campeonato",
   "Brasileirão": "soccer_brazil_campeonato",
+  "Brasileirão Serie B": "soccer_brazil_serie_b",
+  "Serie B Brasil": "soccer_brazil_serie_b",
 };
 
 export function getSportKeyForLeague(leagueId?: number, leagueName?: string): string | null {

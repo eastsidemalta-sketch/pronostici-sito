@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { Suspense } from "react";
 import { getTranslations } from "next-intl/server";
 import { getMenuForCountry } from "@/lib/homeMenuData";
 import { getCachedHomeData } from "@/lib/homePageCache";
@@ -20,11 +21,11 @@ export async function generateMetadata({
   searchParams,
 }: {
   params: Promise<{ locale: string }>;
-  searchParams: Promise<{ sport?: string; league?: string }>;
+  searchParams?: Promise<{ sport?: string; league?: string }>;
 }): Promise<Metadata> {
   const { locale } = await params;
-  const sp = await searchParams;
-  const hasFilters = Object.keys(sp).length > 0;
+  const sp = searchParams ? await searchParams : {};
+  const hasFilters = Object.keys(sp ?? {}).length > 0;
 
   const og = getOgMetadata(locale);
   const t = await getTranslations("home");
@@ -48,8 +49,17 @@ export async function generateMetadata({
 /** Cache 30 secondi: riduce carico API e velocizza il caricamento */
 export const revalidate = 30;
 
-export default async function HomePage({ params }: { params: Promise<{ locale: string }> }) {
+export default async function HomePage({
+  params,
+  searchParams,
+}: {
+  params: Promise<{ locale: string }>;
+  searchParams?: Promise<{ refresh?: string }>;
+}) {
   const { locale } = await params;
+  const sp = searchParams ? await searchParams : {};
+  const bypassCache = sp?.refresh === "1";
+
   const t = await getTranslations("home");
   const tPronostici = await getTranslations("pronosticiQuote");
 
@@ -57,13 +67,17 @@ export default async function HomePage({ params }: { params: Promise<{ locale: s
   const menuItems = getMenuForCountry(country);
   const calcioEnabled = isSportEnabledForCountry(country, "calcio");
 
-  const { fixtures, quotesMap, predictionsMap } = await getCachedHomeData(country);
+  const { fixtures, quotesMap, predictionsMap } = await getCachedHomeData(
+    country,
+    bypassCache
+  );
 
   const featuredBookmaker = getFeaturedBookmaker(country);
   const telegramBanner = await getTelegramBannerForCountryAsync(country);
 
   return (
     <main className="min-h-screen bg-[var(--background)]">
+      <Suspense fallback={<div className="flex min-h-[200px] items-center justify-center text-[var(--foreground-muted)]">Caricamento…</div>}>
       <HomeContent
         menuItems={menuItems}
         fixtures={fixtures}
@@ -102,6 +116,7 @@ export default async function HomePage({ params }: { params: Promise<{ locale: s
         calcioEnabled={calcioEnabled}
         bonusSidebar={<HomeBonusSidebar country={country} locale={locale} />}
       />
+      </Suspense>
     </main>
   );
 }

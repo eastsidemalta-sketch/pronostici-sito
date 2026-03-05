@@ -3,8 +3,10 @@
  * Simula getUpcomingFixtures([71]) e mostra API Football + fallback Betboom.
  *
  * GET /api/debug-br-fixtures
+ * GET /api/debug-br-fixtures?invalidate=1  → invalida cache home BR (Redis)
  */
 import { NextResponse } from "next/server";
+import { invalidateHomeCache } from "@/lib/homePageCache";
 
 function getTodayInSiteTz(): string {
   const fmt = new Intl.DateTimeFormat("en-CA", {
@@ -20,7 +22,12 @@ function getTodayInSiteTz(): string {
   return `${y}-${m}-${d}`;
 }
 
-export async function GET() {
+export async function GET(request: Request) {
+  const { searchParams } = new URL(request.url);
+  if (searchParams.get("invalidate") === "1") {
+    await invalidateHomeCache("BR");
+  }
+
   const apiKey = process.env.API_FOOTBALL_KEY;
   const betboomKey = process.env.BETBOOM_API_KEY;
 
@@ -105,6 +112,7 @@ export async function GET() {
 
   return NextResponse.json({
     ok: true,
+    invalidated: searchParams.get("invalidate") === "1",
     dateRange: { from: fromDate, to: toDate },
     serverNow: new Date().toISOString(),
     seasonTried: [season, nextSeason],
