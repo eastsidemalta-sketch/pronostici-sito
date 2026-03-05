@@ -52,10 +52,21 @@ function parseApiResponse(text: string): unknown {
 export type DirectQuote = {
   homeTeam: string;
   awayTeam: string;
-  outcomes: { home: number; draw: number; away: number };
+  outcomes: Record<string, number>;
   bookmakerKey: string;
   bookmaker: string;
 };
+
+/** Chiavi mercati supportate (allineate a MatchQuotesTabs / quotesEngine) */
+export type DirectMarketKey =
+  | "h2h"
+  | "spreads"
+  | "totals_25"
+  | "totals_15"
+  | "btts"
+  | "double_chance"
+  | "draw_no_bet"
+  | "h2h_3_way_h1";
 
 function buildUrl(
   endpoint: string,
@@ -309,18 +320,129 @@ function extract1X2FromStakes(
   return out;
 }
 
+type StakeLike = { market_id?: number; market_name?: string; outcome_id?: number; name?: string; factor?: number; period_id?: unknown };
+
+/** Estrae Handicap (market_id 2) da stakes. Raggruppa per linea (handicap value) e restituisce array di linee. */
+function extractHandicapFromStakes(
+  stakes: unknown[],
+  homeTeam: string,
+  awayTeam: string
+): Array<{ home: number; away: number; homePoint: number; awayPoint: number }> {
+  const homeNorm = homeTeam.toLowerCase();
+  const awayNorm = awayTeam.toLowerCase();
+  const handicapRe = /([+-]?\d+\.?\d*)/;
+  const stakesArr = (stakes || []) as StakeLike[];
+  const byLine = new Map<number, { home: number; away: number }>();
+  for (const s of stakesArr) {
+    const mid = typeof s.market_id === "number" ? s.market_id : parseInt(String(s.market_id ?? 0), 10);
+    const mkt = String(s.market_name ?? "").toLowerCase();
+    if (mid !== 2 && mkt !== "handicap") continue;
+    if (s.period_id != null && s.period_id !== "") continue;
+    const factor = typeof s.factor === "number" ? s.factor : parseFloat(String(s.factor ?? 0)) || 0;
+    const name = String(s.name ?? "").toLowerCase();
+    const match = name.match(handicapRe);
+    const point = match ? parseFloat(match[1]) : 0;
+    const lineKey = Math.round(point * 10) / 10;
+    const entry = byLine.get(lineKey) ?? { home: 0, away: 0 };
+    if (name.includes(homeNorm) || name.includes("home") || name.includes("1")) {
+      entry.home = factor;
+    } else if (name.includes(awayNorm) || name.includes("away") || name.includes("2")) {
+      entry.away = factor;
+    }
+    byLine.set(lineKey, entry);
+  }
+  return Array.from(byLine.entries())
+    .filter(([, v]) => v.home > 0 || v.away > 0)
+    .map(([point, v]) => ({
+      home: v.home,
+      away: v.away,
+      homePoint: point,
+      awayPoint: -point,
+    }));
+}
+
+/** Estrae Total Over/Under (market_id 3) da stakes. Cerca linee 2.5 e 1.5. */
+function extractTotalsFromStakes(stakes: unknown[]): { over25: number; under25: number; over15: number; under15: number } {
+  const out = { over25: 0, under25: 0, over15: 0, under15: 0 };
+  const stakesArr = (stakes || []) as StakeLike[];
+  const overRe = /over|acima|mais|sopra|übert/i;
+  const underRe = /under|abaixo|menos|sotto|unter/i;
+  const point25Re = /2\.?5|2,5/;
+  const point15Re = /1\.?5|1,5/;
+  for (const s of stakesArr) {
+    const mid = typeof s.market_id === "number" ? s.market_id : parseInt(String(s.market_id ?? 0), 10);
+    const mkt = String(s.market_name ?? "").toLowerCase();
+    if (mid !== 3 && mid !== 79120 && !mkt.includes("total")) continue;
+    if (s.period_id != null && s.period_id !== "") continue;
+    const factor = typeof s.factor === "number" ? s.factor : parseFloat(String(s.factor ?? 0)) || 0;
+    const name = String(s.name ?? "");
+    const isOver = overRe.test(name);
+    const isUnder = underRe.test(name);
+    const is25 = point25Re.test(name) || point25Re.test(String(s.market_name ?? ""));
+    const is15 = point15Re.test(name) || point15Re.test(String(s.market_name ?? ""));
+    if (isOver && is25) out.over25 = factor;
+    else if (isUnder && is25) out.under25 = factor;
+    else if (isOver && is15) out.over15 = factor;
+    else if (isUnder && is15) out.under15 = factor;
+    else if (isOver && !out.over25 && !out.over15) out.over25 = factor; // fallback
+    else if (isUnder && !out.under25 && !out.under15) out.under25 = factor;
+  }
+  return out;
+}
+
+/** Estrae BTTS (market_id 14) da stakes. */
+function extractBttsFromStakes(stakes: unknown[]): { yes: number; no: number } {
+  const out = { yes: 0, no: 0 };
+  const stakesArr = (stakes || []) as StakeLike[];
+  for (const s of stakesArr) {
+    const mid = typeof s.market_id === "number" ? s.market_id : parseInt(String(s.market_id ?? 0), 10);
+    const mkt = String(s.market_name ?? "").toLowerCase();
+    if (mid !== 14 && !mkt.includes("both") && !mkt.includes("btts") && !mkt.includes("score")) continue;
+    if (s.period_id != null && s.period_id !== "") continue;
+    const factor = typeof s.factor === "number" ? s.factor : parseFloat(String(s.factor ?? 0)) || 0;
+    const name = String(s.name ?? "").toLowerCase();
+    if (name === "yes" || name === "sì" || name === "si" || name === "sim") out.yes = factor;
+    else if (name === "no" || name === "não" || name === "nao") out.no = factor;
+  }
+  return out;
+}
+
+/** Estrae Double Chance (market_id 20) da stakes. */
+function extractDoubleChanceFromStakes(stakes: unknown[]): { homeOrDraw: number; homeOrAway: number; drawOrAway: number } {
+  const out = { homeOrDraw: 0, homeOrAway: 0, drawOrAway: 0 };
+  const stakesArr = (stakes || []) as StakeLike[];
+  const dc1X = /1x|1 x|home.*draw|draw.*home/i;
+  const dc12 = /12|1 2|home.*away|away.*home/i;
+  const dcX2 = /x2|x 2|draw.*away|away.*draw/i;
+  for (const s of stakesArr) {
+    const mid = typeof s.market_id === "number" ? s.market_id : parseInt(String(s.market_id ?? 0), 10);
+    const mkt = String(s.market_name ?? "").toLowerCase();
+    if (mid !== 20 && !mkt.includes("double") && !mkt.includes("chance")) continue;
+    if (s.period_id != null && s.period_id !== "") continue;
+    const factor = typeof s.factor === "number" ? s.factor : parseFloat(String(s.factor ?? 0)) || 0;
+    const name = String(s.name ?? "");
+    if (dc1X.test(name)) out.homeOrDraw = factor;
+    else if (dc12.test(name)) out.homeOrAway = factor;
+    else if (dcX2.test(name)) out.drawOrAway = factor;
+  }
+  return out;
+}
+
 /**
  * Fetch quote da un bookmaker con API diretta.
+ * Restituisce Record<marketKey, DirectQuote[]> per supportare multi-market (Betboom Handicap, Total, ecc.).
  */
+export type DirectMultiMarketResult = Partial<Record<DirectMarketKey, DirectQuote[]>>;
+
 export async function fetchDirectBookmakerQuotes(
   bm: Bookmaker,
   leagueId?: number
-): Promise<DirectQuote[]> {
+): Promise<DirectMultiMarketResult> {
   const endpoint = bm.apiEndpoint;
   const mapping = bm.apiMappingConfig;
   const apiKey = bm.apiKey;
 
-  if (!endpoint || !mapping || !apiKey) return [];
+  if (!endpoint || !mapping || !apiKey) return {};
 
   const eventsPath = mapping.eventsPath ?? "$";
   const homeTeamPath = mapping.homeTeam ?? "homeTeam";
@@ -374,13 +496,13 @@ export async function fetchDirectBookmakerQuotes(
         if (ids?.length) {
           bodyObj.category_ids = ids;
         } else if (!Array.isArray(bodyObj.category_ids) || bodyObj.category_ids.length === 0) {
-          return [];
+          return {};
         }
       }
     }
     for (const k of ["category_ids", "tournament_ids"]) {
       const arr = bodyObj[k];
-      if (Array.isArray(arr) && arr.length === 0) return [];
+      if (Array.isArray(arr) && arr.length === 0) return {};
     }
     body = JSON.stringify(bodyObj);
   }
@@ -394,7 +516,7 @@ export async function fetchDirectBookmakerQuotes(
 
   if (!res.ok) {
     console.warn(`Direct API ${bm.name}: HTTP ${res.status}`);
-    return [];
+    return {};
   }
 
   let data: unknown;
@@ -402,14 +524,21 @@ export async function fetchDirectBookmakerQuotes(
     const text = await res.text();
     data = parseApiResponse(text);
   } catch {
-    return [];
+    return {};
   }
 
   const events = useExalogic
     ? flattenExalogicEvents(data)
     : getEventsArray(data, eventsPath);
   const stakesConfig = mapping.stakes1X2;
-  const quotes: DirectQuote[] = [];
+  const result: DirectMultiMarketResult = {
+    h2h: [],
+    spreads: [],
+    totals_25: [],
+    totals_15: [],
+    btts: [],
+    double_chance: [],
+  };
 
   for (const ev of events) {
     if (ev == null || typeof ev !== "object") continue;
@@ -418,18 +547,76 @@ export async function fetchDirectBookmakerQuotes(
     const awayTeam = getString(ev, awayTeamPath);
     if (!homeTeam || !awayTeam) continue;
 
-    let odds1: number;
-    let oddsX: number;
-    let odds2: number;
+    const baseQuote = {
+      homeTeam,
+      awayTeam,
+      bookmakerKey: bm.id,
+      bookmaker: getBookmakerDisplayName(bm),
+    };
 
     if (stakesConfig) {
       const stakesPath = stakesConfig.stakesPath ?? "stakes";
       const stakesVal = getByPath(ev, stakesPath);
       const stakesArr = Array.isArray(stakesVal) ? stakesVal : [];
-      const extracted = extract1X2FromStakes(stakesArr, homeTeam, awayTeam, stakesConfig);
-      odds1 = extracted.odds1;
-      oddsX = extracted.oddsX;
-      odds2 = extracted.odds2;
+
+      const extracted1X2 = extract1X2FromStakes(stakesArr, homeTeam, awayTeam, stakesConfig);
+      if (extracted1X2.odds1 > 0 || extracted1X2.oddsX > 0 || extracted1X2.odds2 > 0) {
+        result.h2h!.push({
+          ...baseQuote,
+          outcomes: {
+            home: extracted1X2.odds1,
+            draw: extracted1X2.oddsX,
+            away: extracted1X2.odds2,
+          },
+        });
+      }
+
+      const handicapLines = extractHandicapFromStakes(stakesArr, homeTeam, awayTeam);
+      for (const h of handicapLines) {
+        result.spreads!.push({
+          ...baseQuote,
+          outcomes: {
+            home: h.home,
+            away: h.away,
+            homePoint: h.homePoint,
+            awayPoint: h.awayPoint,
+          },
+        });
+      }
+
+      const totals = extractTotalsFromStakes(stakesArr);
+      if (totals.over25 > 0 || totals.under25 > 0) {
+        result.totals_25!.push({
+          ...baseQuote,
+          outcomes: { over: totals.over25, under: totals.under25 },
+        });
+      }
+      if (totals.over15 > 0 || totals.under15 > 0) {
+        result.totals_15!.push({
+          ...baseQuote,
+          outcomes: { over: totals.over15, under: totals.under15 },
+        });
+      }
+
+      const btts = extractBttsFromStakes(stakesArr);
+      if (btts.yes > 0 || btts.no > 0) {
+        result.btts!.push({
+          ...baseQuote,
+          outcomes: { yes: btts.yes, no: btts.no },
+        });
+      }
+
+      const dc = extractDoubleChanceFromStakes(stakesArr);
+      if (dc.homeOrDraw > 0 || dc.homeOrAway > 0 || dc.drawOrAway > 0) {
+        result.double_chance!.push({
+          ...baseQuote,
+          outcomes: {
+            homeOrDraw: dc.homeOrDraw,
+            homeOrAway: dc.homeOrAway,
+            drawOrAway: dc.drawOrAway,
+          },
+        });
+      }
     } else {
       const odds1Std = getNumber(ev, odds1Path);
       const oddsXStd = getNumber(ev, oddsXPath);
@@ -437,25 +624,18 @@ export async function fetchDirectBookmakerQuotes(
       const odds1Pers = odds1Personalized ? getNumber(ev, odds1Personalized) : 0;
       const oddsXPers = oddsXPersonalized ? getNumber(ev, oddsXPersonalized) : 0;
       const odds2Pers = odds2Personalized ? getNumber(ev, odds2Personalized) : 0;
-      odds1 = odds1Pers > 0 ? odds1Pers : odds1Std;
-      oddsX = oddsXPers > 0 ? oddsXPers : oddsXStd;
-      odds2 = odds2Pers > 0 ? odds2Pers : odds2Std;
+      const odds1 = odds1Pers > 0 ? odds1Pers : odds1Std;
+      const oddsX = oddsXPers > 0 ? oddsXPers : oddsXStd;
+      const odds2 = odds2Pers > 0 ? odds2Pers : odds2Std;
+
+      if (odds1 > 0 || oddsX > 0 || odds2 > 0) {
+        result.h2h!.push({
+          ...baseQuote,
+          outcomes: { home: odds1, draw: oddsX, away: odds2 },
+        });
+      }
     }
-
-    if (odds1 <= 0 && oddsX <= 0 && odds2 <= 0) continue;
-
-    quotes.push({
-      homeTeam,
-      awayTeam,
-      outcomes: {
-        home: odds1 || 0,
-        draw: oddsX || 0,
-        away: odds2 || 0,
-      },
-      bookmakerKey: bm.id,
-      bookmaker: getBookmakerDisplayName(bm),
-    });
   }
 
-  return quotes;
+  return result;
 }

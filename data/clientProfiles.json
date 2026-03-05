@@ -20,14 +20,15 @@
       "bodyTemplate": {
         "locale": "en",
         "category_ids": [],
-        "market_ids": [1],
+        "market_ids": [1, 2, 3, 14, 20],
         "type": "prematch"
       },
       "apiKeyEnv": "BETBOOM_API_KEY",
       "authType": "x-access-token",
       "extraHeaders": { "x-partner": "id_7557" },
       "documentationUrl": "https://responsible-reaper-a69.notion.site/BetBoom-Feed-API-EN-baf9b68a744c4c128bc2012db480096b",
-      "notes": "Header x-access-token. market_ids 1=Winner (1X2). 71→161 Brazil, 72→161 Brazil B, 135+→141 Italy, 39→128 England, 78→131 Germany.",
+      "notes": "Header x-access-token. market_ids: 1=Winner (1X2), 2=Handicap, 3/79120=Total, 14=BTTS, 20=Double Chance. Jogadores/Estatisticas non documentati→contattare BetBoom. Leghe: 71→161 BR, 72→161 BR B, 135→141 IT, 39→128 EN, 78→131 DE.",
+      "availableMarketIds": [1, 2, 3, 14, 20],
       "apiLeagueMapping": {
         "71": "161",
         "72": "161",

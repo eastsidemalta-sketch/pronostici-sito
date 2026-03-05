@@ -323,8 +323,9 @@ export async function GET(req: Request) {
       const { manifestazioni, matchPairs } = exploreFeed(data);
       let directQuotes: string[] = [];
       try {
-        const quotes = await fetchDirectBookmakerQuotes(netwin!, 135);
-        directQuotes = quotes.map((q) => `${q.homeTeam} - ${q.awayTeam}`);
+        const directResult = await fetchDirectBookmakerQuotes(netwin!, 135);
+        const h2h = directResult.h2h ?? [];
+        directQuotes = h2h.map((q) => `${q.homeTeam} - ${q.awayTeam}`);
       } catch {
         directQuotes = ["(errore fetch)"];
       }

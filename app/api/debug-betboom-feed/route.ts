@@ -6,6 +6,7 @@
  * GET /api/debug-betboom-feed?categoryIds=0 (simula league 71 → mapping "0")
  * GET /api/debug-betboom-feed?full=1 (mostra sample completo primo match)
  * GET /api/debug-betboom-feed?simulate=1 (simula fetchDirectBookmakerQuotes con leagueId 71)
+ * GET /api/debug-betboom-feed?marketIds=1,2,3,14,20 (testa mercati: 1=Winner, 2=Handicap, 3=Total, 14=BTTS, 20=Double Chance)
  */
 import { NextResponse } from "next/server";
 
@@ -14,8 +15,15 @@ export async function GET(req: Request) {
   const apiKey = process.env.BETBOOM_API_KEY;
   const { searchParams } = new URL(req.url);
   const categoryIdsParam = searchParams.get("categoryIds");
+  const marketIdsParam = searchParams.get("marketIds");
   const full = searchParams.get("full") === "1";
   const simulate = searchParams.get("simulate") === "1";
+
+  let marketIds: number[] = [1];
+  if (marketIdsParam) {
+    marketIds = marketIdsParam.split(",").map((s) => parseInt(s.trim(), 10)).filter((n) => !Number.isNaN(n));
+    if (marketIds.length === 0) marketIds = [1];
+  }
 
   if (!apiKey) {
     return NextResponse.json({ error: "BETBOOM_API_KEY mancante" }, { status: 500 });
@@ -60,7 +68,7 @@ export async function GET(req: Request) {
   const body = {
     locale: "en",
     category_ids: categoryIds,
-    market_ids: [1],
+    market_ids: marketIds,
     type: "prematch",
   };
 
@@ -118,15 +126,25 @@ export async function GET(req: Request) {
     );
     const outcomeIds = winnerStakes.map((s: { outcome_id?: number }) => s?.outcome_id);
 
+    // Raggruppa stakes per market_name (utile con marketIds multipli)
+    const stakesByMarket = stakesArr.reduce((acc: Record<string, number>, s: { market_name?: string }) => {
+      const name = String(s?.market_name ?? "unknown");
+      acc[name] = (acc[name] ?? 0) + 1;
+      return acc;
+    }, {});
+
     const result: Record<string, unknown> = {
       ok: true,
       requestBody: body,
+      marketIdsUsed: marketIds,
+      marketIdsLegend: { 1: "Winner", 2: "Handicap", 3: "Total", 14: "BTTS", 20: "Double Chance" },
       matchesCount: matchesArr.length,
       firstMatchKeys,
       firstMatchTeams: { home: homeName, away: awayName },
       stakesCount: stakesArr.length,
       winnerStakesCount: winnerStakes.length,
       winnerOutcomeIds: outcomeIds,
+      stakesByMarket,
       firstMatchSample: firstMatch ? JSON.stringify(firstMatch).slice(0, full ? 4000 : 1500) : null,
       firstStakeSample: firstStakeSample ? JSON.stringify(firstStakeSample) : null,
     };

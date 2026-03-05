@@ -235,7 +235,8 @@ export async function runMatchingReport(bookmakerId?: string): Promise<MatchingR
         }
 
         try {
-          const directQuotes = await fetchDirectBookmakerQuotes(bm, leagueId);
+          const directResult = await fetchDirectBookmakerQuotes(bm, leagueId);
+          const directQuotes = directResult.h2h ?? [];
           for (const q of directQuotes) {
             const matched =
               matchTeamNames(q.homeTeam, apiHome) && matchTeamNames(q.awayTeam, apiAway);
@@ -250,7 +251,11 @@ export async function runMatchingReport(bookmakerId?: string): Promise<MatchingR
               bookmakerName: getBookmakerDisplayName(bm),
               bmHome: q.homeTeam,
               bmAway: q.awayTeam,
-              odds: q.outcomes,
+              odds: {
+                home: q.outcomes.home ?? 0,
+                draw: q.outcomes.draw ?? 0,
+                away: q.outcomes.away ?? 0,
+              },
               matched,
             };
 

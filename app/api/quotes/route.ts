@@ -61,6 +61,9 @@ export async function GET(req: Request) {
   try {
     multiMarket = await getMultiMarketQuotes(sportKey, {
       leagueId: leagueId != null && !isNaN(leagueId) ? leagueId : undefined,
+      homeTeam: homeTeam ?? undefined,
+      awayTeam: awayTeam ?? undefined,
+      country: country ?? undefined,
     });
     const hasAnyEvents = Object.values(multiMarket).some((arr) => Array.isArray(arr) && arr.length > 0);
     if (!hasAnyEvents && homeTeam && awayTeam && sportKey.startsWith("soccer_italy_")) {

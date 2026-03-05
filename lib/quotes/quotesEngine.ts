@@ -90,20 +90,24 @@ export async function getMultiMarketQuotes(
 
     if (bookmaker.apiProvider === "direct") {
       try {
-        const directQuotes = await fetchDirectBookmakerQuotes(
+        const directResult = await fetchDirectBookmakerQuotes(
           bookmaker,
           options?.leagueId
         );
-        for (const q of directQuotes) {
-          merged.h2h.push({
-            fixtureId: "",
-            bookmaker: q.bookmaker,
-            bookmakerKey: q.bookmakerKey,
-            homeTeam: q.homeTeam,
-            awayTeam: q.awayTeam,
-            outcomes: q.outcomes,
-            remuneration: remunerationMap[q.bookmakerKey] ?? null,
-          });
+        for (const [marketKey, quotes] of Object.entries(directResult)) {
+          const arr = merged[marketKey as keyof typeof merged];
+          if (!Array.isArray(arr)) continue;
+          for (const q of quotes ?? []) {
+            arr.push({
+              fixtureId: "",
+              bookmaker: q.bookmaker,
+              bookmakerKey: q.bookmakerKey,
+              homeTeam: q.homeTeam,
+              awayTeam: q.awayTeam,
+              outcomes: q.outcomes,
+              remuneration: remunerationMap[q.bookmakerKey] ?? null,
+            });
+          }
         }
       } catch {
         continue;

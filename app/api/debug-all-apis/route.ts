@@ -50,11 +50,12 @@ export async function GET(req: Request) {
       quotesCount: 0,
     };
     try {
-      const quotes = await fetchDirectBookmakerQuotes(bm, leagueId);
+      const directResult = await fetchDirectBookmakerQuotes(bm, leagueId);
+      const h2h = directResult.h2h ?? [];
       entry.ok = true;
-      entry.quotesCount = quotes.length;
-      if (quotes.length > 0) {
-        entry.sampleTeams = quotes
+      entry.quotesCount = h2h.length;
+      if (h2h.length > 0) {
+        entry.sampleTeams = h2h
           .slice(0, 3)
           .map((q) => `${q.homeTeam} vs ${q.awayTeam}`);
       } else if (probe && bm.apiEndpoint) {
