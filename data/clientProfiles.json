@@ -27,9 +27,17 @@
       "authType": "x-access-token",
       "extraHeaders": { "x-partner": "id_7557" },
       "documentationUrl": "https://responsible-reaper-a69.notion.site/BetBoom-Feed-API-EN-baf9b68a744c4c128bc2012db480096b",
-      "notes": "Header x-access-token. market_ids 1=Winner (1X2). League 71 (Brasileirão) → category_id 161 (Brazil).",
+      "notes": "Header x-access-token. market_ids 1=Winner (1X2). 71→161 Brazil, 135+→141 Italy, 39→128 England, 78→131 Germany.",
       "apiLeagueMapping": {
-        "71": "161"
+        "71": "161",
+        "135": "141",
+        "136": "141",
+        "137": "141",
+        "138": "141",
+        "942": "141",
+        "943": "141",
+        "39": "128",
+        "78": "131"
       },
       "mapping": {
         "eventsPath": "$.matches",
