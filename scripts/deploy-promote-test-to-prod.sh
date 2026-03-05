@@ -13,9 +13,10 @@ PROD_DIR="/var/www/pronostici-sito"
 wait_for_app() {
   local name=$1
   local port=$2
-  local max=30
+  local max=45
   local n=0
   echo -n "Attendo avvio $name sulla porta $port..."
+  sleep 5
   while [ $n -lt $max ]; do
     if curl -s -o /dev/null -w "%{http_code}" "http://127.0.0.1:$port" 2>/dev/null | grep -q "200\|301\|302"; then
       echo " OK"
@@ -65,7 +66,7 @@ cp -r .next/static .next/standalone/.next/ 2>/dev/null || true
 node scripts/apply-netwin-config.mjs 2>/dev/null || true
 cp -r data .next/standalone/ 2>/dev/null || true
 if [ -f .env.local ]; then cp .env.local .next/standalone/; elif [ -f .env ]; then cp .env .next/standalone/; fi
-pm2 delete pronostici 2>/dev/null; pm2 start ecosystem.config.cjs --only pronostici
+pm2 delete pronostici 2>/dev/null; pm2 start "$PROD_DIR/ecosystem.config.cjs" --only pronostici
 wait_for_app "pronostici" 3000 || true
 
 echo ""
