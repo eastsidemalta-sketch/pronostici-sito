@@ -17,10 +17,10 @@ const DATA_FILES = [
   path.join(STANDALONE, "bookmakers.json"),
 ];
 
-function isNetwin(b) {
-  const id = (b.id || "").toLowerCase();
+/** Rimuove solo il cliente IT-002 (Netwin da clientProfiles), non altri bookmaker con "netwin" nel nome */
+function isNetwinIT002(b) {
   const siteId = (b.siteId || "").toUpperCase();
-  return siteId === "IT-002" || id.includes("netwin");
+  return siteId === "IT-002";
 }
 
 for (const dataPath of DATA_FILES) {
@@ -29,7 +29,7 @@ for (const dataPath of DATA_FILES) {
     const raw = readFileSync(dataPath, "utf-8");
     const bookmakers = JSON.parse(raw);
     const before = bookmakers.length;
-    const filtered = bookmakers.filter((b) => !isNetwin(b));
+    const filtered = bookmakers.filter((b) => !isNetwinIT002(b));
     const removed = before - filtered.length;
     if (removed > 0) {
       writeFileSync(dataPath, JSON.stringify(filtered, null, 2));
