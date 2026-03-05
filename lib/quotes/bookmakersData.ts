@@ -187,12 +187,12 @@ function applyClientProfilesOverrides(bookmakers: Bookmaker[]): Bookmaker[] {
     const profiles = JSON.parse(readFileSync(PROFILES_PATH, "utf-8")) as Record<string, ClientProfile>;
     return bookmakers.map((bm) => {
       const siteId = bm.siteId || "";
-      let profile = profiles[siteId];
+      let profile: ClientProfile | undefined = profiles[siteId];
       if (!profile) {
         const bmId = (bm.id || "").toLowerCase();
         profile = Object.values(profiles).find(
           (p) => (p.bookmakerId || p.internalName?.toLowerCase().replace(/\s+/g, "") || "").toLowerCase() === bmId
-        ) ?? null;
+        );
       }
       if (!profile) return bm;
       const updates: Partial<Bookmaker> = {};
