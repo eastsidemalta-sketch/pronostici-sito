@@ -12,12 +12,20 @@ type QuoteRow = {
   bookmakerUrl?: string | null;
   bookmakerLogoUrl?: string | null;
   outcomes: Record<string, number>;
+  homeTeam?: string;
+  awayTeam?: string;
 };
+
+function formatHandicap(point: number): string {
+  if (point === 0) return "0";
+  const str = point > 0 ? `+${point}` : `${point}`;
+  return str.replace(".", ",");
+}
 
 type MarketDef = {
   key: string;
   title: string;
-  columns: Array<{ key: string; label: string; pointKey?: string }>;
+  columns: Array<{ key: string; label: string; pointKey?: string; isHandicap?: boolean }>;
 };
 
 /** Solo mercati che possiamo recuperare da The Odds API. Nessun placeholder. */
@@ -38,10 +46,10 @@ const MARKET_CATEGORIES: Record<
     markets: [
       {
         key: "spreads",
-        title: "Handicap",
+        title: "Handicap Asiático",
         columns: [
-          { key: "home", label: "Casa", pointKey: "homePoint" },
-          { key: "away", label: "Ospiti", pointKey: "awayPoint" },
+          { key: "home", label: "", pointKey: "homePoint", isHandicap: true },
+          { key: "away", label: "", pointKey: "awayPoint", isHandicap: true },
         ],
       },
     ],
@@ -157,6 +165,101 @@ export default function MatchQuotesTabs({ sportKey, homeTeam, awayTeam, country,
           );
           const source = validQuotes.length > 0 ? validQuotes : quotes;
 
+          if (market.key === "spreads") {
+            const byLine = new Map<string, QuoteRow[]>();
+            for (const q of source) {
+              const hp = q.outcomes?.homePoint ?? 0;
+              const ap = q.outcomes?.awayPoint ?? 0;
+              const lineKey = `${hp},${ap}`;
+              const arr = byLine.get(lineKey) ?? [];
+              arr.push(q);
+              byLine.set(lineKey, arr);
+            }
+            return (
+              <div key={market.key} className="mb-5 last:mb-0 md:mb-6">
+                <h3 className="mb-3 text-sm font-semibold text-[var(--foreground)] md:text-base">
+                  {market.title}
+                </h3>
+                {Array.from(byLine.entries()).map(([lineKey, lineQuotes]) => {
+                  const first = lineQuotes[0];
+                  const homePoint = first?.outcomes?.homePoint ?? 0;
+                  const awayPoint = first?.outcomes?.awayPoint ?? 0;
+                  const hTeam = first?.homeTeam ?? homeTeam ?? "";
+                  const aTeam = first?.awayTeam ?? awayTeam ?? "";
+                  return (
+                    <div key={lineKey} className="mb-4 last:mb-0">
+                      <div className="mb-1.5 text-xs font-medium text-[var(--foreground-muted)]">
+                        Handicap {formatHandicap(homePoint)} / {formatHandicap(awayPoint)}
+                      </div>
+                      <div className="overflow-x-auto rounded-lg border border-[var(--card-border)]">
+                        <table className="w-full text-sm md:text-base">
+                          <thead>
+                            <tr className="border-b border-[var(--card-border)] bg-slate-50">
+                              <th className="px-3 py-2 text-left text-xs font-semibold text-[var(--foreground)] md:px-4 md:py-2.5 md:text-sm">Bookmaker</th>
+                              <th className="px-3 py-2 text-center text-xs font-semibold text-[var(--foreground)] md:px-4 md:py-2.5 md:text-sm">
+                                {hTeam} {formatHandicap(homePoint)}
+                              </th>
+                              <th className="px-3 py-2 text-center text-xs font-semibold text-[var(--foreground)] md:px-4 md:py-2.5 md:text-sm">
+                                {aTeam} {formatHandicap(awayPoint)}
+                              </th>
+                              <th className="w-20 px-3 py-2 text-center text-xs font-semibold text-[var(--foreground)] md:w-24 md:px-4 md:py-2.5 md:text-sm">
+                                Sito
+                              </th>
+                            </tr>
+                          </thead>
+                          <tbody>
+                            {lineQuotes.map((q, i) => (
+                              <tr key={i} className="border-b border-slate-100 last:border-0 hover:bg-slate-50/50">
+                                <td className="flex items-center gap-2 px-3 py-2 md:px-4 md:py-2.5">
+                                  {(faviconByKey.get((q.bookmakerKey || "").toLowerCase()) || logoByKey.get((q.bookmakerKey || "").toLowerCase())) ? (
+                                    <>
+                                      <div className="flex shrink-0 items-center justify-center rounded border border-gray-200 bg-white p-1.5">
+                                        <BookmakerLogo
+                                          src={faviconByKey.get((q.bookmakerKey || "").toLowerCase()) || logoByKey.get((q.bookmakerKey || "").toLowerCase())!}
+                                          size="xs"
+                                          title={q.bookmaker}
+                                        />
+                                      </div>
+                                      <span className="text-xs font-medium text-[var(--foreground)] md:text-sm">{q.bookmaker}</span>
+                                    </>
+                                  ) : (
+                                    <span className="text-xs font-medium text-[var(--foreground)] md:text-sm">{q.bookmaker}</span>
+                                  )}
+                                </td>
+                                <td className="px-3 py-2 text-center text-xs font-semibold text-[var(--foreground)] md:px-4 md:py-2.5 md:text-sm">
+                                  {(q.outcomes?.home ?? 0) > 0 ? (q.outcomes!.home as number).toFixed(2) : "-"}
+                                </td>
+                                <td className="px-3 py-2 text-center text-xs font-semibold text-[var(--foreground)] md:px-4 md:py-2.5 md:text-sm">
+                                  {(q.outcomes?.away ?? 0) > 0 ? (q.outcomes!.away as number).toFixed(2) : "-"}
+                                </td>
+                                <td className="px-3 py-2 text-center md:px-4 md:py-2.5">
+                                  {q.bookmakerUrl ? (
+                                    <BookmakerLink
+                                      href={q.bookmakerUrl}
+                                      bookmakerName={q.bookmaker}
+                                      locale={locale}
+                                      logoUrl={q.bookmakerLogoUrl}
+                                      matchSlug={matchSlug}
+                                      className="inline-flex min-h-[32px] items-center justify-center rounded-lg bg-[var(--accent)] px-3 py-1.5 text-xs font-semibold text-white transition hover:bg-[var(--accent-hover)] md:min-h-[36px] md:px-4 md:py-2 md:text-sm"
+                                    >
+                                      Scommetti
+                                    </BookmakerLink>
+                                  ) : (
+                                    <span className="text-[var(--foreground-muted)]">-</span>
+                                  )}
+                                </td>
+                              </tr>
+                            ))}
+                          </tbody>
+                        </table>
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+            );
+          }
+
           return (
             <div key={market.key} className="mb-5 last:mb-0 md:mb-6">
               <h3 className="mb-3 text-sm font-semibold text-[var(--foreground)] md:text-base">
@@ -208,7 +311,7 @@ export default function MatchQuotesTabs({ sportKey, homeTeam, awayTeam, country,
                           const pointKey = "pointKey" in col ? col.pointKey : undefined;
                           const point = pointKey ? (q.outcomes?.[pointKey] ?? 0) : 0;
                           const display =
-                            pointKey && num > 0
+                            pointKey && num > 0 && !("isHandicap" in col && col.isHandicap)
                               ? `${num.toFixed(2)} (${point > 0 ? "+" : ""}${point})`
                               : num > 0
                                 ? num.toFixed(2)
