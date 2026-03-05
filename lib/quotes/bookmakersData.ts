@@ -129,9 +129,11 @@ type ClientProfile = {
     endpoint?: string;
     method?: string;
     params?: Record<string, string>;
+    bodyTemplate?: Record<string, unknown>; // per POST (es. Betboom: locale, market_ids, type)
     apiKeyEnv?: string; // es. "BETBOOM_API_KEY" - usa process.env[apiKeyEnv]
     authType?: "query" | "header" | "bearer";
     mapping?: Record<string, unknown>;
+    apiLeagueMapping?: Record<string, string>; // leagueId -> category_id o tournament_id
   };
 };
 
@@ -195,7 +197,9 @@ function applyClientProfilesOverrides(bookmakers: Bookmaker[]): Bookmaker[] {
         updates.apiRequestConfig = {
           method: (profile.api.method === "POST" ? "POST" : "GET") as "GET" | "POST",
           queryParams: { ...profile.api.params },
+          bodyTemplate: profile.api.bodyTemplate,
         };
+        if (profile.api.apiLeagueMapping) updates.apiLeagueMapping = profile.api.apiLeagueMapping;
         if (profile.api.apiKeyEnv) {
           const key = process.env[profile.api.apiKeyEnv];
           if (key) updates.apiKey = key;

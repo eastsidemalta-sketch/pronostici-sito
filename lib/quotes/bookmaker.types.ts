@@ -104,6 +104,14 @@ export type Bookmaker = {
     eventsPath?: string;
     /** Feed Exalogic (Manifestazione/Avvenimento/Scommessa): usa estrattore dedicato */
     exalogic?: boolean;
+    /** Feed Betboom/Sporthub: quote in array stakes, mercato Winner, outcome_id 1=X 2=X 3=2 */
+    stakes1X2?: {
+      stakesPath?: string;
+      marketName?: string;
+      outcomeId1?: number;
+      outcomeIdX?: number;
+      outcomeId2?: number;
+    };
   } | null;
   /** Stato ultimo tentativo matching: pending | testing | matched | failed */
   apiDiscoveryStatus?: "pending" | "testing" | "matched" | "failed";

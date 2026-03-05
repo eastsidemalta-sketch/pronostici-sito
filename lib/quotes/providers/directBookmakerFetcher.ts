@@ -237,6 +237,44 @@ function getEventsArray(data: unknown, eventsPath: string): unknown[] {
 }
 
 /**
+ * Estrae quote 1X2 da array stakes (Betboom/Sporthub).
+ * market_name "Winner". Mappa per outcome_id (1,2,3) o per name (home, Draw, away).
+ */
+function extract1X2FromStakes(
+  stakes: unknown[],
+  homeTeam: string,
+  awayTeam: string,
+  config: { marketName?: string; outcomeId1?: number; outcomeIdX?: number; outcomeId2?: number }
+): { odds1: number; oddsX: number; odds2: number } {
+  const marketName = (config.marketName ?? "Winner").toLowerCase();
+  const id1 = config.outcomeId1 ?? 1;
+  const idX = config.outcomeIdX ?? 2;
+  const id2 = config.outcomeId2 ?? 3;
+  const out = { odds1: 0, oddsX: 0, odds2: 0 };
+  const homeNorm = homeTeam.toLowerCase().trim();
+  const awayNorm = awayTeam.toLowerCase().trim();
+  const drawNames = new Set(["draw", "empate", "x", "tie", "pareggio"]);
+
+  for (const s of stakes) {
+    if (!s || typeof s !== "object") continue;
+    const o = s as Record<string, unknown>;
+    const mkt = String(o.market_name ?? "").toLowerCase();
+    if (mkt !== marketName) continue;
+    const factor = typeof o.factor === "number" ? o.factor : parseFloat(String(o.factor ?? 0)) || 0;
+    const outcomeId = typeof o.outcome_id === "number" ? o.outcome_id : parseInt(String(o.outcome_id ?? 0), 10);
+    const name = String(o.name ?? "").toLowerCase().trim();
+
+    if (outcomeId === id1) out.odds1 = factor;
+    else if (outcomeId === idX) out.oddsX = factor;
+    else if (outcomeId === id2) out.odds2 = factor;
+    else if (name && drawNames.has(name)) out.oddsX = factor;
+    else if (name && homeNorm && name.includes(homeNorm)) out.odds1 = factor;
+    else if (name && awayNorm && name.includes(awayNorm)) out.odds2 = factor;
+  }
+  return out;
+}
+
+/**
  * Fetch quote da un bookmaker con API diretta.
  */
 export async function fetchDirectBookmakerQuotes(
@@ -285,7 +323,13 @@ export async function fetchDirectBookmakerQuotes(
 
   let body: string | undefined;
   if (method === "POST" && reqConfig.bodyTemplate) {
-    const bodyObj = { ...reqConfig.bodyTemplate, ...queryParams };
+    const bodyObj = { ...reqConfig.bodyTemplate, ...queryParams } as Record<string, unknown>;
+    if (leagueId != null && bm.apiLeagueMapping?.[String(leagueId)]) {
+      const mapped = bm.apiLeagueMapping[String(leagueId)];
+      const num = /^\d+$/.test(String(mapped)) ? parseInt(String(mapped), 10) : mapped;
+      if (bodyObj.category_ids !== undefined) bodyObj.category_ids = [num];
+      if (bodyObj.tournament_ids !== undefined) bodyObj.tournament_ids = [num];
+    }
     body = JSON.stringify(bodyObj);
   }
 
@@ -312,6 +356,7 @@ export async function fetchDirectBookmakerQuotes(
   const events = useExalogic
     ? flattenExalogicEvents(data)
     : getEventsArray(data, eventsPath);
+  const stakesConfig = mapping.stakes1X2;
   const quotes: DirectQuote[] = [];
 
   for (const ev of events) {
@@ -319,17 +364,32 @@ export async function fetchDirectBookmakerQuotes(
 
     const homeTeam = getString(ev, homeTeamPath);
     const awayTeam = getString(ev, awayTeamPath);
-    const odds1Std = getNumber(ev, odds1Path);
-    const oddsXStd = getNumber(ev, oddsXPath);
-    const odds2Std = getNumber(ev, odds2Path);
-    const odds1Pers = odds1Personalized ? getNumber(ev, odds1Personalized) : 0;
-    const oddsXPers = oddsXPersonalized ? getNumber(ev, oddsXPersonalized) : 0;
-    const odds2Pers = odds2Personalized ? getNumber(ev, odds2Personalized) : 0;
-    const odds1 = odds1Pers > 0 ? odds1Pers : odds1Std;
-    const oddsX = oddsXPers > 0 ? oddsXPers : oddsXStd;
-    const odds2 = odds2Pers > 0 ? odds2Pers : odds2Std;
-
     if (!homeTeam || !awayTeam) continue;
+
+    let odds1: number;
+    let oddsX: number;
+    let odds2: number;
+
+    if (stakesConfig) {
+      const stakesPath = stakesConfig.stakesPath ?? "stakes";
+      const stakesVal = getByPath(ev, stakesPath);
+      const stakesArr = Array.isArray(stakesVal) ? stakesVal : [];
+      const extracted = extract1X2FromStakes(stakesArr, homeTeam, awayTeam, stakesConfig);
+      odds1 = extracted.odds1;
+      oddsX = extracted.oddsX;
+      odds2 = extracted.odds2;
+    } else {
+      const odds1Std = getNumber(ev, odds1Path);
+      const oddsXStd = getNumber(ev, oddsXPath);
+      const odds2Std = getNumber(ev, odds2Path);
+      const odds1Pers = odds1Personalized ? getNumber(ev, odds1Personalized) : 0;
+      const oddsXPers = oddsXPersonalized ? getNumber(ev, oddsXPersonalized) : 0;
+      const odds2Pers = odds2Personalized ? getNumber(ev, odds2Personalized) : 0;
+      odds1 = odds1Pers > 0 ? odds1Pers : odds1Std;
+      oddsX = oddsXPers > 0 ? oddsXPers : oddsXStd;
+      odds2 = odds2Pers > 0 ? odds2Pers : odds2Std;
+    }
+
     if (odds1 <= 0 && oddsX <= 0 && odds2 <= 0) continue;
 
     quotes.push({

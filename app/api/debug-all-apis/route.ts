@@ -57,17 +57,55 @@ export async function GET(req: Request) {
         entry.sampleTeams = quotes
           .slice(0, 3)
           .map((q) => `${q.homeTeam} vs ${q.awayTeam}`);
-      } else if (probe && bm.apiEndpoint && bm.apiRequestConfig?.queryParams) {
-        // Probe: fetch raw per capire la struttura
-        const params = new URLSearchParams(bm.apiRequestConfig.queryParams as Record<string, string>);
-        const url = `${bm.apiEndpoint}?${params}`;
-        const res = await fetch(url, {
-          headers: bm.apiAuthType === "header" && bm.apiKey
-            ? { "X-Api-Key": bm.apiKey, Accept: "application/json" }
-            : { Accept: "application/json" },
-        });
-        if (res.ok) {
-          const data = (await res.json()) as unknown;
+      } else if (probe && bm.apiEndpoint) {
+        // Probe: fetch raw (GET o POST, Bearer/header)
+        const reqConfig = bm.apiRequestConfig ?? {};
+        const method = reqConfig.method === "POST" ? "POST" : "GET";
+        const headers: Record<string, string> = {
+          Accept: "application/json",
+          "Content-Type": "application/json",
+        };
+        if (bm.apiAuthType === "header" && bm.apiKey) headers["X-Api-Key"] = bm.apiKey;
+        else if (bm.apiAuthType === "bearer" && bm.apiKey) headers["Authorization"] = `Bearer ${bm.apiKey}`;
+
+        let url = bm.apiEndpoint;
+        let body: string | undefined;
+        if (method === "POST" && reqConfig.bodyTemplate) {
+          const bodyObj = { ...reqConfig.bodyTemplate } as Record<string, unknown>;
+          if (leagueId != null && bm.apiLeagueMapping?.[String(leagueId)]) {
+            const mapped = bm.apiLeagueMapping[String(leagueId)];
+            const num = /^\d+$/.test(String(mapped)) ? parseInt(String(mapped), 10) : mapped;
+            if (bodyObj.category_ids !== undefined) bodyObj.category_ids = [num];
+            if (bodyObj.tournament_ids !== undefined) bodyObj.tournament_ids = [num];
+          }
+          body = JSON.stringify(bodyObj);
+          entry.rawProbe = { ...(entry.rawProbe ?? {}), requestBody: bodyObj };
+        } else {
+          const qp = (reqConfig.queryParams ?? {}) as Record<string, string>;
+          const params = new URLSearchParams(qp);
+          url = `${url}${params.toString() ? `?${params}` : ""}`;
+        }
+
+        const res = await fetch(url, { method, headers, body });
+        const text = await res.text();
+        let data: unknown = null;
+        try {
+          data = text ? (JSON.parse(text) as unknown) : null;
+        } catch {
+          entry.rawProbe = {
+            ...(entry.rawProbe ?? {}),
+            httpStatus: res.status,
+            parseError: "Risposta non JSON",
+            rawPreview: text.slice(0, 400),
+          };
+        }
+        if (data !== null && !res.ok) {
+          entry.rawProbe = {
+            ...(entry.rawProbe ?? {}),
+            httpStatus: res.status,
+            errorResponse: data,
+          };
+        } else if (data !== null && res.ok) {
           const keys = typeof data === "object" && data !== null ? Object.keys(data as object) : [];
           let firstEvent: unknown = null;
           let eventsPathHint = bm.apiMappingConfig?.eventsPath ?? "$";
@@ -81,6 +119,9 @@ export async function GET(req: Request) {
               firstEvent = arr[0];
               const key = obj.data ? "data" : obj.events ? "events" : obj.eventi ? "eventi" : "risultati";
               eventsPathHint = `${key} (len=${arr.length})`;
+            } else if (Array.isArray(obj.matches) && obj.matches.length > 0) {
+              firstEvent = obj.matches[0];
+              eventsPathHint = `matches (len=${obj.matches.length})`;
             } else if (keys.length > 0) {
               const val = obj[keys[0]];
               if (Array.isArray(val) && val.length > 0) {
@@ -90,10 +131,14 @@ export async function GET(req: Request) {
             }
           }
           entry.rawProbe = {
+            ...(entry.rawProbe ?? {}),
             keys,
             firstEventKeys: firstEvent && typeof firstEvent === "object" ? Object.keys(firstEvent as object) : undefined,
             eventsPathHint,
-            sample: firstEvent ? JSON.stringify(firstEvent).slice(0, 800) : undefined,
+            sample: firstEvent ? JSON.stringify(firstEvent).slice(0, 1200) : undefined,
+            matchesCount: Array.isArray((data as Record<string, unknown>)?.matches)
+              ? (data as Record<string, unknown>).matches.length
+              : undefined,
           };
         }
       }
