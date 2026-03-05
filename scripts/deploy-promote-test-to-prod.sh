@@ -59,6 +59,7 @@ fi
 echo ""
 echo "3. Build e restart produzione..."
 mkdir -p public/uploads
+rm -rf .next
 npm ci
 npm run build
 cp -r public .next/standalone/ 2>/dev/null || true
