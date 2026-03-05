@@ -136,9 +136,10 @@ export async function GET(req: Request) {
             firstEventKeys: firstEvent && typeof firstEvent === "object" ? Object.keys(firstEvent as object) : undefined,
             eventsPathHint,
             sample: firstEvent ? JSON.stringify(firstEvent).slice(0, 1200) : undefined,
-            matchesCount: Array.isArray((data as Record<string, unknown>)?.matches)
-              ? (data as Record<string, unknown>).matches.length
-              : undefined,
+            matchesCount: (() => {
+              const m = (data as Record<string, unknown>)?.matches;
+              return Array.isArray(m) ? m.length : undefined;
+            })(),
           };
         }
       }
