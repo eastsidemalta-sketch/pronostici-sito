@@ -1,17 +1,23 @@
 /**
- * Debug: fetch Betboom categories per Football (sport_id 1).
- * Usa il risultato per trovare category_id del Brasileirão da mettere in apiLeagueMapping.
+ * Debug: fetch Betboom categories per sport.
  * GET /api/debug-betboom-categories
+ * GET /api/debug-betboom-categories?sportIds=2,3 (usa sport_id da /api/debug-betboom-sports)
  */
 import { NextResponse } from "next/server";
 
-export async function GET() {
+export async function GET(req: Request) {
   const endpoint = "https://com-br-partner-feed.sporthub.bet/api/partner_feed/v1/categories/get_by_sport_ids";
   const apiKey = process.env.BETBOOM_API_KEY;
+  const { searchParams } = new URL(req.url);
+  const sportIdsParam = searchParams.get("sportIds");
 
   if (!apiKey) {
     return NextResponse.json({ error: "BETBOOM_API_KEY mancante" }, { status: 500 });
   }
+
+  const sportIds = sportIdsParam
+    ? sportIdsParam.split(",").map((s) => parseInt(s.trim(), 10)).filter((n) => !Number.isNaN(n))
+    : [1];
 
   try {
     const res = await fetch(endpoint, {
@@ -21,7 +27,7 @@ export async function GET() {
         "x-access-token": apiKey,
         "x-partner": process.env.BETBOOM_PARTNER_ID ?? "id_7557",
       },
-      body: JSON.stringify({ locale: "en", sport_ids: [1] }),
+      body: JSON.stringify({ locale: "en", sport_ids: sportIds }),
       cache: "no-store",
     });
     const data = (await res.json()) as { categories?: Array<{ id: number; name: string; url_slug: string }> };
@@ -39,10 +45,11 @@ export async function GET() {
 
     return NextResponse.json({
       ok: true,
+      sportIds,
       categories,
       brasileiraoHint: brasileirao
         ? { id: brasileirao.id, name: brasileirao.name, slug: brasileirao.url_slug }
-        : "Cerca 'Brasil' o 'Serie A' nella lista categories e usa l'id in apiLeagueMapping.71",
+        : "Cerca 'Brasil' o 'Serie A' nella lista. Se vedi solo esports, chiama /api/debug-betboom-sports per trovare sport_id Football, poi ?sportIds=ID",
     });
   } catch (e) {
     return NextResponse.json({
