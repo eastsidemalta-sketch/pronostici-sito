@@ -136,6 +136,7 @@ export default function HomeContent({
               <HomeMatchesList
                 fixtures={filteredFixtures}
                 locale={locale}
+                initialTab={searchParams.get("tab") === "pronostici" ? "pronostici" : "quotes"}
                 noMatchesLabel={labels.noMatches}
                 compareLabel={labels.compareOdds}
                 allQuotesLabel={labels.allQuotes}
@@ -151,18 +152,21 @@ export default function HomeContent({
             {bonusSidebar}
           </div>
         ) : (
-          <div className="min-w-0 flex-1 space-y-6">
-            <div className="rounded-lg border border-[var(--card-border)] bg-[var(--card-bg)] p-6 text-center shadow-sm md:p-8">
-              <p className="mb-4 text-sm leading-relaxed text-[var(--foreground-muted)] md:text-base">
-                {labels.selectSportForMatches({ sport: sportLabel })}
-              </p>
-              <Link
-                href="/pronostici-quote"
-                className="inline-flex min-h-[40px] items-center justify-center rounded-lg bg-[var(--accent)] px-5 py-2.5 text-sm font-semibold text-white transition hover:bg-[var(--accent-hover)] md:min-h-[36px]"
-              >
-                {labels.pronosticiTitle}
-              </Link>
+          <div className="flex flex-col gap-6 sm:gap-6 lg:flex-row lg:items-start lg:gap-6">
+            <div className="min-w-0 flex-1 space-y-6">
+              <div className="rounded-lg border border-[var(--card-border)] bg-[var(--card-bg)] p-6 text-center shadow-sm md:p-8">
+                <p className="mb-4 text-sm leading-relaxed text-[var(--foreground-muted)] md:text-base">
+                  {labels.selectSportForMatches({ sport: sportLabel })}
+                </p>
+                <Link
+                  href="/pronostici-quote"
+                  className="inline-flex min-h-[40px] items-center justify-center rounded-lg bg-[var(--accent)] px-5 py-2.5 text-sm font-semibold text-white transition hover:bg-[var(--accent-hover)] md:min-h-[36px]"
+                >
+                  {labels.pronosticiTitle}
+                </Link>
+              </div>
             </div>
+            {bonusSidebar}
           </div>
         )}
       </div>

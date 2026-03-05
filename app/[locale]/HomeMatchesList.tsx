@@ -8,6 +8,7 @@ import { usePathname } from "@/i18n/navigation";
 import { useSearchParams } from "next/navigation";
 import { Link } from "@/i18n/navigation";
 import { BookmakerLink } from "@/lib/components/BookmakerLink";
+import { BookmakerLogo } from "@/lib/components/BookmakerLogo";
 import { localeToIntl } from "@/i18n/routing";
 import { normalizeTeamName, buildMatchSlug } from "@/lib/textEncoding";
 import { useLiveMatches } from "@/lib/hooks/useLiveMatches";
@@ -80,11 +81,9 @@ export default function HomeMatchesList({
 
   const handleTabClick = (tab: "quotes" | "pronostici") => {
     setMobileTab(tab);
-    if (pathname.includes("pronostici-quote")) {
-      const params = new URLSearchParams(searchParams.toString());
-      params.set("tab", tab);
-      router.replace(`${pathname}?${params.toString()}`);
-    }
+    const params = new URLSearchParams(searchParams.toString());
+    params.set("tab", tab);
+    router.replace(`${pathname}?${params.toString()}`);
   };
 
   const intlLocale = localeToIntl[locale] ?? "it-IT";
@@ -303,7 +302,7 @@ export default function HomeMatchesList({
                                   <div className="flex min-h-[40px] min-w-[4.5rem] overflow-hidden rounded-lg border border-[var(--card-border)] sm:min-h-0 sm:min-w-0 md:min-w-[5rem]">
                                     <div className="flex shrink-0 items-center justify-center border-r border-gray-200 bg-white px-2 py-2 sm:px-1.5 sm:py-1.5">
                                       {(q.bookmaker1?.faviconUrl || q.bookmaker1?.logoUrl) ? (
-                                        <Image src={q.bookmaker1.faviconUrl || q.bookmaker1.logoUrl!} alt="" width={36} height={36} className="h-8 w-8 shrink-0 object-contain md:h-9 md:w-9" title={q.bookmaker1.name} />
+                                        <BookmakerLogo src={q.bookmaker1.faviconUrl || q.bookmaker1.logoUrl!} size="sm" title={q.bookmaker1.name} />
                                       ) : null}
                                     </div>
                                     <div className="flex flex-1 items-center justify-center bg-slate-100 px-1.5 py-1.5 sm:px-1 sm:py-1">
@@ -318,7 +317,7 @@ export default function HomeMatchesList({
                                   <div className="flex min-h-[40px] min-w-[4.5rem] overflow-hidden rounded-lg border border-[var(--card-border)] sm:min-h-0 sm:min-w-0 md:min-w-[5rem]">
                                     <div className="flex shrink-0 items-center justify-center border-r border-gray-200 bg-white px-2 py-2 sm:px-1.5 sm:py-1.5">
                                       {(q.bookmakerX?.faviconUrl || q.bookmakerX?.logoUrl) ? (
-                                        <Image src={q.bookmakerX.faviconUrl || q.bookmakerX.logoUrl!} alt="" width={36} height={36} className="h-8 w-8 shrink-0 object-contain md:h-9 md:w-9" title={q.bookmakerX.name} />
+                                        <BookmakerLogo src={q.bookmakerX.faviconUrl || q.bookmakerX.logoUrl!} size="sm" title={q.bookmakerX.name} />
                                       ) : null}
                                     </div>
                                     <div className="flex flex-1 items-center justify-center bg-slate-100 px-1.5 py-1.5 sm:px-1 sm:py-1">
@@ -333,7 +332,7 @@ export default function HomeMatchesList({
                                   <div className="flex min-h-[40px] min-w-[4.5rem] overflow-hidden rounded-lg border border-[var(--card-border)] sm:min-h-0 sm:min-w-0 md:min-w-[5rem]">
                                     <div className="flex shrink-0 items-center justify-center border-r border-gray-200 bg-white px-2 py-2 sm:px-1.5 sm:py-1.5">
                                       {(q.bookmaker2?.faviconUrl || q.bookmaker2?.logoUrl) ? (
-                                        <Image src={q.bookmaker2.faviconUrl || q.bookmaker2.logoUrl!} alt="" width={36} height={36} className="h-8 w-8 shrink-0 object-contain md:h-9 md:w-9" title={q.bookmaker2.name} />
+                                        <BookmakerLogo src={q.bookmaker2.faviconUrl || q.bookmaker2.logoUrl!} size="sm" title={q.bookmaker2.name} />
                                       ) : null}
                                     </div>
                                     <div className="flex flex-1 items-center justify-center bg-slate-100 px-1.5 py-1.5 sm:px-1 sm:py-1">
@@ -363,12 +362,9 @@ export default function HomeMatchesList({
                                 >
                                   {(featuredBookmaker.faviconUrl || featuredBookmaker.logoUrl) && (
                                     <div className="flex shrink-0 items-center justify-center border-r border-gray-200 bg-white px-2 py-1.5">
-                                      <Image
+                                      <BookmakerLogo
                                         src={featuredBookmaker.faviconUrl || featuredBookmaker.logoUrl!}
-                                        alt=""
-                                        width={36}
-                                        height={36}
-                                        className="h-8 w-8 shrink-0 object-contain md:h-9 md:w-9"
+                                        size="sm"
                                       />
                                     </div>
                                   )}
@@ -426,12 +422,9 @@ export default function HomeMatchesList({
                                     >
                                       {(featuredBookmaker.faviconUrl || featuredBookmaker.logoUrl) && (
                                         <div className="flex shrink-0 items-center justify-center border-r border-gray-200 bg-white px-2 py-1.5">
-                                          <Image
+                                          <BookmakerLogo
                                             src={featuredBookmaker.faviconUrl || featuredBookmaker.logoUrl!}
-                                            alt=""
-                                            width={36}
-                                            height={36}
-                                            className="h-8 w-8 shrink-0 object-contain md:h-9 md:w-9"
+                                            size="sm"
                                           />
                                         </div>
                                       )}
@@ -469,12 +462,9 @@ export default function HomeMatchesList({
                                   >
                                     {(featuredBookmaker.faviconUrl || featuredBookmaker.logoUrl) && (
                                       <div className="flex shrink-0 items-center justify-center border-r border-gray-200 bg-white px-2 py-1.5">
-                                        <Image
+                                        <BookmakerLogo
                                           src={featuredBookmaker.faviconUrl || featuredBookmaker.logoUrl!}
-                                          alt=""
-                                          width={28}
-                                          height={28}
-                                          className="h-6 w-6 shrink-0 object-contain md:h-7 md:w-7"
+                                          size="sm"
                                         />
                                       </div>
                                     )}

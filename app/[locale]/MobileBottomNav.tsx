@@ -128,7 +128,7 @@ export default function MobileBottomNav() {
 
   const isHome = path.length <= 1;
   const isQuote = isOnPronosticiQuote && tab !== "pronostici";
-  const isPronostici = isOnPronosticiQuote && tab === "pronostici";
+  const isPronostici = tab === "pronostici" && (isOnPronosticiQuote || isHome);
   const isBonus = pathname.includes("bonus");
   const isSiti = pathname.includes("siti-scommesse");
 
@@ -156,16 +156,15 @@ export default function MobileBottomNav() {
           {t("quotes")}
         </span>
       </button>
-      <button
-        type="button"
-        onClick={() => openMenu("sports")}
+      <Link
+        href="/?tab=pronostici"
         className="flex min-w-0 flex-1 flex-col items-center gap-0.5 px-0.5 py-2 active:opacity-70"
       >
         <PredictionsIcon active={isPronostici} />
         <span className={`text-[9px] font-medium ${isPronostici ? "text-[var(--nav-bar-active)]" : "text-[var(--nav-bar-inactive)]"}`}>
           {t("predictions")}
         </span>
-      </button>
+      </Link>
       <button
         type="button"
         onClick={() => openMenu("main")}
