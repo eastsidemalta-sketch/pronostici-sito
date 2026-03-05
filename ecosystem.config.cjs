@@ -15,9 +15,9 @@ module.exports = {
     {
       name: "pronostici",
       cwd: "/var/www/pronostici-sito/.next/standalone",
-      script: "node",
-      args: "server.js",
-      env: { PORT: 3000, HOSTNAME: "0.0.0.0" },
+      script: "./start-standalone.sh",
+      interpreter: "bash",
+      env: { PORT: "3000", HOSTNAME: "0.0.0.0" },
     },
   ],
 };

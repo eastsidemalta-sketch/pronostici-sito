@@ -35,6 +35,8 @@ cp -r .next/static .next/standalone/.next/ 2>/dev/null || true
 node scripts/apply-netwin-config.mjs 2>/dev/null || true
 cp -r data .next/standalone/ 2>/dev/null || true
 if [ -f .env.local ]; then cp .env.local .next/standalone/; elif [ -f .env ]; then cp .env .next/standalone/; fi
+cp scripts/start-standalone.sh .next/standalone/ 2>/dev/null || true
+chmod +x .next/standalone/start-standalone.sh 2>/dev/null || true
 pm2 delete pronostici 2>/dev/null; pm2 start /var/www/pronostici-sito/ecosystem.config.cjs --only pronostici
 wait_for_app "pronostici" 3000 || true
 echo ""
