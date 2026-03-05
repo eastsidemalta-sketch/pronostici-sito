@@ -29,7 +29,7 @@ export async function GET(req: Request) {
       quotesCount: number;
       sampleTeams?: string[];
       error?: string;
-      rawProbe?: { keys: string[]; firstEventKeys?: string[]; eventsPathHint: string; sample?: unknown };
+      rawProbe?: Record<string, unknown>;
     }>;
     combinedTest?: { h2hQuotesCount: number; sampleBookmakers: string[] };
   } = {
