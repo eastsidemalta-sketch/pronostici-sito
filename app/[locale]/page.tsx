@@ -77,7 +77,7 @@ export default async function HomePage({
 
   return (
     <main className="min-h-screen bg-[var(--background)]">
-      <Suspense fallback={<div className="flex min-h-[200px] items-center justify-center text-[var(--foreground-muted)]">Caricamento…</div>}>
+      <Suspense fallback={<div className="flex min-h-[200px] items-center justify-center text-[var(--foreground-muted)]">{t("loading")}</div>}>
       <HomeContent
         menuItems={menuItems}
         fixtures={fixtures}

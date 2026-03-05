@@ -144,10 +144,14 @@ function injectFromClientProfiles(bookmakers: Bookmaker[]): Bookmaker[] {
   try {
     if (!existsSync(PROFILES_PATH)) return bookmakers;
     const profiles = JSON.parse(readFileSync(PROFILES_PATH, "utf-8")) as Record<string, ClientProfile>;
-    const existingIds = new Set(bookmakers.map((b) => (b.siteId || b.id || "").toUpperCase()));
+    const existingSiteIds = new Set(bookmakers.map((b) => (b.siteId || "").toUpperCase()).filter(Boolean));
+    const existingBookmakerIds = new Set(bookmakers.map((b) => (b.id || "").toLowerCase()).filter(Boolean));
     const toAdd: Bookmaker[] = [];
     for (const [siteId, profile] of Object.entries(profiles)) {
-      if (!profile || existingIds.has(siteId.toUpperCase())) continue;
+      if (!profile) continue;
+      if (existingSiteIds.has(siteId.toUpperCase())) continue;
+      const profileId = (profile.bookmakerId || profile.internalName?.toLowerCase().replace(/\s+/g, "") || "netwinit").toLowerCase();
+      if (existingBookmakerIds.has(profileId)) continue; // evita duplicati: Netwin già creato in admin con siteId diverso (es. IT-0001)
       toAdd.push({
         id: profile.bookmakerId || profile.internalName?.toLowerCase().replace(/\s+/g, "") || "netwinit",
         siteId: profile.siteId || siteId,
@@ -183,7 +187,13 @@ function applyClientProfilesOverrides(bookmakers: Bookmaker[]): Bookmaker[] {
     const profiles = JSON.parse(readFileSync(PROFILES_PATH, "utf-8")) as Record<string, ClientProfile>;
     return bookmakers.map((bm) => {
       const siteId = bm.siteId || "";
-      const profile = profiles[siteId];
+      let profile = profiles[siteId];
+      if (!profile) {
+        const bmId = (bm.id || "").toLowerCase();
+        profile = Object.values(profiles).find(
+          (p) => (p.bookmakerId || p.internalName?.toLowerCase().replace(/\s+/g, "") || "").toLowerCase() === bmId
+        ) ?? null;
+      }
       if (!profile) return bm;
       const updates: Partial<Bookmaker> = {};
       if (profile.logoPath) updates.logoUrl = profile.logoPath;

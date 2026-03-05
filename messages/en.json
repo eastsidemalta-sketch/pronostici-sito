@@ -5,6 +5,7 @@
     "pronosticiQuote": "PlaySignal",
     "bonus": "Bonus",
     "sitiScommesse": "Betting Sites",
+    "sitiScommesseShort": "Sites",
     "bookmakers": "Bookmakers",
     "quotes": "Quotes",
     "predictions": "Predictions",
@@ -36,7 +37,8 @@
     "quotesTab": "Odds",
     "predictionsTab": "Predictions",
     "featuredBookmaker": "Featured site",
-    "claimBonus": "100€ BONUS"
+    "claimBonus": "100€ BONUS",
+    "loading": "Loading…"
   },
   "pronosticiQuote": {
     "title": "PlaySignal",
@@ -106,9 +108,32 @@
     "description": "Bookmaker profiles, reviews and links to the best betting sites. Compare odds and bonuses.",
     "placeholder": "We will add bookmaker profiles here."
   },
+  "quotes": {
+    "bookmaker": "Bookmaker",
+    "site": "Site",
+    "bet": "Bet",
+    "loadingQuotes": "Loading odds…",
+    "noQuotesAvailable": "Odds not available for this match",
+    "quotePrincipals": "Main Odds",
+    "handicapBets": "Handicap Bets",
+    "asianHandicap": "Asian Handicap",
+    "resultBets": "Result Bets",
+    "extraBets": "Extra Bets",
+    "overUnder25": "Over/Under 2.5 goals",
+    "overUnder15": "Over/Under 1.5 goals",
+    "bothTeamsScore": "Both teams score",
+    "outcome1X2": "1X2 Result",
+    "doubleChance": "Double Chance",
+    "drawNoBet": "Draw No Bet",
+    "halfTimeOutcome": "1st Half Result",
+    "handicapLine": "Handicap"
+  },
   "footer": {
     "copyright": "© {year} PlaySignal — {country}",
     "terms": "Terms and Conditions"
+  },
+  "redirect": {
+    "transferring": "We are redirecting you to the partner betting site"
   },
   "cookies": {
     "title": "We use cookies",

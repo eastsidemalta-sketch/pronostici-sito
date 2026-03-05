@@ -105,6 +105,9 @@
     "copyright": "© {year} PlaySignal — {country}",
     "terms": "Terms and Conditions"
   },
+  "redirect": {
+    "transferring": "We are redirecting you to the partner betting site"
+  },
   "cookies": {
     "title": "We use cookies",
     "description": "We use cookies and similar technologies to improve your experience, analyse traffic and personalise content. You can manage your preferences in our ",

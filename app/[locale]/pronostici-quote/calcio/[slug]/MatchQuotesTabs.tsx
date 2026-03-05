@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from "react";
 import { useParams, useSearchParams } from "next/navigation";
+import { useTranslations } from "next-intl";
 import { trackEvent } from "@/lib/analytics/ga";
 import { BookmakerLink } from "@/lib/components/BookmakerLink";
 import { BookmakerLogo } from "@/lib/components/BookmakerLogo";
@@ -28,44 +29,36 @@ type MarketDef = {
   columns: Array<{ key: string; label: string; pointKey?: string; isHandicap?: boolean }>;
 };
 
-/** Solo mercati che possiamo recuperare da The Odds API. Nessun placeholder. */
 const MARKET_CATEGORIES: Record<
   string,
-  { label: string; markets: MarketDef[] }
+  { labelKey: string; markets: Array<MarketDef & { titleKey: string }> }
 > = {
   principali: {
-    label: "Quote Principali",
+    labelKey: "quotePrincipals",
     markets: [
-      { key: "h2h", title: "Esito 1X2", columns: [{ key: "home", label: "1" }, { key: "draw", label: "X" }, { key: "away", label: "2" }] },
-      { key: "double_chance", title: "Doppia Chance", columns: [{ key: "homeOrDraw", label: "1X" }, { key: "homeOrAway", label: "12" }, { key: "drawOrAway", label: "X2" }] },
-      { key: "draw_no_bet", title: "Draw No Bet", columns: [{ key: "home", label: "1" }, { key: "away", label: "2" }] },
+      { key: "h2h", titleKey: "outcome1X2", title: "", columns: [{ key: "home", label: "1" }, { key: "draw", label: "X" }, { key: "away", label: "2" }] },
+      { key: "double_chance", titleKey: "doubleChance", title: "", columns: [{ key: "homeOrDraw", label: "1X" }, { key: "homeOrAway", label: "12" }, { key: "drawOrAway", label: "X2" }] },
+      { key: "draw_no_bet", titleKey: "drawNoBet", title: "", columns: [{ key: "home", label: "1" }, { key: "away", label: "2" }] },
     ],
   },
   handicap: {
-    label: "Scommesse con Handicap",
+    labelKey: "handicapBets",
     markets: [
-      {
-        key: "spreads",
-        title: "Handicap Asiático",
-        columns: [
-          { key: "home", label: "", pointKey: "homePoint", isHandicap: true },
-          { key: "away", label: "", pointKey: "awayPoint", isHandicap: true },
-        ],
-      },
+      { key: "spreads", titleKey: "asianHandicap", title: "", columns: [{ key: "home", label: "", pointKey: "homePoint", isHandicap: true }, { key: "away", label: "", pointKey: "awayPoint", isHandicap: true }] },
     ],
   },
   risultato: {
-    label: "Scommesse sul risultato",
+    labelKey: "resultBets",
     markets: [
-      { key: "totals_25", title: "Over/Under 2.5 gol", columns: [{ key: "over", label: "Over 2.5" }, { key: "under", label: "Under 2.5" }] },
-      { key: "totals_15", title: "Over/Under 1.5 gol", columns: [{ key: "over", label: "Over 1.5" }, { key: "under", label: "Under 1.5" }] },
-      { key: "btts", title: "Entrambe segnano", columns: [{ key: "yes", label: "Sì" }, { key: "no", label: "No" }] },
+      { key: "totals_25", titleKey: "overUnder25", title: "", columns: [{ key: "over", label: "Over 2.5" }, { key: "under", label: "Under 2.5" }] },
+      { key: "totals_15", titleKey: "overUnder15", title: "", columns: [{ key: "over", label: "Over 1.5" }, { key: "under", label: "Under 1.5" }] },
+      { key: "btts", titleKey: "bothTeamsScore", title: "", columns: [{ key: "yes", label: "Sì" }, { key: "no", label: "No" }] },
     ],
   },
   extra: {
-    label: "Scommesse Extra",
+    labelKey: "extraBets",
     markets: [
-      { key: "h2h_3_way_h1", title: "Esito 1° Tempo", columns: [{ key: "home", label: "1" }, { key: "draw", label: "X" }, { key: "away", label: "2" }] },
+      { key: "h2h_3_way_h1", titleKey: "halfTimeOutcome", title: "", columns: [{ key: "home", label: "1" }, { key: "draw", label: "X" }, { key: "away", label: "2" }] },
     ],
   },
 };
@@ -83,6 +76,8 @@ type Props = {
 export default function MatchQuotesTabs({ sportKey, homeTeam, awayTeam, country, leagueId, bookmakerLogos = {}, bookmakerFavicons = {} }: Props) {
   const params = useParams();
   const searchParams = useSearchParams();
+  const t = useTranslations("quotes");
+  const tMatch = useTranslations("match");
   const locale = (params?.locale as string) || "it";
   const matchSlug = params?.slug as string | undefined;
   const logoByKey = new Map<string, string>(Object.entries(bookmakerLogos));
@@ -111,7 +106,7 @@ export default function MatchQuotesTabs({ sportKey, homeTeam, awayTeam, country,
   if (loading) {
     return (
       <div className="rounded-lg border border-[var(--card-border)] bg-[var(--card-bg)] p-6 text-center shadow-sm md:p-8">
-        <p className="text-base text-[var(--foreground-muted)]">Caricamento quote…</p>
+        <p className="text-base text-[var(--foreground-muted)]">{t("loadingQuotes")}</p>
       </div>
     );
   }
@@ -120,7 +115,7 @@ export default function MatchQuotesTabs({ sportKey, homeTeam, awayTeam, country,
   if (!hasAnyQuotes) {
     return (
       <div className="rounded-lg border border-[var(--card-border)] bg-[var(--card-bg)] p-6 text-center shadow-sm md:p-8">
-        <p className="text-base text-[var(--foreground-muted)]">Quote non disponibili per questa partita</p>
+        <p className="text-base text-[var(--foreground-muted)]">{t("noQuotesAvailable")}</p>
       </div>
     );
   }
@@ -151,7 +146,7 @@ export default function MatchQuotesTabs({ sportKey, homeTeam, awayTeam, country,
                   : "border-transparent text-[var(--foreground-muted)] hover:text-[var(--foreground)]"
               }`}
             >
-              {cat.label}
+              {t(cat.labelKey)}
             </button>
           ))}
         </div>
@@ -178,7 +173,7 @@ export default function MatchQuotesTabs({ sportKey, homeTeam, awayTeam, country,
             return (
               <div key={market.key} className="mb-5 last:mb-0 md:mb-6">
                 <h3 className="mb-3 text-sm font-semibold text-[var(--foreground)] md:text-base">
-                  {market.title}
+                  {t(market.titleKey)}
                 </h3>
                 {Array.from(byLine.entries()).map(([lineKey, lineQuotes]) => {
                   const first = lineQuotes[0];
@@ -189,13 +184,13 @@ export default function MatchQuotesTabs({ sportKey, homeTeam, awayTeam, country,
                   return (
                     <div key={lineKey} className="mb-4 last:mb-0">
                       <div className="mb-1.5 text-xs font-medium text-[var(--foreground-muted)]">
-                        Handicap {formatHandicap(homePoint)} / {formatHandicap(awayPoint)}
+                        {t("handicapLine")} {formatHandicap(homePoint)} / {formatHandicap(awayPoint)}
                       </div>
                       <div className="overflow-x-auto rounded-lg border border-[var(--card-border)]">
                         <table className="w-full text-sm md:text-base">
                           <thead>
                             <tr className="border-b border-[var(--card-border)] bg-slate-50">
-                              <th className="px-3 py-2 text-left text-xs font-semibold text-[var(--foreground)] md:px-4 md:py-2.5 md:text-sm">Bookmaker</th>
+                              <th className="px-3 py-2 text-left text-xs font-semibold text-[var(--foreground)] md:px-4 md:py-2.5 md:text-sm">{t("bookmaker")}</th>
                               <th className="px-3 py-2 text-center text-xs font-semibold text-[var(--foreground)] md:px-4 md:py-2.5 md:text-sm">
                                 {hTeam} {formatHandicap(homePoint)}
                               </th>
@@ -203,7 +198,7 @@ export default function MatchQuotesTabs({ sportKey, homeTeam, awayTeam, country,
                                 {aTeam} {formatHandicap(awayPoint)}
                               </th>
                               <th className="w-20 px-3 py-2 text-center text-xs font-semibold text-[var(--foreground)] md:w-24 md:px-4 md:py-2.5 md:text-sm">
-                                Sito
+                                {t("site")}
                               </th>
                             </tr>
                           </thead>
@@ -242,7 +237,7 @@ export default function MatchQuotesTabs({ sportKey, homeTeam, awayTeam, country,
                                       matchSlug={matchSlug}
                                       className="inline-flex min-h-[32px] items-center justify-center rounded-lg bg-[var(--accent)] px-3 py-1.5 text-xs font-semibold text-white transition hover:bg-[var(--accent-hover)] md:min-h-[36px] md:px-4 md:py-2 md:text-sm"
                                     >
-                                      Scommetti
+                                      {t("bet")}
                                     </BookmakerLink>
                                   ) : (
                                     <span className="text-[var(--foreground-muted)]">-</span>
@@ -263,23 +258,23 @@ export default function MatchQuotesTabs({ sportKey, homeTeam, awayTeam, country,
           return (
             <div key={market.key} className="mb-5 last:mb-0 md:mb-6">
               <h3 className="mb-3 text-sm font-semibold text-[var(--foreground)] md:text-base">
-                {market.title}
+                {t((market as MarketDef & { titleKey?: string }).titleKey ?? market.key)}
               </h3>
               <div className="overflow-x-auto rounded-lg border border-[var(--card-border)]">
                 <table className="w-full text-sm md:text-base">
                   <thead>
                     <tr className="border-b border-[var(--card-border)] bg-slate-50">
-                      <th className="px-3 py-2 text-left text-xs font-semibold text-[var(--foreground)] md:px-4 md:py-2.5 md:text-sm">Bookmaker</th>
+                      <th className="px-3 py-2 text-left text-xs font-semibold text-[var(--foreground)] md:px-4 md:py-2.5 md:text-sm">{t("bookmaker")}</th>
                       {market.columns.map((col) => (
                         <th
                           key={col.key}
                           className="px-3 py-2 text-center text-xs font-semibold text-[var(--foreground)] md:px-4 md:py-2.5 md:text-sm"
                         >
-                          {col.label}
+                          {(col.key === "yes" || col.key === "no") ? tMatch(col.key) : col.label}
                         </th>
                       ))}
                       <th className="w-20 px-3 py-2 text-center text-xs font-semibold text-[var(--foreground)] md:w-24 md:px-4 md:py-2.5 md:text-sm">
-                        Sito
+                        {t("site")}
                       </th>
                     </tr>
                   </thead>
@@ -335,7 +330,7 @@ export default function MatchQuotesTabs({ sportKey, homeTeam, awayTeam, country,
                               matchSlug={matchSlug}
                               className="inline-flex min-h-[32px] items-center justify-center rounded-lg bg-[var(--accent)] px-3 py-1.5 text-xs font-semibold text-white transition hover:bg-[var(--accent-hover)] md:min-h-[36px] md:px-4 md:py-2 md:text-sm"
                             >
-                              Scommetti
+                              {t("bet")}
                             </BookmakerLink>
                           ) : (
                             <span className="text-[var(--foreground-muted)]">-</span>

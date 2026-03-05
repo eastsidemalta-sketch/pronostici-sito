@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { useTranslations } from "next-intl";
 
 type Props = {
   targetUrl: string;
@@ -9,6 +10,7 @@ type Props = {
 };
 
 export function RedirectContent({ targetUrl, bookmakerName, bookmakerLogoUrl }: Props) {
+  const t = useTranslations("redirect");
   const [activeBall, setActiveBall] = useState(-1);
 
   useEffect(() => {
@@ -41,7 +43,7 @@ export function RedirectContent({ targetUrl, bookmakerName, bookmakerLogoUrl }: 
       />
 
       <p className="mb-6 max-w-md text-center text-lg text-gray-700">
-        Vi stiamo trasferendo verso il sito di scommesse partner
+        {t("transferring")}
       </p>
 
       {bookmakerLogoUrl && (

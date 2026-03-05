@@ -180,8 +180,8 @@ export default function MobileBottomNav() {
         className="flex min-w-0 flex-1 flex-col items-center gap-0.5 px-0.5 py-2 active:opacity-70"
       >
         <SitesIcon active={isSiti} />
-        <span className={`text-[9px] font-medium ${isSiti ? "text-[var(--nav-bar-active)]" : "text-[var(--nav-bar-inactive)]"}`}>
-          {t("sitiScommesse")}
+        <span className={`whitespace-nowrap text-[9px] font-medium ${isSiti ? "text-[var(--nav-bar-active)]" : "text-[var(--nav-bar-inactive)]"}`}>
+          {t("sitiScommesseShort") ?? t("sitiScommesse")}
         </span>
       </Link>
     </nav>

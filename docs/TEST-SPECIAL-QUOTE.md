@@ -53,7 +53,14 @@ Se una tab non appare, quel mercato non ha dati (vedi debug sopra).
 | Nomi outcome diversi | Adattare regex in `directBookmakerFetcher.ts` (extractHandicapFromStakes, extractTotalsFromStakes, ecc.) |
 | Nessuna partita matchata | Verificare `matchTeamNames` – i nomi Betboom potrebbero differire da API-Football |
 
-## 5. File da modificare per sistemare
+## 5. Home page senza quote/pronostici
+
+Se la home pt-BR non mostra quote e pronostici:
+1. Prova `?refresh=1` sull’URL (es. `/pt-BR/?refresh=1`) per bypassare la cache
+2. Invalida la cache: `GET /api/debug-br-home?invalidate=1`
+3. Se persiste: verificare che `market_ids: [1,2,3,14,20]` non causi risposta vuota da Betboom. In tal caso, provare temporaneamente `market_ids: [1]` in clientProfiles.
+
+## 6. File da modificare per sistemare
 
 - `lib/quotes/providers/directBookmakerFetcher.ts` – funzioni `extract*FromStakes`
 - `app/[locale]/pronostici-quote/calcio/[slug]/MatchQuotesTabs.tsx` – layout/ordine tab, etichette PT-BR
