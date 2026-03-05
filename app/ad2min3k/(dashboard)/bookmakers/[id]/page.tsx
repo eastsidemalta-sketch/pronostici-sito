@@ -85,12 +85,19 @@ export default function AdminBookmakerEditPage() {
     fetch(`/api/ad2min3k/bookmakers`)
       .then((r) => r.json())
       .then((data) => {
-        const found = data.bookmakers?.find((b: Bookmaker) => b.id === id);
+        // Cerca per id o per siteId (es. IT-0002)
+        const found =
+          data.bookmakers?.find((b: Bookmaker) => b.id === id) ??
+          data.bookmakers?.find((b: Bookmaker) => (b.siteId || "").toUpperCase() === (id || "").toUpperCase());
         setBm(found || null);
+        // Se trovato per siteId, reindirizza alla URL canonica (id)
+        if (found && found.id !== id) {
+          router.replace(`/ad2min3k/bookmakers/${found.id}`);
+        }
       })
       .catch(() => setBm(null))
       .finally(() => setLoading(false));
-  }, [id]);
+  }, [id, router]);
 
   function handleChange(field: keyof Bookmaker, value: unknown) {
     if (!bm) return;
@@ -105,7 +112,7 @@ export default function AdminBookmakerEditPage() {
     try {
       const formData = new FormData();
       formData.append("favicon", file);
-      const res = await fetch(`/api/ad2min3k/bookmakers/${id}/favicon`, {
+      const res = await fetch(`/api/ad2min3k/bookmakers/${bm.id}/favicon`, {
         method: "POST",
         body: formData,
       });
@@ -132,7 +139,7 @@ export default function AdminBookmakerEditPage() {
     try {
       const formData = new FormData();
       formData.append("logo", file);
-      const res = await fetch(`/api/ad2min3k/bookmakers/${id}/logo`, {
+      const res = await fetch(`/api/ad2min3k/bookmakers/${bm.id}/logo`, {
         method: "POST",
         body: formData,
       });
@@ -214,7 +221,7 @@ export default function AdminBookmakerEditPage() {
           )}
         </div>
         <Link
-          href={`/ad2min3k/bookmakers/${id}/matching-report`}
+          href={`/ad2min3k/bookmakers/${bm.id}/matching-report`}
           className="text-sm font-medium text-emerald-600 hover:text-emerald-700"
         >
           Report matching →
@@ -434,9 +441,9 @@ export default function AdminBookmakerEditPage() {
         </div>
 
         <div className="rounded-xl border bg-white p-6">
-          <h3 className="mb-4 font-semibold">Bonus in Box partita</h3>
+          <h3 className="mb-4 font-semibold">Bonus per paese</h3>
           <p className="mb-4 text-sm text-neutral-600">
-            Configura i box bonus sotto &quot;Tutte le quote&quot; e &quot;Pronostici completi&quot;. Puoi usare testi e URL diversi per ciascuno.
+            Configura il bonus mostrato su <strong>Bonus</strong> e <strong>Siti di scommesse</strong>, e i box sotto &quot;Tutte le quote&quot; / &quot;Pronostici completi&quot;.
           </p>
           {(Object.keys(bm.countryConfig || {}) as string[]).length === 0 ? (
             <p className="text-sm text-neutral-500">
@@ -459,6 +466,19 @@ export default function AdminBookmakerEditPage() {
                 return (
                   <div key={countryCode} className="rounded-lg border border-neutral-200 bg-neutral-50 p-4">
                     <h4 className="mb-4 font-medium text-neutral-800">{countryCode}</h4>
+
+                    {/* Testo bonus (Bonus page + Siti scommesse) */}
+                    <div className="mb-6 rounded-lg border border-emerald-200 bg-emerald-50/50 p-4">
+                      <h5 className="mb-3 text-sm font-semibold text-emerald-800">Testo bonus (pagina Bonus e Siti scommesse)</h5>
+                      <RichTextEditor
+                        label="Descrizione bonus"
+                        value={cfg.bonusDescription || ""}
+                        onChange={(v) => updateMatchBox({ bonusDescription: v || undefined })}
+                        rows={3}
+                        placeholder="Es. 300€ di Bonus totale : 250€ subito + 50€ di real bonus sul primo deposito"
+                        preview={false}
+                      />
+                    </div>
 
                     {/* Box sotto "Tutte le quote" */}
                     <div className="mb-6 rounded-lg border border-neutral-200 bg-white p-4">
@@ -675,7 +695,7 @@ export default function AdminBookmakerEditPage() {
                     setDiscoverResult(null);
                     setError("");
                     try {
-                      const res = await fetch(`/api/ad2min3k/bookmakers/${id}/test-api`, {
+                      const res = await fetch(`/api/ad2min3k/bookmakers/${bm.id}/test-api`, {
                         method: "POST",
                         headers: { "Content-Type": "application/json" },
                         body: JSON.stringify({
@@ -707,7 +727,7 @@ export default function AdminBookmakerEditPage() {
                     setDiscoverResult(null);
                     setError("");
                     try {
-                      const res = await fetch(`/api/ad2min3k/bookmakers/${id}/discover-mapping`, {
+                      const res = await fetch(`/api/ad2min3k/bookmakers/${bm.id}/discover-mapping`, {
                         method: "POST",
                         headers: { "Content-Type": "application/json" },
                         body: JSON.stringify({ rawBody: testResult?.rawBody }),
