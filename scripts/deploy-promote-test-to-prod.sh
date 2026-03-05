@@ -3,7 +3,7 @@
 # Copia data/ da test a prod (bookmakers, config admin) e fa deploy prod.
 # Eseguire sul droplet: bash scripts/deploy-promote-test-to-prod.sh
 #
-# Flusso: 1) copia data da test 2) pull + build + restart prod
+# Flusso: 1) pull prod (reset locale se conflitti) 2) copia data da test 3) build + restart
 
 set -e
 
@@ -31,23 +31,32 @@ wait_for_app() {
 
 echo "=== Promozione TEST → PRODUZIONE ==="
 
-# 1. Copia data da test a prod (bookmakers.json, config admin, ecc.)
+# 1. Aggiorna codice prod (reset locale se ci sono conflitti)
+echo "1. Aggiorno codice produzione..."
+cd "$PROD_DIR"
+git fetch origin main
+if ! git pull origin main 2>/dev/null; then
+  echo "   Conflitti locali, ripristino a origin/main..."
+  git reset --hard origin/main
+  git clean -fd data/ 2>/dev/null || true
+fi
+
+# 2. Copia data da test a prod (bookmakers, config admin)
 if [ -d "$TEST_DIR/data" ]; then
-  echo "1. Copio data/ da test a prod..."
+  echo ""
+  echo "2. Copio data/ da test a prod..."
   mkdir -p "$PROD_DIR/data"
   for f in "$TEST_DIR/data"/*; do
     [ -e "$f" ] && cp -f "$f" "$PROD_DIR/data/" 2>/dev/null || true
   done
   echo "   OK"
 else
-  echo "1. Cartella data test non trovata, proseguo senza copia"
+  echo "2. Cartella data test non trovata"
 fi
 
-# 2. Deploy produzione (pull, build, restart)
+# 3. Build e restart
 echo ""
-echo "2. Deploy produzione..."
-cd "$PROD_DIR"
-git pull origin main
+echo "3. Build e restart produzione..."
 mkdir -p public/uploads
 npm ci
 npm run build
