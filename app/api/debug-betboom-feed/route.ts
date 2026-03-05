@@ -1,7 +1,11 @@
 /**
  * Debug: POST a matches/get_by_category_ids e mostra risposta raw.
  * GET /api/debug-betboom-feed
- * GET /api/debug-betboom-feed?categoryIds=123,456 (testa category_ids)
+ * GET /api/debug-betboom-feed?categoryIds=all (category_ids vuoto = tutte le categorie)
+ * GET /api/debug-betboom-feed?categoryIds=123,456 (category_ids specifici)
+ * GET /api/debug-betboom-feed?categoryIds=0 (simula league 71 → mapping "0")
+ * GET /api/debug-betboom-feed?full=1 (mostra sample completo primo match)
+ * GET /api/debug-betboom-feed?simulate=1 (simula fetchDirectBookmakerQuotes con leagueId 71)
  */
 import { NextResponse } from "next/server";
 
@@ -10,14 +14,48 @@ export async function GET(req: Request) {
   const apiKey = process.env.BETBOOM_API_KEY;
   const { searchParams } = new URL(req.url);
   const categoryIdsParam = searchParams.get("categoryIds");
+  const full = searchParams.get("full") === "1";
+  const simulate = searchParams.get("simulate") === "1";
 
   if (!apiKey) {
     return NextResponse.json({ error: "BETBOOM_API_KEY mancante" }, { status: 500 });
   }
 
-  const categoryIds = categoryIdsParam
-    ? categoryIdsParam.split(",").map((s) => parseInt(s.trim(), 10)).filter((n) => !Number.isNaN(n))
-    : [0];
+  let categoryIds: number[];
+  if (categoryIdsParam === "all" || categoryIdsParam === "") {
+    try {
+      const catsRes = await fetch(
+        "https://com-br-partner-feed.sporthub.bet/api/partner_feed/v1/categories/get_by_sport_ids",
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            "x-access-token": apiKey,
+            "x-partner": process.env.BETBOOM_PARTNER_ID ?? "id_7557",
+          },
+          body: JSON.stringify({ locale: "en", sport_ids: [2] }),
+          cache: "no-store",
+        }
+      );
+      const catsData = (await catsRes.json()) as { categories?: Array<{ id: number }>; data?: { categories?: Array<{ id: number }> } };
+      const cats = catsData?.categories ?? catsData?.data?.categories ?? [];
+      const allIds = cats.map((c) => c.id).filter((n) => n > 0);
+      categoryIds = allIds.length > 0 ? allIds : [1];
+    } catch {
+      categoryIds = [1];
+    }
+  } else if (categoryIdsParam) {
+    categoryIds = categoryIdsParam.split(",").map((s) => parseInt(s.trim(), 10)).filter((n) => !Number.isNaN(n));
+  } else {
+    categoryIds = [0]; // default: simula mapping league 71
+  }
+
+  if (categoryIds.length === 0) {
+    return NextResponse.json({
+      error: "Betboom richiede category_ids con almeno 1 elemento. Chiama /api/debug-betboom-categories per gli ID, poi ?categoryIds=123,456",
+      categoriesUrl: "/api/debug-betboom-categories?sportIds=2",
+    }, { status: 400 });
+  }
 
   const body = {
     locale: "en",
@@ -63,25 +101,62 @@ export async function GET(req: Request) {
     const obj = data as Record<string, unknown>;
     const matches = obj.matches;
     const matchesArr = Array.isArray(matches) ? matches : [];
-    const firstMatch = matchesArr[0];
-    const firstMatchKeys = firstMatch && typeof firstMatch === "object" ? Object.keys(firstMatch as object) : [];
-    const firstStake = firstMatch && typeof firstMatch === "object"
-      ? (firstMatch as Record<string, unknown>).stakes
-      : null;
+    const firstMatch = matchesArr[0] as Record<string, unknown> | undefined;
+    const firstMatchKeys = firstMatch ? Object.keys(firstMatch) : [];
+    const firstStake = firstMatch?.stakes;
     const stakesArr = Array.isArray(firstStake) ? firstStake : [];
     const firstStakeSample = stakesArr[0];
 
-    return NextResponse.json({
+    // Estrai teams (path config: teams.home_team.name)
+    const teams = firstMatch?.teams as { home_team?: { name?: string }; away_team?: { name?: string } } | undefined;
+    const homeName = teams?.home_team?.name ?? "(non trovato)";
+    const awayName = teams?.away_team?.name ?? "(non trovato)";
+
+    // Cerca stake Winner (market_id 1) con outcome 1,2,3
+    const winnerStakes = stakesArr.filter(
+      (s: { market_name?: string }) => String(s?.market_name ?? "").toLowerCase() === "winner"
+    );
+    const outcomeIds = winnerStakes.map((s: { outcome_id?: number }) => s?.outcome_id);
+
+    const result: Record<string, unknown> = {
       ok: true,
       requestBody: body,
       matchesCount: matchesArr.length,
       firstMatchKeys,
-      firstMatchSample: firstMatch ? JSON.stringify(firstMatch).slice(0, 1500) : null,
+      firstMatchTeams: { home: homeName, away: awayName },
+      stakesCount: stakesArr.length,
+      winnerStakesCount: winnerStakes.length,
+      winnerOutcomeIds: outcomeIds,
+      firstMatchSample: firstMatch ? JSON.stringify(firstMatch).slice(0, full ? 4000 : 1500) : null,
       firstStakeSample: firstStakeSample ? JSON.stringify(firstStakeSample) : null,
-      hint: categoryIds[0] === 0
-        ? "Chiama /api/debug-betboom-categories per ottenere category_id, poi ?categoryIds=123"
-        : undefined,
-    });
+    };
+
+    if (categoryIds.length === 0) {
+      result.hint = "category_ids=[] (tutte le categorie). Se matchesCount>0, rimuovi apiLeagueMapping 71 per usare tutte le categorie.";
+    } else if (categoryIds[0] === 0) {
+      result.hint = "category_ids=[0] (placeholder). Prova ?categoryIds=all per tutte le categorie, oppure /api/debug-betboom-categories per id reali.";
+    } else {
+      result.hint = `category_ids=${JSON.stringify(categoryIds)}`;
+    }
+
+    if (simulate) {
+      try {
+        const { getMultiMarketQuotes } = await import("@/lib/quotes/quotesEngine");
+        const multi = await getMultiMarketQuotes("soccer_brazil_campeonato", { leagueId: 71 });
+        result.simulatePipeline = {
+          h2hCount: (multi.h2h ?? []).length,
+          sampleQuotes: (multi.h2h ?? []).slice(0, 3).map((q) => ({
+            home: q.homeTeam,
+            away: q.awayTeam,
+            odds: q.outcomes,
+          })),
+        };
+      } catch (e) {
+        result.simulatePipeline = { error: e instanceof Error ? e.message : String(e) };
+      }
+    }
+
+    return NextResponse.json(result);
   } catch (e) {
     return NextResponse.json({
       ok: false,

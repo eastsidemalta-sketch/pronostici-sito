@@ -154,8 +154,11 @@ export async function getUpcomingFixtures(leagueIds?: number[]) {
         ? configIds
         : DEFAULT_LEAGUE_IDS;
 
-  async function fetchLeague(leagueId: number): Promise<any[]> {
-    const url = `https://v3.football.api-sports.io/fixtures?from=${fromDate}&to=${toDate}&league=${leagueId}&season=${season}`;
+  const BR_LEAGUE_ID = 71;
+
+  async function fetchLeague(leagueId: number, useSeason?: number): Promise<any[]> {
+    const s = useSeason ?? season;
+    const url = `https://v3.football.api-sports.io/fixtures?from=${fromDate}&to=${toDate}&league=${leagueId}&season=${s}`;
     try {
       const res = await fetch(url, {
         headers: { "x-apisports-key": apiKey },
@@ -170,11 +173,20 @@ export async function getUpcomingFixtures(leagueIds?: number[]) {
     }
   }
 
-  let results = await Promise.all(leagues.map(fetchLeague));
-  const totalFirst = results.reduce((s, arr) => s + arr.length, 0);
+  let results = await Promise.all(leagues.map((lid) => fetchLeague(lid)));
+  let totalFirst = results.reduce((s, arr) => s + arr.length, 0);
   if (totalFirst === 0 && leagues.length > 0) {
     await new Promise((r) => setTimeout(r, 800));
-    results = await Promise.all(leagues.map(fetchLeague));
+    results = await Promise.all(leagues.map((lid) => fetchLeague(lid)));
+    totalFirst = results.reduce((s, arr) => s + arr.length, 0);
+  }
+  if (totalFirst === 0 && leagues.includes(BR_LEAGUE_ID)) {
+    const nextSeason = today.getFullYear();
+    const brazilFixtures = await fetchLeague(BR_LEAGUE_ID, nextSeason);
+    if (brazilFixtures.length > 0) {
+      const idx = leagues.indexOf(BR_LEAGUE_ID);
+      results[idx] = brazilFixtures;
+    }
   }
   for (const arr of results) {
     if (arr.length) allFixtures.push(...arr);

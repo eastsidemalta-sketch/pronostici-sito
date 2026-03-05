@@ -135,6 +135,7 @@ type ClientProfile = {
     authType?: "query" | "header" | "bearer" | "x-access-token";
     mapping?: Record<string, unknown>;
     apiLeagueMapping?: Record<string, string>; // leagueId -> category_id o tournament_id
+    fallbackCategoryIds?: number[]; // quando non c'è mapping (es. league 71). Betboom richiede >= 1
   };
 };
 
@@ -203,6 +204,7 @@ function applyClientProfilesOverrides(bookmakers: Bookmaker[]): Bookmaker[] {
         if (profile.api.extraHeaders) reqConfig.headers = profile.api.extraHeaders;
         updates.apiRequestConfig = reqConfig;
         if (profile.api.apiLeagueMapping) updates.apiLeagueMapping = profile.api.apiLeagueMapping;
+        if (profile.api.fallbackCategoryIds?.length) updates.apiFallbackCategoryIds = profile.api.fallbackCategoryIds;
         if (profile.api.apiKeyEnv) {
           const key = process.env[profile.api.apiKeyEnv];
           if (key) updates.apiKey = key;

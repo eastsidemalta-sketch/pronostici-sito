@@ -4,6 +4,38 @@
  * Supporta risposta JSON e XML.
  */
 import type { Bookmaker } from "../bookmaker.types";
+
+/** Cache Betboom category IDs (TTL 1h) per fallback quando non in config */
+let betboomCategoriesCache: { ids: number[]; expires: number } | null = null;
+const CACHE_TTL_MS = 60 * 60 * 1000;
+
+async function fetchBetboomFootballCategoryIds(apiKey: string, partnerId: string): Promise<number[]> {
+  if (betboomCategoriesCache && Date.now() < betboomCategoriesCache.expires) {
+    return betboomCategoriesCache.ids;
+  }
+  try {
+    const res = await fetch(
+      "https://com-br-partner-feed.sporthub.bet/api/partner_feed/v1/categories/get_by_sport_ids",
+      {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "x-access-token": apiKey,
+          "x-partner": partnerId,
+        },
+        body: JSON.stringify({ locale: "en", sport_ids: [2] }),
+        cache: "no-store",
+      }
+    );
+    if (!res.ok) return [];
+    const data = (await res.json()) as { categories?: Array<{ id: number }> };
+    const ids = (data.categories ?? []).map((c) => c.id).filter((n) => n > 0);
+    betboomCategoriesCache = { ids, expires: Date.now() + CACHE_TTL_MS };
+    return ids;
+  } catch {
+    return [];
+  }
+}
 import { getBookmakerDisplayName } from "../bookmakers";
 import { getByPath, getNumber, getString } from "@/lib/jsonPath";
 import { XMLParser } from "fast-xml-parser";
@@ -262,6 +294,7 @@ function extract1X2FromStakes(
     const o = s as Record<string, unknown>;
     const mkt = String(o.market_name ?? "").toLowerCase();
     if (mkt !== marketName) continue;
+    if (o.period_id != null && o.period_id !== "") continue;
     const factor = typeof o.factor === "number" ? o.factor : parseFloat(String(o.factor ?? 0)) || 0;
     const outcomeId = typeof o.outcome_id === "number" ? o.outcome_id : parseInt(String(o.outcome_id ?? 0), 10);
     const name = String(o.name ?? "").toLowerCase().trim();
@@ -326,11 +359,28 @@ export async function fetchDirectBookmakerQuotes(
   let body: string | undefined;
   if (method === "POST" && reqConfig.bodyTemplate) {
     const bodyObj = { ...reqConfig.bodyTemplate, ...queryParams } as Record<string, unknown>;
-    if (leagueId != null && bm.apiLeagueMapping?.[String(leagueId)]) {
-      const mapped = bm.apiLeagueMapping[String(leagueId)];
-      const num = /^\d+$/.test(String(mapped)) ? parseInt(String(mapped), 10) : mapped;
-      if (bodyObj.category_ids !== undefined) bodyObj.category_ids = [num];
-      if (bodyObj.tournament_ids !== undefined) bodyObj.tournament_ids = [num];
+    if (bodyObj.category_ids !== undefined) {
+      if (leagueId != null && bm.apiLeagueMapping?.[String(leagueId)]) {
+        const mapped = bm.apiLeagueMapping[String(leagueId)];
+        const num = /^\d+$/.test(String(mapped)) ? parseInt(String(mapped), 10) : mapped;
+        bodyObj.category_ids = [num];
+        if (bodyObj.tournament_ids !== undefined) bodyObj.tournament_ids = [num];
+      } else {
+        let ids = bm.apiFallbackCategoryIds;
+        if (!ids?.length && endpoint?.includes("sporthub.bet")) {
+          const partnerId = reqConfig.headers?.["x-partner"] ?? "id_7557";
+          ids = await fetchBetboomFootballCategoryIds(apiKey, partnerId);
+        }
+        if (ids?.length) {
+          bodyObj.category_ids = ids;
+        } else if (!Array.isArray(bodyObj.category_ids) || bodyObj.category_ids.length === 0) {
+          return [];
+        }
+      }
+    }
+    for (const k of ["category_ids", "tournament_ids"]) {
+      const arr = bodyObj[k];
+      if (Array.isArray(arr) && arr.length === 0) return [];
     }
     body = JSON.stringify(bodyObj);
   }

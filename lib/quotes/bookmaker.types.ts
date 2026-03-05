@@ -117,6 +117,8 @@ export type Bookmaker = {
   apiDiscoveryStatus?: "pending" | "testing" | "matched" | "failed";
   /** Mapping leagueId (API-Football) -> identificatore lega per questo bookmaker */
   apiLeagueMapping?: Record<string, string>;
+  /** Categorie da usare quando non c'è mapping (es. league 71). Betboom richiede >= 1. Da /api/debug-betboom-categories */
+  apiFallbackCategoryIds?: number[];
   /** Config richiesta: method, queryParams, body (per POST) */
   apiRequestConfig?: {
     method?: "GET" | "POST";

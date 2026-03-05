@@ -27,6 +27,7 @@ export const CALCIO_COMPETITIONS = [
   { id: 143, name: "Copa del Rey", type: "cup" as const },
   { id: 148, name: "DFB-Pokal", type: "cup" as const },
   { id: 66, name: "Coupe de France", type: "cup" as const },
+  { id: 71, name: "Brasileirão Serie A", type: "league" as const },
 ];
 
 export type MenuItem = {

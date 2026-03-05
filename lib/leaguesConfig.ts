@@ -54,19 +54,28 @@ function filterHidden<T extends number | string>(ids: T[]): T[] {
   return ids.filter((id) => !isHiddenCompetition(id));
 }
 
+/** League IDs di default per Brasile (Brasileirão) */
+const BR_DEFAULT_LEAGUE_IDS = [71];
+
 /** Restituisce gli ID competizioni calcio abilitate per un paese (retrocompatibilità) */
 export function getEnabledLeagueIds(country?: string): number[] {
   const config = getRawConfig();
   let ids: number[];
   if (!country) ids = config.leagueIds ?? DEFAULT_LEAGUE_IDS;
-  else {
+  else if (country === "BR") {
+    const cc = config.byCountry?.[country];
+    const raw = cc && (Array.isArray((cc as { leagueIds?: number[] }).leagueIds)
+      ? (cc as { leagueIds: number[] }).leagueIds
+      : (cc as { calcio?: { leagueIds?: number[] } })?.calcio?.leagueIds);
+    ids = raw?.length ? raw : BR_DEFAULT_LEAGUE_IDS;
+  } else {
     const cc = config.byCountry?.[country];
     if (!cc) ids = config.leagueIds ?? DEFAULT_LEAGUE_IDS;
     else {
-      const raw = cc.leagueIds;
+      const raw = (cc as { leagueIds?: number[] }).leagueIds;
       if (Array.isArray(raw) && raw.length) ids = raw;
       else {
-        const calcio = cc.calcio as { leagueIds?: number[] } | undefined;
+        const calcio = (cc as { calcio?: { leagueIds?: number[] } }).calcio;
         ids = calcio?.leagueIds?.length ? calcio.leagueIds : config.leagueIds ?? DEFAULT_LEAGUE_IDS;
       }
     }
@@ -83,12 +92,14 @@ export function getEnabledCompetitionIds(
   const cc = config.byCountry?.[country];
   let ids: number[] | string[];
   if (!cc) {
-    ids = sportKey === "calcio" ? (config.leagueIds ?? DEFAULT_LEAGUE_IDS) : [];
+    ids = sportKey === "calcio"
+      ? (country === "BR" ? BR_DEFAULT_LEAGUE_IDS : (config.leagueIds ?? DEFAULT_LEAGUE_IDS))
+      : [];
   } else if (sportKey === "calcio") {
     const calcio = cc.calcio as { leagueIds?: number[] } | undefined;
     if (calcio?.leagueIds?.length) ids = calcio.leagueIds;
     else if (Array.isArray(cc.leagueIds) && cc.leagueIds.length) ids = cc.leagueIds;
-    else ids = config.leagueIds ?? DEFAULT_LEAGUE_IDS;
+    else ids = country === "BR" ? BR_DEFAULT_LEAGUE_IDS : (config.leagueIds ?? DEFAULT_LEAGUE_IDS);
   } else {
     const sportConfig = cc[sportKey] as { competitionIds?: string[] } | undefined;
     ids = sportConfig?.competitionIds ?? [];

@@ -17,7 +17,7 @@ export async function GET(req: Request) {
 
   const sportIds = sportIdsParam
     ? sportIdsParam.split(",").map((s) => parseInt(s.trim(), 10)).filter((n) => !Number.isNaN(n))
-    : [1];
+    : [2];
 
   try {
     const res = await fetch(endpoint, {
@@ -49,7 +49,7 @@ export async function GET(req: Request) {
       categories,
       brasileiraoHint: brasileirao
         ? { id: brasileirao.id, name: brasileirao.name, slug: brasileirao.url_slug }
-        : "Cerca 'Brasil' o 'Serie A' nella lista. Se vedi solo esports, chiama /api/debug-betboom-sports per trovare sport_id Football, poi ?sportIds=ID",
+        : "Cerca 'Brasil' o 'Serie A' nella lista. Football = sport_id 2 (default).",
     });
   } catch (e) {
     return NextResponse.json({
