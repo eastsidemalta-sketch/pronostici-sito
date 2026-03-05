@@ -29,7 +29,7 @@ export async function POST(
     apiEndpoint: string;
     apiKey: string;
     apiSecret: string;
-    authType: "query" | "header" | "bearer";
+      authType: "query" | "header" | "bearer" | "x-access-token";
     method: "GET" | "POST";
   }> = {};
   try {

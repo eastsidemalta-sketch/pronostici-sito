@@ -39,7 +39,7 @@ type Bookmaker = {
   apiConfig: { markets: string[] };
   apiDocumentationUrl?: string | null;
   apiEndpoint?: string | null;
-  apiAuthType?: "query" | "header" | "bearer";
+  apiAuthType?: "query" | "header" | "bearer" | "x-access-token";
   apiSecret?: string | null;
   apiMappingConfig?: {
     homeTeam?: string;
@@ -635,12 +635,13 @@ export default function AdminBookmakerEditPage() {
                 <label className="block text-sm font-medium text-neutral-700 mb-1">Come inviare la chiave</label>
                 <select
                   value={bm.apiAuthType || "query"}
-                  onChange={(e) => handleChange("apiAuthType", e.target.value as "query" | "header" | "bearer")}
+                  onChange={(e) => handleChange("apiAuthType", e.target.value as "query" | "header" | "bearer" | "x-access-token")}
                   className="w-full rounded-lg border border-neutral-300 px-4 py-2 focus:border-emerald-500 focus:outline-none focus:ring-1 focus:ring-emerald-500"
                 >
                   <option value="query">Query (apiKey=xxx nell&apos;URL)</option>
                   <option value="header">Header (X-Api-Key)</option>
                   <option value="bearer">Bearer token</option>
+                  <option value="x-access-token">Header (x-access-token)</option>
                 </select>
               </div>
               <div>

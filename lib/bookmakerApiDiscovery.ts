@@ -3,7 +3,7 @@
  * delle API dirette dei bookmaker.
  */
 
-export type AuthType = "query" | "header" | "bearer";
+export type AuthType = "query" | "header" | "bearer" | "x-access-token";
 
 export type TestApiInput = {
   apiEndpoint: string;
@@ -42,6 +42,8 @@ export async function testBookmakerApi(input: TestApiInput): Promise<TestApiResu
     if (apiSecret) headers["X-Api-Secret"] = apiSecret;
   } else if (authType === "bearer") {
     headers["Authorization"] = `Bearer ${apiKey}`;
+  } else if (authType === "x-access-token") {
+    headers["x-access-token"] = apiKey;
   }
 
   try {
