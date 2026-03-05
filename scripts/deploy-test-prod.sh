@@ -43,5 +43,7 @@ pm2 delete pronostici-test 2>/dev/null; pm2 start ecosystem.config.cjs --only pr
 wait_for_app "pronostici-test" 3001 || true
 echo ""
 echo "=== Deploy TEST completato ==="
-echo "Verifica il sito test. Quando tutto ok: bash scripts/deploy-prod.sh"
+echo "Verifica il sito test. Poi promuovi a produzione:"
+echo "  bash scripts/deploy-promote-test-to-prod.sh   (copia data da test + deploy prod)"
+echo "  oppure: bash scripts/deploy-prod.sh           (solo deploy prod, senza copia data)"
 echo "Se vedi 502: bash scripts/debug-502.sh"
