@@ -564,7 +564,7 @@ export default function AdminBookmakerEditPage() {
                   try {
                     const res = await fetch(`/api/ad2min3k/client-profiles?siteId=${encodeURIComponent(bm.siteId ?? "")}`);
                     const data = await res.json();
-                    const profile = data.profile as { api?: { enabled?: boolean; endpoint?: string; documentationUrl?: string; params?: Record<string, string>; mapping?: Record<string, string>; method?: string }; logoPath?: string; faviconPath?: string } | null;
+                    const profile = data.profile as { api?: { enabled?: boolean; endpoint?: string; documentationUrl?: string; params?: Record<string, string>; mapping?: Record<string, string>; method?: string }; logoPath?: string; faviconPath?: string; remuneration?: { model: string; value: number } } | null;
                     if (profile && bm) {
                       const updates: Partial<Bookmaker> = { ...bm };
                       if (profile.api?.enabled) {
@@ -581,6 +581,7 @@ export default function AdminBookmakerEditPage() {
                       }
                       if (profile.logoPath && !bm.logoUrl) updates.logoUrl = profile.logoPath;
                       if (profile.faviconPath && !bm.faviconUrl) updates.faviconUrl = profile.faviconPath;
+                      if (profile.remuneration) updates.remuneration = profile.remuneration as RemunerationConfig;
                       setBm({ ...bm, ...updates });
                     }
                   } catch {
@@ -598,70 +599,15 @@ export default function AdminBookmakerEditPage() {
           <div className="mb-4">
             <label className="block text-sm font-medium text-neutral-700 mb-2">Provider</label>
             <select
-              value={bm.apiProvider || "the_odds_api"}
+              value={bm.apiProvider || "direct"}
               onChange={(e) => handleChange("apiProvider", e.target.value)}
               className="w-full rounded-lg border border-neutral-300 px-4 py-2 focus:border-emerald-500 focus:outline-none focus:ring-1 focus:ring-emerald-500"
             >
-              <option value="the_odds_api">The Odds API (aggregatore, per test)</option>
               <option value="direct">API diretta del bookmaker</option>
             </select>
           </div>
 
-          {bm.apiProvider === "the_odds_api" ? (
-            <>
-              <p className="mb-4 text-sm text-neutral-600">
-                URL API quote e settaggi (The Odds API). La chiave usa THE_ODDS_API_KEY da .env se non impostata.
-              </p>
-              <div className="space-y-4">
-                <div>
-                  <label className="block text-sm font-medium text-neutral-700 mb-1">URL base API</label>
-                  <input
-                    type="url"
-                    value={bm.apiBaseUrl || ""}
-                    onChange={(e) => handleChange("apiBaseUrl", e.target.value || undefined)}
-                    className="w-full rounded-lg border border-neutral-300 px-4 py-2 focus:border-emerald-500 focus:outline-none focus:ring-1 focus:ring-emerald-500"
-                    placeholder="https://api.the-odds-api.com/v4 (default)"
-                  />
-                </div>
-                <div>
-                  <label className="block text-sm font-medium text-neutral-700 mb-1">API Key (opzionale)</label>
-                  <input
-                    type="text"
-                    value={bm.apiKey || ""}
-                    onChange={(e) => handleChange("apiKey", e.target.value)}
-                    className="w-full rounded-lg border border-neutral-300 px-4 py-2 focus:border-emerald-500 focus:outline-none focus:ring-1 focus:ring-emerald-500"
-                    placeholder="Lasciare vuoto per usare globale"
-                  />
-                </div>
-                <div>
-                  <label className="block text-sm font-medium text-neutral-700 mb-1">Chiave bookmaker API (es. bet365)</label>
-                  <input
-                    type="text"
-                    value={bm.apiBookmakerKey || ""}
-                    onChange={(e) => handleChange("apiBookmakerKey", e.target.value)}
-                    className="w-full rounded-lg border border-neutral-300 px-4 py-2 focus:border-emerald-500 focus:outline-none focus:ring-1 focus:ring-emerald-500"
-                    placeholder="bet365"
-                  />
-                </div>
-                <div>
-                  <label className="block text-sm font-medium text-neutral-700 mb-1">Markets (separati da virgola)</label>
-                  <input
-                    type="text"
-                    value={bm.apiConfig?.markets?.join(", ") || "h2h"}
-                    onChange={(e) =>
-                      handleChange("apiConfig", {
-                        ...bm.apiConfig,
-                        markets: e.target.value.split(",").map((s) => s.trim()).filter(Boolean) || ["h2h"],
-                      })
-                    }
-                    className="w-full rounded-lg border border-neutral-300 px-4 py-2 focus:border-emerald-500 focus:outline-none focus:ring-1 focus:ring-emerald-500"
-                    placeholder="h2h"
-                  />
-                </div>
-              </div>
-            </>
-          ) : (
-            <div className="space-y-4">
+          <div className="space-y-4">
               <p className="text-sm text-neutral-600">
                 Inserisci documentazione, endpoint e chiavi fornite dal bookmaker. Il sistema prova a fare il matching automatico.
               </p>
@@ -888,7 +834,6 @@ export default function AdminBookmakerEditPage() {
                 />
               </div>
             </div>
-          )}
         </div>
 
         {/* ── Sezione Remunerazione ── */}

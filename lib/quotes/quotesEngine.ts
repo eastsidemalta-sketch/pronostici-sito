@@ -1,8 +1,5 @@
-import { getBookmakers, getBookmakerDisplayName } from "./bookmakers";
-import { fetchOddsFromTheOddsApi } from "./providers/theOddsApi";
+import { getBookmakers } from "./bookmakers";
 import { fetchDirectBookmakerQuotes } from "./providers/directBookmakerFetcher";
-import { normalizeOdds } from "./normalizer";
-import { normalizeMultiMarket } from "./multiMarketNormalizer";
 import { matchTeamNames } from "@/lib/teamAliases";
 import { compareBookmakers } from "./bookmakerRanking";
 import type { RemunerationConfig } from "./bookmaker.types";
@@ -24,32 +21,17 @@ function filterByMatch<T extends { homeTeam?: string; awayTeam?: string }>(
   });
 }
 
+/** Quote da API dirette dei bookmaker. The Odds API rimosso. */
 export async function getQuotesForMatch(
   sportKey: string,
-  options?: { homeTeam?: string; awayTeam?: string }
+  options?: { homeTeam?: string; awayTeam?: string; leagueId?: number }
 ) {
-  const results: any[] = [];
-  const bookmakers = getBookmakers();
-  const apiKey = process.env.THE_ODDS_API_KEY;
-
-  for (const bookmaker of bookmakers) {
-    if (!bookmaker.isActive) continue;
-    if (bookmaker.apiProvider !== "the_odds_api") continue;
-    const key = bookmaker.apiKey || apiKey;
-    if (!key) continue;
-
-    let raw: any[];
-    try {
-      raw = await fetchOddsFromTheOddsApi({ apiKey: key, sportKey });
-    } catch {
-      continue;
-    }
-
-    const normalized = normalizeOdds(raw, getBookmakerDisplayName(bookmaker), bookmaker.apiBookmakerKey);
-    results.push(...normalized);
-  }
-
-  return filterByMatch(results, options?.homeTeam, options?.awayTeam);
+  const multi = await getMultiMarketQuotes(sportKey, {
+    homeTeam: options?.homeTeam,
+    awayTeam: options?.awayTeam,
+    leagueId: options?.leagueId,
+  });
+  return filterByMatch(multi.h2h ?? [], options?.homeTeam, options?.awayTeam);
 }
 
 export type MultiMarketQuotes = Record<
@@ -77,7 +59,6 @@ export async function getMultiMarketQuotes(
           b.apiBookmakerKey?.toLowerCase() === options!.bookmakerId?.toLowerCase()
       )
     : bookmakers;
-  const apiKey = process.env.THE_ODDS_API_KEY;
   const merged: MultiMarketQuotes = {
     h2h: [],
     h2h_3_way_h1: [],
@@ -99,28 +80,7 @@ export async function getMultiMarketQuotes(
   for (const bookmaker of filteredBms) {
     if (!bookmaker.isActive) continue;
 
-    if (bookmaker.apiProvider === "the_odds_api") {
-      const key = bookmaker.apiKey || apiKey;
-      if (!key) continue;
-
-      let raw: any[];
-      try {
-        raw = await fetchOddsFromTheOddsApi({ apiKey: key, sportKey });
-      } catch {
-        continue;
-      }
-
-      const byMarket = normalizeMultiMarket(raw);
-      for (const [marketKey, quotes] of Object.entries(byMarket)) {
-        if (!merged[marketKey]) continue;
-        // Arricchisce ogni quota con la remunerazione del suo bookmaker
-        const withRem = quotes.map((q) => ({
-          ...q,
-          remuneration: remunerationMap[q.bookmakerKey] ?? null,
-        }));
-        merged[marketKey].push(...withRem);
-      }
-    } else if (bookmaker.apiProvider === "direct") {
+    if (bookmaker.apiProvider === "direct") {
       try {
         const directQuotes = await fetchDirectBookmakerQuotes(
           bookmaker,

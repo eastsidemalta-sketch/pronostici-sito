@@ -8,11 +8,15 @@
     "bookmakers": "Bookmakers",
     "quotes": "Quotes",
     "predictions": "Predictions",
+    "quotesAndPredictions": "Quotes and Predictions",
     "menu": "Menu",
     "openMenu": "Open menu",
     "closeMenu": "Close menu",
     "scrollLeft": "Scroll left",
-    "scrollRight": "Scroll right"
+    "scrollRight": "Scroll right",
+    "selectCountry": "Select country",
+    "goToCountry": "Go to {country}",
+    "activeCountry": "{country} (active)"
   },
   "home": {
     "title": "PlaySignal",
@@ -92,8 +96,9 @@
     "under25": "Under 2.5"
   },
   "bonus": {
-    "title": "Bonus",
+    "title": "Bookmaker Bonuses",
     "description": "Bookmaker bonuses and promotions. Bonus codes, welcome offers and free bets.",
+    "intro": "From Bet365 to Betsson, Eurobet to Snai, a variety of operators offer users the chance to place their bets online. Bookmakers, faced with competition, strive to offer different strengths, though some areas for improvement remain.",
     "placeholder": "We will add bookmaker bonuses here."
   },
   "sitiScommesse": {

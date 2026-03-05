@@ -71,7 +71,7 @@ export const SUPPORTED_MARKETS: Record<string, MarketConfig> = {
     name: "United Kingdom",
   },
   BR: {
-    active: false,
+    active: true,
     languages: ["pt"],
     defaultCurrency: "BRL",
     defaultLocale: "pt-BR",

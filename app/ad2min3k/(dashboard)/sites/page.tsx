@@ -64,7 +64,7 @@ export default function AdminSitesPage() {
     countries: ["IT"] as string[],
     logoUrl: "",
     affiliateUrl: "",
-    apiProvider: "the_odds_api" as "the_odds_api" | "direct",
+    apiProvider: "direct",
     apiDocumentationUrl: "",
     apiEndpoint: "",
     apiKey: "",
@@ -201,7 +201,7 @@ export default function AdminSitesPage() {
         countries: ["IT"],
         logoUrl: "",
         affiliateUrl: "",
-        apiProvider: "the_odds_api",
+        apiProvider: "direct",
         apiDocumentationUrl: "",
         apiEndpoint: "",
         apiKey: "",
@@ -235,7 +235,6 @@ export default function AdminSitesPage() {
       country: "IT",
       countries: ["IT"],
       apiProvider: "direct",
-      pauseOddsApi: true,
       profileSiteId: "IT-002",
     }));
   }
@@ -490,12 +489,11 @@ export default function AdminSitesPage() {
                     onChange={(e) =>
                       setCreateForm((f) => ({
                         ...f,
-                        apiProvider: e.target.value as "the_odds_api" | "direct",
+                        apiProvider: e.target.value as "direct",
                       }))
                     }
                     className="w-full rounded-lg border border-neutral-300 px-4 py-2 focus:border-emerald-500 focus:outline-none focus:ring-1 focus:ring-emerald-500"
                   >
-                    <option value="the_odds_api">The Odds API (aggregatore)</option>
                     <option value="direct">API diretta del bookmaker</option>
                   </select>
                 </div>

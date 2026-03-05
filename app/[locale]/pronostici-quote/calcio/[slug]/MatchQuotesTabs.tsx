@@ -4,6 +4,7 @@ import { useState, useEffect } from "react";
 import { useParams, useSearchParams } from "next/navigation";
 import { trackEvent } from "@/lib/analytics/ga";
 import { BookmakerLink } from "@/lib/components/BookmakerLink";
+import { BookmakerLogo } from "@/lib/components/BookmakerLogo";
 
 type QuoteRow = {
   bookmaker: string;
@@ -189,11 +190,10 @@ export default function MatchQuotesTabs({ sportKey, homeTeam, awayTeam, country,
                           {(faviconByKey.get((q.bookmakerKey || "").toLowerCase()) || logoByKey.get((q.bookmakerKey || "").toLowerCase())) ? (
                             <>
                               <div className="flex shrink-0 items-center justify-center rounded border border-gray-200 bg-white p-1.5">
-                                <img
+                                <BookmakerLogo
                                   src={faviconByKey.get((q.bookmakerKey || "").toLowerCase()) || logoByKey.get((q.bookmakerKey || "").toLowerCase())!}
-                                  alt={q.bookmaker}
+                                  size="xs"
                                   title={q.bookmaker}
-                                  className="h-8 w-8 shrink-0 object-contain md:h-10 md:w-10"
                                 />
                               </div>
                               <span className="text-xs font-medium text-[var(--foreground)] md:text-sm">{q.bookmaker}</span>

@@ -16,7 +16,7 @@ services:
         value: production
       - key: NODE_OPTIONS
         value: --max-old-space-size=400
-      # Aggiungi nel dashboard: API_FOOTBALL_KEY, THE_ODDS_API_KEY, ADMIN_EMAIL, ADMIN_PASSWORD
+      # Aggiungi nel dashboard: API_FOOTBALL_KEY, ADMIN_EMAIL, ADMIN_PASSWORD
 
   # Staging - test prima del go-live (puoi metterlo in pausa)
   - type: web

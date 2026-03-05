@@ -1,12 +1,11 @@
 /**
- * Debug endpoint: testa TUTTE le API quote (The Odds API + Direct).
+ * Debug endpoint: testa le API quote dirette dei bookmaker.
  * GET /api/debug-all-apis
  * GET /api/debug-all-apis?leagueId=135 (opzionale: filtra per lega)
  * GET /api/debug-all-apis?probe=1 (quando quotesCount=0, mostra struttura raw risposta API)
  */
 import { NextResponse } from "next/server";
 import { getBookmakers } from "@/lib/quotes/bookmakers";
-import { fetchOddsFromTheOddsApi } from "@/lib/quotes/providers/theOddsApi";
 import { fetchDirectBookmakerQuotes } from "@/lib/quotes/providers/directBookmakerFetcher";
 import { LEAGUE_ID_TO_SPORT_KEY } from "@/lib/quotes/leagueToSportKey";
 
@@ -19,12 +18,10 @@ export async function GET(req: Request) {
 
   const bookmakers = getBookmakers();
   const active = bookmakers.filter((b) => b.isActive);
-  const oddsApiBms = active.filter((b) => b.apiProvider === "the_odds_api");
   const directBms = active.filter((b) => b.apiProvider === "direct");
 
   const report: {
-    summary: { total: number; active: number; oddsApi: number; direct: number };
-    theOddsApi: { ok: boolean; eventsCount?: number; error?: string; bookmakers: string[] };
+    summary: { total: number; active: number; direct: number };
     direct: Array<{
       id: string;
       name: string;
@@ -39,32 +36,12 @@ export async function GET(req: Request) {
     summary: {
       total: bookmakers.length,
       active: active.length,
-      oddsApi: oddsApiBms.length,
       direct: directBms.length,
-    },
-    theOddsApi: {
-      ok: false,
-      bookmakers: oddsApiBms.map((b) => b.name),
     },
     direct: [],
   };
 
-  // 1. Test The Odds API
-  const apiKey = process.env.THE_ODDS_API_KEY ?? oddsApiBms[0]?.apiKey;
-  if (apiKey && oddsApiBms.length > 0) {
-    try {
-      const raw = await fetchOddsFromTheOddsApi({ apiKey, sportKey });
-      const events = Array.isArray(raw) ? raw : [];
-      report.theOddsApi.ok = true;
-      report.theOddsApi.eventsCount = events.length;
-    } catch (e) {
-      report.theOddsApi.error = e instanceof Error ? e.message : String(e);
-    }
-  } else if (oddsApiBms.length > 0) {
-    report.theOddsApi.error = "THE_ODDS_API_KEY mancante in .env";
-  }
-
-  // 2. Test ogni Direct API
+  // Test ogni Direct API
   for (const bm of directBms) {
     const entry: (typeof report.direct)[0] = {
       id: bm.id,
@@ -143,20 +120,15 @@ export async function GET(req: Request) {
     };
   }
 
-  const allOk =
-    (report.theOddsApi.ok || oddsApiBms.length === 0) &&
-    report.direct.every((d) => d.ok);
+  const allOk = directBms.length === 0 || report.direct.every((d) => d.ok);
 
   return NextResponse.json({
     ok: allOk,
     leagueId,
     sportKey,
     report,
-    fix:
-      !allOk && report.theOddsApi.error
-        ? "Aggiungi THE_ODDS_API_KEY in .env sul server"
-        : report.direct.some((d) => d.error)
-          ? "Verifica endpoint, apiKey e mapping in clientProfiles per i direct"
-          : undefined,
+    fix: report.direct.some((d) => d.error)
+      ? "Verifica endpoint, apiKey e mapping in clientProfiles per i direct"
+      : undefined,
   });
 }

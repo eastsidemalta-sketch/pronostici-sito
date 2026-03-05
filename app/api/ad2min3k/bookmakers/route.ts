@@ -73,7 +73,7 @@ export async function POST(req: Request) {
       : [country];
     let logoUrl = body.logoUrl || "";
     let affiliateUrl = body.affiliateUrl || "";
-    let apiProvider = body.apiProvider || "the_odds_api";
+    let apiProvider = body.apiProvider || "direct";
     let apiKey = body.apiKey || "";
     let apiDocumentationUrl = body.apiDocumentationUrl || null;
     let apiEndpoint = body.apiEndpoint || null;
@@ -137,7 +137,7 @@ export async function POST(req: Request) {
       logoUrl,
       affiliateUrl,
       isActive: false,
-      apiProvider: apiProvider as "the_odds_api" | "direct",
+      apiProvider: apiProvider as "direct",
       apiKey,
       apiConfig: { markets: ["h2h"] },
       apiDocumentationUrl,
@@ -148,15 +148,7 @@ export async function POST(req: Request) {
       apiRequestConfig,
     };
 
-    let updated = [...bookmakers, newBm];
-
-    // Se richiesto, metti in pausa tutti i bookmaker The Odds API
-    if (body.pauseOddsApi === true) {
-      updated = updated.map((b) =>
-        b.apiProvider === "the_odds_api" ? { ...b, isActive: false } : b
-      );
-    }
-
+    const updated = [...bookmakers, newBm];
     saveBookmakers(updated);
 
     return NextResponse.json({

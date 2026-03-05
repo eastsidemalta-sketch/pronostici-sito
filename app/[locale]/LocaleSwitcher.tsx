@@ -4,6 +4,16 @@ import { Link, usePathname } from "@/i18n/navigation";
 import { useLocale } from "next-intl";
 import { routing, localeToCountry } from "@/i18n/routing";
 
+function pathWithoutLocale(pathname: string): string {
+  const path = (pathname || "/").replace(/\/$/, "") || "/";
+  const locales = routing.locales as readonly string[];
+  for (const loc of locales) {
+    if (path === `/${loc}`) return "/";
+    if (path.startsWith(`/${loc}/`)) return path.slice(`/${loc}`.length) || "/";
+  }
+  return path || "/";
+}
+
 const LOCALE_LABELS: Record<string, string> = {
   it: "IT",
   fr: "FR",
@@ -27,7 +37,7 @@ export default function LocaleSwitcher() {
         return (
           <Link
             key={locale}
-            href={pathname || "/"}
+            href={pathWithoutLocale(pathname)}
             locale={locale}
             className={`rounded px-2 py-1 transition ${
               isActive

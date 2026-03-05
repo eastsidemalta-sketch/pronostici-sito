@@ -1,7 +1,8 @@
 import type { Metadata } from "next";
 import { hasLocale } from "next-intl";
 import { notFound } from "next/navigation";
-import { getTranslations } from "next-intl/server";
+import { getTranslations, getMessages } from "next-intl/server";
+import { NextIntlClientProvider } from "next-intl";
 import { routing, localeToCountry } from "@/i18n/routing";
 import { getDefaultLocale } from "@/lib/markets";
 import { getOgMetadata } from "@/lib/seo/ogMetadata";
@@ -13,6 +14,7 @@ import MobileBottomNav from "./MobileBottomNav";
 import CookieConsent from "./CookieConsent";
 import MobileMenu from "./MobileMenu";
 import MobileMenuWrapper from "./MobileMenuWrapper";
+import HeaderCountrySelector from "./HeaderCountrySelector";
 import BaseSchemaJsonLd from "./BaseSchemaJsonLd";
 import { RichText } from "@/lib/components/RichText";
 
@@ -53,14 +55,16 @@ export default async function LocaleLayout({ children, params }: Props) {
     notFound();
   }
 
-  const t = await getTranslations("common");
-  const tFooter = await getTranslations("footer");
-  const tCookies = await getTranslations("cookies");
+  const t = await getTranslations({ locale, namespace: "common" });
+  const tFooter = await getTranslations({ locale, namespace: "footer" });
+  const tCookies = await getTranslations({ locale, namespace: "cookies" });
   const country = localeToCountry[locale] ?? locale;
   const termsLink = getLegalLinkAndTitle(locale, "terms");
   const privacyLink = getLegalLinkAndTitle(locale, "privacy");
+  const messages = await getMessages({ locale });
 
   return (
+    <NextIntlClientProvider locale={locale} messages={messages}>
     <MobileMenuWrapper>
       {locale === getDefaultLocale() && <BaseSchemaJsonLd />}
       <header className="sticky top-0 z-50 border-b border-[var(--card-border)] bg-white shadow-sm">
@@ -85,7 +89,7 @@ export default async function LocaleLayout({ children, params }: Props) {
               href="/"
               className="rounded px-2 py-2 text-base font-semibold text-[var(--foreground-muted)] transition hover:text-[var(--accent)] md:px-2.5 md:text-lg"
             >
-              Quote e Pronostici
+              {t("quotesAndPredictions")}
             </Link>
             <Link
               href="/bonus"
@@ -100,8 +104,10 @@ export default async function LocaleLayout({ children, params }: Props) {
               {t("sitiScommesse")}
             </Link>
           </nav>
-          {/* Spacer su mobile per bilanciare hamburger */}
-          <div className="w-9 shrink-0 md:hidden" aria-hidden />
+          {/* Selettore paese: desktop a destra, mobile accanto al logo */}
+          <div className="flex shrink-0 items-center">
+            <HeaderCountrySelector />
+          </div>
         </div>
       </header>
 
@@ -160,5 +166,6 @@ export default async function LocaleLayout({ children, params }: Props) {
       <MobileBottomNav />
       <CookieConsent />
     </MobileMenuWrapper>
+    </NextIntlClientProvider>
   );
 }

@@ -71,11 +71,11 @@ export type Bookmaker = {
   url3UseCase?: string; // dove utilizzare url3
   isActive: boolean;
 
-  apiProvider: "the_odds_api" | "direct"; // the_odds_api = aggregatore, direct = API del bookmaker
+  apiProvider: "direct"; // API diretta del bookmaker
   /** URL base API quote (es. The Odds API) */
   apiBaseUrl?: string;
   apiKey: string; // chiave API
-  apiBookmakerKey?: string; // chiave The Odds API (es. "bet365") - solo se apiProvider=the_odds_api
+  apiBookmakerKey?: string; // chiave identificativa del bookmaker (es. "bet365", "netwinit")
   apiConfig: {
     markets: string[];
   };

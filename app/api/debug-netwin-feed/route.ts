@@ -23,6 +23,64 @@ function toArray<T>(v: T | T[] | null | undefined): T[] {
   return Array.isArray(v) ? v : [v];
 }
 
+/** Esplora gerarchia Disciplina > Manifestazione > Avvenimento > Scommessa > Esito */
+function exploreHierarchy(obj: unknown): {
+  disciplina: unknown[];
+  manifestazione: unknown[];
+  avvenimento: unknown[];
+  scommessa: unknown[];
+  esito: unknown[];
+} {
+  const out = { disciplina: [] as unknown[], manifestazione: [] as unknown[], avvenimento: [] as unknown[], scommessa: [] as unknown[], esito: [] as unknown[] };
+  function walk(o: unknown, depth: number) {
+    if (depth > 15) return;
+    if (Array.isArray(o)) {
+      for (const item of o) walk(item, depth + 1);
+      return;
+    }
+    if (!o || typeof o !== "object") return;
+    const rec = o as Record<string, unknown>;
+    if (rec.Disciplina) {
+      const arr = toArray(rec.Disciplina);
+      out.disciplina.push(...arr);
+      for (const d of arr) walk(d, depth + 1);
+    }
+    if (rec.Manifestazione) {
+      const arr = toArray(rec.Manifestazione);
+      if (out.manifestazione.length < 5) out.manifestazione.push(...arr.slice(0, 5 - out.manifestazione.length));
+      for (const m of arr) walk(m, depth + 1);
+    }
+    if (rec.Avvenimento) {
+      const arr = toArray(rec.Avvenimento);
+      if (out.avvenimento.length < 5) out.avvenimento.push(...arr.slice(0, 5 - out.avvenimento.length));
+      for (const a of arr) walk(a, depth + 1);
+    }
+    if (rec.Scommessa) {
+      const arr = toArray(rec.Scommessa);
+      if (out.scommessa.length < 5) out.scommessa.push(...arr.slice(0, 5 - out.scommessa.length));
+      for (const s of arr) walk(s, depth + 1);
+    }
+    if (rec.Esito) {
+      const arr = toArray(rec.Esito);
+      if (out.esito.length < 10) out.esito.push(...arr.slice(0, 10 - out.esito.length));
+    }
+    for (const v of Object.values(rec)) {
+      if (v !== rec.Disciplina && v !== rec.Manifestazione && v !== rec.Avvenimento && v !== rec.Scommessa && v !== rec.Esito) {
+        walk(v, depth + 1);
+      }
+    }
+  }
+  walk(obj, 0);
+  return out;
+}
+
+function sampleNode(n: unknown): unknown {
+  if (n == null) return null;
+  if (typeof n !== "object") return n;
+  const o = n as Record<string, unknown>;
+  return { keys: Object.keys(o), descr: o.descr, cod: o.cod, Lista: o.Lista, quota: o.quota, sample: JSON.stringify(o).slice(0, 300) };
+}
+
 function extractMatchFromNode(node: Record<string, unknown>): string | null {
   const home = String(node.squadraCasa ?? node.squadra1 ?? node.homeTeam ?? "").trim();
   const away = String(node.squadraOspite ?? node.squadra2 ?? node.awayTeam ?? "").trim();
@@ -220,11 +278,46 @@ export async function GET(req: Request) {
       firstAvvenimentoSample = JSON.stringify(firstAvv, null, 2).slice(0, 2000);
     }
 
+    const hierarchy = exploreHierarchy(data);
+    const disciplinaList = hierarchy.disciplina.map((d) => {
+      if (d == null) return null;
+      if (typeof d !== "object") return String(d);
+      const o = d as Record<string, unknown>;
+      const descr = String(o.descr ?? "").trim();
+      const cod = o.cod != null ? String(o.cod) : "";
+      return descr || cod || JSON.stringify(o).slice(0, 200);
+    }).filter(Boolean) as string[];
+    const calcioInDisciplina = hierarchy.disciplina.filter((d) => {
+      if (d == null || typeof d !== "object") return String(d).toUpperCase().includes("CALCIO");
+      const o = d as Record<string, unknown>;
+      return Object.values(o).some((v) => String(v ?? "").toUpperCase().includes("CALCIO"));
+    });
+    const disciplinaInfo = {
+      count: hierarchy.disciplina.length,
+      list: disciplinaList,
+      hasCalcio: calcioInDisciplina.length > 0,
+      calcioItems: calcioInDisciplina.map((d) => (d && typeof d === "object" ? { keys: Object.keys(d as object), ...(d as Record<string, unknown>) } : d)),
+      items: hierarchy.disciplina.map((d) => {
+        if (d == null) return null;
+        if (typeof d !== "object") return d;
+        const o = d as Record<string, unknown>;
+        return { keys: Object.keys(o), ...o, _full: JSON.stringify(o).slice(0, 800) };
+      }),
+    };
+
     let exploreResult: {
       manifestazioni: string[];
       matchPairs: string[];
       directQuotes: string[];
-      italiaSerieA?: { avvCount: number; firstAvvKeys?: string[]; nestedCount?: number; sampleNested?: unknown };
+      italiaSerieA?: { avvCount: number; firstAvvKeys?: string[]; nestedCount?: number; sampleNested?: unknown; aliasSample?: unknown };
+      foundSerieAMatches?: string[];
+      hierarchy?: {
+        disciplina: unknown[];
+        manifestazione: unknown[];
+        avvenimento: unknown[];
+        scommessa: unknown[];
+        esito: unknown[];
+      };
     } | undefined;
     if (explore) {
       const { manifestazioni, matchPairs } = exploreFeed(data);
@@ -235,7 +328,7 @@ export async function GET(req: Request) {
       } catch {
         directQuotes = ["(errore fetch)"];
       }
-      let italiaSerieA: { avvCount: number; firstAvvKeys?: string[]; nestedCount?: number; sampleNested?: unknown } | undefined;
+      let italiaSerieA: { avvCount: number; firstAvvKeys?: string[]; nestedCount?: number; sampleNested?: unknown; aliasSample?: unknown } | undefined;
       for (const ev of eventsArray) {
         if (!ev || typeof ev !== "object") continue;
         const mans = toArray((ev as Record<string, unknown>).Manifestazione);
@@ -253,19 +346,43 @@ export async function GET(req: Request) {
                 }
               }
             }
-            const firstAvvKeys = avv[0] && typeof avv[0] === "object" ? Object.keys(avv[0] as object) : [];
+            const firstAvv = avv[0] && typeof avv[0] === "object" ? (avv[0] as Record<string, unknown>) : null;
+            const firstAvvKeys = firstAvv ? Object.keys(firstAvv) : [];
+            let aliasSample: unknown = null;
+            if (firstAvv?.Alias) {
+              const alias = firstAvv.Alias;
+              aliasSample = Array.isArray(alias)
+                ? { type: "array", length: alias.length, first: alias[0] }
+                : { type: typeof alias, keys: typeof alias === "object" && alias ? Object.keys(alias as object) : [], sample: JSON.stringify(alias).slice(0, 500) };
+            }
             italiaSerieA = {
               avvCount: avv.length,
               firstAvvKeys,
               nestedCount: nested.length,
-              sampleNested: nested.length > 0 ? nested.slice(0, 3).map((n) => (n && typeof n === "object" ? { keys: Object.keys(n as object), descr: (n as Record<string, unknown>).descr, scommessaCount: toArray((n as Record<string, unknown>).Scommessa).length } : n)) : (firstAvvKeys.length ? "nessun Partita/Incontro/Avvenimento annidato" : undefined),
+              sampleNested: nested.length > 0 ? nested.slice(0, 3).map((n) => (n && typeof n === "object" ? { keys: Object.keys(n as object), descr: (n as Record<string, unknown>).descr, scommessaCount: toArray((n as Record<string, unknown>).Scommessa).length } : n)) : (firstAvvKeys.length ? "nessun Partita/Incontro annidato" : undefined),
+              aliasSample,
             };
             break;
           }
         }
         if (italiaSerieA) break;
       }
-      exploreResult = { manifestazioni, matchPairs, directQuotes, italiaSerieA };
+      const serieATeams = ["Inter", "Juventus", "Milan", "Napoli", "Roma", "Lazio"];
+      const foundSerieA = matchPairs.filter((p) => serieATeams.some((t) => p.includes(t)));
+      exploreResult = {
+        manifestazioni,
+        matchPairs,
+        directQuotes,
+        italiaSerieA,
+        foundSerieAMatches: foundSerieA,
+        hierarchy: {
+          disciplina: hierarchy.disciplina.map(sampleNode),
+          manifestazione: hierarchy.manifestazione.map(sampleNode),
+          avvenimento: hierarchy.avvenimento.map(sampleNode),
+          scommessa: hierarchy.scommessa.map(sampleNode),
+          esito: hierarchy.esito.map(sampleNode),
+        },
+      };
     }
 
     return NextResponse.json({
@@ -282,6 +399,7 @@ export async function GET(req: Request) {
           : null,
       exalogicAvvenimentiCount: exalogicAvvenimenti.length,
       firstAvvenimentoSample,
+      disciplina: disciplinaInfo,
       ...(exploreResult && { explore: exploreResult }),
     });
   } catch (e) {

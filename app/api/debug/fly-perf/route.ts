@@ -26,7 +26,6 @@ export async function GET() {
     env: {
       nodeEnv: process.env.NODE_ENV,
       hasApiFootball: !!process.env.API_FOOTBALL_KEY,
-      hasOddsApi: !!process.env.THE_ODDS_API_KEY,
     },
   });
 }

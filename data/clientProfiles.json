@@ -1,4 +1,39 @@
 {
+  "BR-0001": {
+    "siteId": "BR-0001",
+    "name": "Betboom",
+    "internalName": "Betboom_BR",
+    "bookmakerId": "betboom",
+    "affiliateUrl": "https://click.betboom.com/0p7o0R0n",
+    "bonusDescription": "Bônus de boas-vindas para novos apostadores. Cadastre-se e aproveite as melhores odds em futebol, esportes e apostas ao vivo.",
+    "logoPath": "/logos/betboom.png",
+    "faviconPath": "/favicons/betboom.png",
+    "commission": "Revenue Share 40%",
+    "remuneration": {
+      "model": "revenue_share",
+      "value": 40
+    },
+    "api": {
+      "enabled": true,
+      "endpoint": "https://com-br-partner-feed.sporthub.bet/api/partner_feed/v1",
+      "method": "GET",
+      "params": {
+        "partner_id": "7557"
+      },
+      "apiKeyEnv": "BETBOOM_API_KEY",
+      "authType": "bearer",
+      "documentationUrl": "https://responsible-reaper-a69.notion.site/BetBoom-Feed-API-EN-baf9b68a744c4c128bc2012db480096b",
+      "notes": "JWT in Authorization Bearer. Partner ID 7557. IP server deve essere whitelistato da Betboom.",
+      "mapping": {
+        "eventsPath": "$.data",
+        "homeTeam": "homeTeam",
+        "awayTeam": "awayTeam",
+        "odds1": "odds1",
+        "oddsX": "oddsX",
+        "odds2": "odds2"
+      }
+    }
+  },
   "IT-002": {
     "siteId": "IT-002",
     "name": "Netwin",
@@ -6,7 +41,7 @@
     "bookmakerId": "netwinit",
     "affiliateUrl": "https://m.netwin.it/redirect.aspx?mid=26&sid=6165&cid=&pid=&affid=3281",
     "bonusDescription": "300€ di Bonus totale : 250€ subito + 50€ di real bonus sul primo deposito",
-    "logoPath": "/logos/netwin-it.png",
+    "logoPath": "/logos/netwin-it-2.png",
     "faviconPath": "/favicons/netwin-it.png",
     "api": {
       "enabled": true,

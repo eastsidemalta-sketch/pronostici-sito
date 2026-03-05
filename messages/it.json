@@ -8,11 +8,15 @@
     "bookmakers": "Bookmakers",
     "quotes": "Quote",
     "predictions": "Pronostici",
+    "quotesAndPredictions": "Quote e Pronostici",
     "menu": "Menu",
     "openMenu": "Apri menu",
     "closeMenu": "Chiudi menu",
     "scrollLeft": "Scorri a sinistra",
-    "scrollRight": "Scorri a destra"
+    "scrollRight": "Scorri a destra",
+    "selectCountry": "Seleziona paese",
+    "goToCountry": "Vai a {country}",
+    "activeCountry": "{country} (attivo)"
   },
   "home": {
     "title": "PlaySignal",
@@ -104,8 +108,9 @@
     "under25": "Under 2,5"
   },
   "bonus": {
-    "title": "Bonus",
+    "title": "Bonus Siti Scommesse",
     "description": "Bonus e promozioni dei bookmaker. Codici bonus, offerte di benvenuto e free bet.",
+    "intro": "Da Snai a Eurobet, passando per Betsson o Bet365, diversi attori del settore propongono agli utenti di piazzare le loro scommesse online. Gli allibratori, vista la concorrenza, cercano di offrire a loro volta diversi punti forti, anche se a volte rimangono ancora alcuni elementi da migliorare.",
     "placeholder": "Qui inseriremo i bonus dei bookmaker."
   },
   "sitiScommesse": {

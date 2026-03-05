@@ -11,13 +11,9 @@ async function fetchAndMeasure(
   return { bytes, status: res.status, ok: res.ok };
 }
 
-/** Stima byte tipici quando l'API fallisce (es. 429 rate limit) */
-const ESTIMATED_ODDS_API_BYTES = 300_000; // ~300 KB risposta tipica soccer_europe
-
 export async function GET() {
   const results: Record<string, { bytes: number; status?: number; ok?: boolean; note?: string; estimated?: boolean }> = {};
   const apiFootballKey = process.env.API_FOOTBALL_KEY;
-  const oddsApiKey = process.env.THE_ODDS_API_KEY;
 
   // API-Football: fixtures (una lega, 7 giorni)
   if (apiFootballKey) {
@@ -60,30 +56,10 @@ export async function GET() {
     results["API-Football"] = { bytes: 0, note: "API_FOOTBALL_KEY non configurata" };
   }
 
-  // The Odds API: soccer_europe (tutte le quote)
-  if (oddsApiKey) {
-    try {
-      const r = await fetchAndMeasure(
-        `https://api.the-odds-api.com/v4/sports/soccer_europe/odds/?regions=eu&markets=h2h,h2h_3_way_h1,totals,double_chance,btts,spreads,draw_no_bet&oddsFormat=decimal&apiKey=${oddsApiKey}`
-      );
-      const bytesForTotal = r.ok ? r.bytes : ESTIMATED_ODDS_API_BYTES;
-      results["The Odds API: soccer_europe (tutti i mercati)"] = {
-        bytes: bytesForTotal,
-        status: r.status,
-        ok: r.ok,
-        ...(r.ok ? {} : { note: `Risposta reale: ${r.bytes} byte (es. 429). Totale usa stima ${ESTIMATED_ODDS_API_BYTES.toLocaleString()} byte.`, estimated: true }),
-      };
-    } catch (e) {
-      results["The Odds API"] = { bytes: ESTIMATED_ODDS_API_BYTES, note: `${String(e)} (totale usa stima)`, estimated: true };
-    }
-  } else {
-    results["The Odds API"] = { bytes: ESTIMATED_ODDS_API_BYTES, note: "THE_ODDS_API_KEY non configurata (totale usa stima ~300 KB)", estimated: true };
-  }
-
   const totalBytes = Object.values(results).reduce((s, r) => s + (r.bytes || 0), 0);
 
   return NextResponse.json({
-    note: "Byte delle risposte HTTP (body) per le principali chiamate API. Include API-Football e The Odds API. Se The Odds API fallisce (es. 429), usa stima ~300 KB.",
+    note: "Byte delle risposte HTTP (body) per le principali chiamate API. Include API-Football.",
     results,
     totalBytes,
     totalKB: Math.round(totalBytes / 1024 * 10) / 10,

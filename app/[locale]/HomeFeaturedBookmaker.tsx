@@ -1,5 +1,6 @@
 import { getFeaturedBookmaker } from "@/lib/quotes/bookmakers";
 import { BookmakerLink } from "@/lib/components/BookmakerLink";
+import { BookmakerLogo } from "@/lib/components/BookmakerLogo";
 import { getTranslations } from "next-intl/server";
 import { RichText } from "@/lib/components/RichText";
 
@@ -28,21 +29,18 @@ export default async function HomeFeaturedBookmaker({ country, locale }: HomeFea
       logoUrl={featured.logoUrl}
       className={`mt-6 flex flex-col items-center gap-0.5 rounded-xl border-2 border-black/25 p-4 shadow-sm transition md:mt-8 md:flex-row md:items-center md:justify-between md:gap-6 md:p-5 ${bgClass}`}
     >
-      <div className="flex items-center gap-3">
+      <div className="flex items-center gap-4">
         {(featured.faviconUrl || featured.logoUrl) && (
-          <img
+          <BookmakerLogo
             src={featured.faviconUrl || featured.logoUrl!}
-            alt=""
-            className="h-12 w-12 shrink-0 object-contain md:h-14 md:w-14"
+            size="2xl"
+            title={featured.name}
           />
         )}
         <div>
           <p className="text-[10px] font-semibold uppercase tracking-wide text-black/95 md:text-xs">
             {t("featuredBookmaker")}
           </p>
-          <h3 className="text-base font-extrabold text-black md:text-lg">
-            {featured.name}
-          </h3>
           {featured.bonusDescription && (
             <RichText
               as="p"
@@ -55,10 +53,10 @@ export default async function HomeFeaturedBookmaker({ country, locale }: HomeFea
       <span className={`group flex shrink-0 overflow-hidden rounded-lg border-2 border-black transition hover:bg-black md:min-w-[200px]`}>
         {(featured.faviconUrl || featured.logoUrl) && (
           <div className="flex shrink-0 items-center justify-center border-r-2 border-black bg-white px-3 py-2.5 md:px-4 md:py-3">
-            <img
+            <BookmakerLogo
               src={featured.faviconUrl || featured.logoUrl!}
-              alt=""
-              className="h-8 w-8 object-contain md:h-9 md:w-9"
+              size="md"
+              title={featured.name}
             />
           </div>
         )}

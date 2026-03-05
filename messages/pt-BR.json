@@ -8,11 +8,15 @@
     "bookmakers": "Bookmakers",
     "quotes": "Odds",
     "predictions": "Previsões",
+    "quotesAndPredictions": "Odds e Previsões",
     "menu": "Menu",
     "openMenu": "Abrir menu",
     "closeMenu": "Fechar menu",
     "scrollLeft": "Rolar para a esquerda",
-    "scrollRight": "Rolar para a direita"
+    "scrollRight": "Rolar para a direita",
+    "selectCountry": "Selecionar país",
+    "goToCountry": "Ir para {country}",
+    "activeCountry": "{country} (ativo)"
   },
   "home": {
     "title": "PlaySignal",
