@@ -42,9 +42,10 @@ if ! git pull origin main 2>/dev/null; then
   git clean -fd data/ 2>/dev/null || true
 fi
 
-# 2. Rimuovi Netwin da test/data, poi copia da test a prod
+# 2. Normalizza Netwin: solo IT-0002 (rimuovi IT-002, aggiungi IT-0002 se manca)
 if [ -d "$TEST_DIR/data" ]; then
   (cd "$TEST_DIR" && node scripts/remove-netwin-from-bookmakers.mjs 2>/dev/null) || true
+  (cd "$TEST_DIR" && node scripts/add-netwin-it0002.mjs 2>/dev/null) || true
   echo ""
   echo "2. Copio data/ da test a prod..."
   mkdir -p "$PROD_DIR/data"
