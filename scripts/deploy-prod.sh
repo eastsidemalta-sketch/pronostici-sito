@@ -11,7 +11,7 @@ wait_for_app() {
   local n=0
   echo -n "Attendo avvio $name sulla porta $port..."
   while [ $n -lt $max ]; do
-    if curl -s -o /dev/null -w "%{http_code}" "http://127.0.0.1:$port" 2>/dev/null | grep -q "200\|301\|302"; then
+    if curl -s -o /dev/null -w "%{http_code}" "http://127.0.0.1:$port" 2>/dev/null | grep -qE "^(200|301|302|307)$"; then
       echo " OK"
       return 0
     fi
