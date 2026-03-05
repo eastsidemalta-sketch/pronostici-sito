@@ -43,15 +43,21 @@ if ! git pull origin main 2>/dev/null; then
 fi
 
 # 2. Normalizza Netwin: solo IT-0002 (rimuovi IT-002, aggiungi IT-0002 se manca)
+# Esegui su TEST e su PROD (prod potrebbe avere data da git clean)
 if [ -d "$TEST_DIR/data" ]; then
-  (cd "$TEST_DIR" && node scripts/remove-netwin-from-bookmakers.mjs 2>/dev/null) || true
-  (cd "$TEST_DIR" && node scripts/add-netwin-it0002.mjs 2>/dev/null) || true
+  echo "2a. Normalizzo Netwin su test..."
+  (cd "$TEST_DIR" && node scripts/remove-netwin-from-bookmakers.mjs) || true
+  (cd "$TEST_DIR" && node scripts/add-netwin-it0002.mjs) || true
   echo ""
-  echo "2. Copio data/ da test a prod..."
+  echo "2b. Copio data/ da test a prod..."
   mkdir -p "$PROD_DIR/data"
   for f in "$TEST_DIR/data"/*; do
     [ -e "$f" ] && cp -f "$f" "$PROD_DIR/data/" 2>/dev/null || true
   done
+  echo "2c. Normalizzo Netwin su prod (dopo copia)..."
+  (cd "$PROD_DIR" && node scripts/remove-netwin-from-bookmakers.mjs) || true
+  (cd "$PROD_DIR" && node scripts/add-netwin-it0002.mjs) || true
+  pm2 restart pronostici-test 2>/dev/null || true
   echo "   OK"
 else
   echo "2. Cartella data test non trovata"
@@ -66,7 +72,6 @@ npm ci
 npm run build
 cp -r public .next/standalone/ 2>/dev/null || true
 cp -r .next/static .next/standalone/.next/ 2>/dev/null || true
-node scripts/apply-netwin-config.mjs 2>/dev/null || true
 cp -r data .next/standalone/ 2>/dev/null || true
 if [ -f .env.local ]; then cp .env.local .next/standalone/; elif [ -f .env ]; then cp .env .next/standalone/; fi
 cp scripts/start-standalone.sh .next/standalone/ 2>/dev/null || true

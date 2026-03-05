@@ -17,9 +17,9 @@ const DATA_FILES = [
   path.join(STANDALONE, "bookmakers.json"),
 ];
 
-/** Rimuove solo il cliente IT-002 (Netwin da clientProfiles), non altri bookmaker con "netwin" nel nome */
+/** Rimuove IT-002 (vecchio clientProfiles). NON tocca IT-0002. */
 function isNetwinIT002(b) {
-  const siteId = (b.siteId || "").toUpperCase();
+  const siteId = (b.siteId || "").toString().trim().toUpperCase();
   return siteId === "IT-002";
 }
 
