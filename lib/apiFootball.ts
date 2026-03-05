@@ -123,6 +123,74 @@ function formatDateInSiteTz(date: Date): string {
   return `${y}-${m}-${d}`;
 }
 
+/** Formato API Football per una partita (usato da HomeMatchesList) */
+type ApiFootballFixture = {
+  fixture: { id: number; date: string; status?: { short?: string } };
+  league: { id: number; name: string; logo?: string };
+  teams: { home: { name: string; logo?: string }; away: { name: string; logo?: string } };
+};
+
+/**
+ * Fallback: fetch partite da Betboom (category Brazil 161) e trasforma in formato API Football.
+ * Usato quando API Football non restituisce partite per Brasileirão (league 71).
+ */
+async function fetchBetboomFixturesAsApiFootball(
+  fromDate: string,
+  toDate: string
+): Promise<ApiFootballFixture[]> {
+  const apiKey = process.env.BETBOOM_API_KEY;
+  if (!apiKey) return [];
+  try {
+    const res = await fetch(
+      "https://com-br-partner-feed.sporthub.bet/api/partner_feed/v1/matches/get_by_category_ids",
+      {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "x-access-token": apiKey,
+          "x-partner": process.env.BETBOOM_PARTNER_ID ?? "id_7557",
+        },
+        body: JSON.stringify({
+          locale: "en",
+          category_ids: [161],
+          market_ids: [1],
+          type: "prematch",
+        }),
+        cache: "no-store",
+      }
+    );
+    if (!res.ok) return [];
+    const data = (await res.json()) as { matches?: Array<{ id: number; start_dttm?: string; teams?: { home_team?: { name?: string }; away_team?: { name?: string } } }> };
+    const matches = data.matches ?? [];
+    const from = new Date(fromDate + "T00:00:00Z").getTime();
+    const to = new Date(toDate + "T23:59:59Z").getTime();
+    const out: ApiFootballFixture[] = [];
+    for (const m of matches) {
+      const home = m.teams?.home_team?.name ?? "";
+      const away = m.teams?.away_team?.name ?? "";
+      if (!home || !away) continue;
+      const start = m.start_dttm ? new Date(m.start_dttm).getTime() : 0;
+      if (start < from || start > to) continue;
+      out.push({
+        fixture: {
+          id: m.id,
+          date: m.start_dttm ?? fromDate + "T12:00:00Z",
+          status: { short: "NS" },
+        },
+        league: { id: 71, name: "Brasileirão Serie A" },
+        teams: {
+          home: { name: home },
+          away: { name: away },
+        },
+      });
+    }
+    out.sort((a, b) => new Date(a.fixture.date).getTime() - new Date(b.fixture.date).getTime());
+    return out;
+  } catch {
+    return [];
+  }
+}
+
 /**
  * Ottiene le partite future dalla data di oggi fino a 7 giorni successivi.
  * Usa Europe/Rome per "oggi" così le partite del giorno sono sempre visibili.
@@ -186,6 +254,12 @@ export async function getUpcomingFixtures(leagueIds?: number[]) {
     if (brazilFixtures.length > 0) {
       const idx = leagues.indexOf(BR_LEAGUE_ID);
       results[idx] = brazilFixtures;
+    } else {
+      const betboomFixtures = await fetchBetboomFixturesAsApiFootball(fromDate, toDate);
+      if (betboomFixtures.length > 0) {
+        const idx = leagues.indexOf(BR_LEAGUE_ID);
+        results[idx] = betboomFixtures;
+      }
     }
   }
   for (const arr of results) {
