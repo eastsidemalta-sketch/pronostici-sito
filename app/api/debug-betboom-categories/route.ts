@@ -18,7 +18,7 @@ export async function GET() {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
-        Authorization: `Bearer ${apiKey}`,
+        "x-access-token": apiKey,
       },
       body: JSON.stringify({ locale: "en", sport_ids: [1] }),
       cache: "no-store",

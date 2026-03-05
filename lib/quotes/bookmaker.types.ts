@@ -86,7 +86,7 @@ export type Bookmaker = {
   /** Endpoint completo per le quote (es. https://api.bookmaker.com/v1/odds) */
   apiEndpoint?: string | null;
   /** Come inviare la chiave: query (param), header (X-Api-Key), bearer */
-  apiAuthType?: "query" | "header" | "bearer";
+  apiAuthType?: "query" | "header" | "bearer" | "x-access-token";
   /** Chiave segreta aggiuntiva (es. per header Authorization) */
   apiSecret?: string | null;
   /** Mapping scoperto automaticamente: percorsi JSON per homeTeam, awayTeam, odds 1/X/2 */

@@ -131,7 +131,7 @@ type ClientProfile = {
     params?: Record<string, string>;
     bodyTemplate?: Record<string, unknown>; // per POST (es. Betboom: locale, market_ids, type)
     apiKeyEnv?: string; // es. "BETBOOM_API_KEY" - usa process.env[apiKeyEnv]
-    authType?: "query" | "header" | "bearer";
+    authType?: "query" | "header" | "bearer" | "x-access-token";
     mapping?: Record<string, unknown>;
     apiLeagueMapping?: Record<string, string>; // leagueId -> category_id o tournament_id
   };
@@ -192,7 +192,7 @@ function applyClientProfilesOverrides(bookmakers: Bookmaker[]): Bookmaker[] {
         updates.apiProvider = "direct";
         updates.isActive = true;
         updates.apiEndpoint = profile.api.endpoint;
-        updates.apiAuthType = (profile.api.authType as "query" | "header" | "bearer") ?? "bearer";
+        updates.apiAuthType = (profile.api.authType as "query" | "header" | "bearer" | "x-access-token") ?? "bearer";
         updates.apiMappingConfig = profile.api.mapping as Bookmaker["apiMappingConfig"] ?? undefined;
         updates.apiRequestConfig = {
           method: (profile.api.method === "POST" ? "POST" : "GET") as "GET" | "POST",

@@ -67,6 +67,7 @@ export async function GET(req: Request) {
         };
         if (bm.apiAuthType === "header" && bm.apiKey) headers["X-Api-Key"] = bm.apiKey;
         else if (bm.apiAuthType === "bearer" && bm.apiKey) headers["Authorization"] = `Bearer ${bm.apiKey}`;
+        else if (bm.apiAuthType === "x-access-token" && bm.apiKey) headers["x-access-token"] = bm.apiKey;
 
         let url = bm.apiEndpoint;
         let body: string | undefined;

@@ -24,9 +24,9 @@
         "type": "prematch"
       },
       "apiKeyEnv": "BETBOOM_API_KEY",
-      "authType": "bearer",
+      "authType": "x-access-token",
       "documentationUrl": "https://responsible-reaper-a69.notion.site/BetBoom-Feed-API-EN-baf9b68a744c4c128bc2012db480096b",
-      "notes": "JWT Bearer. market_ids 1=Winner (1X2). Scopri category_id Brasileirão con categories/get_by_sport_ids (sport 1).",
+      "notes": "Header x-access-token. market_ids 1=Winner (1X2). Scopri category_id Brasileirão con /api/debug-betboom-categories.",
       "apiLeagueMapping": {
         "71": "0"
       },

@@ -61,6 +61,8 @@ function buildHeaders(
     if (apiSecret) headers["X-Api-Secret"] = apiSecret;
   } else if (authType === "bearer") {
     headers["Authorization"] = `Bearer ${apiKey}`;
+  } else if (authType === "x-access-token") {
+    headers["x-access-token"] = apiKey;
   }
 
   return headers;

@@ -31,7 +31,7 @@ export async function GET(req: Request) {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
-        Authorization: `Bearer ${apiKey}`,
+        "x-access-token": apiKey,
       },
       body: JSON.stringify(body),
       cache: "no-store",
