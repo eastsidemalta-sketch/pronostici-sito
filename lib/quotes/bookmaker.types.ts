@@ -122,6 +122,7 @@ export type Bookmaker = {
     method?: "GET" | "POST";
     queryParams?: Record<string, string>;
     bodyTemplate?: Record<string, unknown>;
+    headers?: Record<string, string>;
   };
 
   /**

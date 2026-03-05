@@ -25,6 +25,7 @@
       },
       "apiKeyEnv": "BETBOOM_API_KEY",
       "authType": "x-access-token",
+      "extraHeaders": { "x-partner": "id_7557" },
       "documentationUrl": "https://responsible-reaper-a69.notion.site/BetBoom-Feed-API-EN-baf9b68a744c4c128bc2012db480096b",
       "notes": "Header x-access-token. market_ids 1=Winner (1X2). Scopri category_id Brasileirão con /api/debug-betboom-categories.",
       "apiLeagueMapping": {

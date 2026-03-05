@@ -32,6 +32,7 @@ export async function GET(req: Request) {
       headers: {
         "Content-Type": "application/json",
         "x-access-token": apiKey,
+        "x-partner": process.env.BETBOOM_PARTNER_ID ?? "id_7557",
       },
       body: JSON.stringify(body),
       cache: "no-store",

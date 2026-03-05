@@ -321,7 +321,7 @@ export async function fetchDirectBookmakerQuotes(
     method === "GET" ? queryParams : undefined
   );
 
-  const headers = buildHeaders(apiKey, bm.apiSecret ?? undefined, authType);
+  const headers = { ...buildHeaders(apiKey, bm.apiSecret ?? undefined, authType), ...(reqConfig.headers ?? {}) };
 
   let body: string | undefined;
   if (method === "POST" && reqConfig.bodyTemplate) {

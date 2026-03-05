@@ -130,6 +130,7 @@ type ClientProfile = {
     method?: string;
     params?: Record<string, string>;
     bodyTemplate?: Record<string, unknown>; // per POST (es. Betboom: locale, market_ids, type)
+    extraHeaders?: Record<string, string>; // header aggiuntivi (es. x-partner per Betboom)
     apiKeyEnv?: string; // es. "BETBOOM_API_KEY" - usa process.env[apiKeyEnv]
     authType?: "query" | "header" | "bearer" | "x-access-token";
     mapping?: Record<string, unknown>;
@@ -194,11 +195,13 @@ function applyClientProfilesOverrides(bookmakers: Bookmaker[]): Bookmaker[] {
         updates.apiEndpoint = profile.api.endpoint;
         updates.apiAuthType = (profile.api.authType as "query" | "header" | "bearer" | "x-access-token") ?? "bearer";
         updates.apiMappingConfig = profile.api.mapping as Bookmaker["apiMappingConfig"] ?? undefined;
-        updates.apiRequestConfig = {
+        const reqConfig: NonNullable<Bookmaker["apiRequestConfig"]> = {
           method: (profile.api.method === "POST" ? "POST" : "GET") as "GET" | "POST",
           queryParams: { ...profile.api.params },
           bodyTemplate: profile.api.bodyTemplate,
         };
+        if (profile.api.extraHeaders) reqConfig.headers = profile.api.extraHeaders;
+        updates.apiRequestConfig = reqConfig;
         if (profile.api.apiLeagueMapping) updates.apiLeagueMapping = profile.api.apiLeagueMapping;
         if (profile.api.apiKeyEnv) {
           const key = process.env[profile.api.apiKeyEnv];
