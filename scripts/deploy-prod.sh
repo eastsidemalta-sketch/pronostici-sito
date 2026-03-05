@@ -29,8 +29,12 @@ git pull origin main
 mkdir -p public/uploads
 npm ci
 npm run build
+cp -r public .next/standalone/ 2>/dev/null || true
+cp -r .next/static .next/standalone/.next/ 2>/dev/null || true
 node scripts/apply-netwin-config.mjs 2>/dev/null || true
-pm2 restart pronostici || pm2 start npm --name pronostici -- start
+cp -r data .next/standalone/ 2>/dev/null || true
+if [ -f .env.local ]; then cp .env.local .next/standalone/; elif [ -f .env ]; then cp .env .next/standalone/; fi
+pm2 delete pronostici 2>/dev/null; pm2 start ecosystem.config.cjs --only pronostici
 wait_for_app "pronostici" 3000 || true
 echo ""
 echo "=== Deploy produzione completato ==="

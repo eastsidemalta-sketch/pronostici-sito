@@ -14,9 +14,9 @@ module.exports = {
     },
     {
       name: "pronostici",
-      cwd: "/var/www/pronostici-sito",
-      script: "npm",
-      args: "start",
+      cwd: "/var/www/pronostici-sito/.next/standalone",
+      script: "node",
+      args: "server.js",
       env: { PORT: 3000 },
     },
   ],
