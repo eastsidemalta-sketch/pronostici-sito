@@ -80,7 +80,7 @@ export async function getQuotesForFixtures(
     const leagueId = leagueFixtures[0]?.league?.id;
     let multiMarket: Awaited<ReturnType<typeof getMultiMarketQuotes>>;
     try {
-      multiMarket = await getMultiMarketQuotes(sportKey, { leagueId });
+      multiMarket = await getMultiMarketQuotes(sportKey, { leagueId, country });
     } catch {
       continue;
     }

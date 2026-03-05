@@ -49,9 +49,17 @@ export type MultiMarketQuotes = Record<
 
 export async function getMultiMarketQuotes(
   sportKey: string,
-  options?: { homeTeam?: string; awayTeam?: string; leagueId?: number; bookmakerId?: string }
+  options?: { homeTeam?: string; awayTeam?: string; leagueId?: number; bookmakerId?: string; country?: string }
 ): Promise<MultiMarketQuotes> {
-  const bookmakers = getBookmakers();
+  let bookmakers = getBookmakers();
+  if (options?.country) {
+    bookmakers = bookmakers.filter(
+      (b) =>
+        b.countries?.includes(options!.country!) ||
+        b.country === options!.country ||
+        b.countryConfig?.[options!.country!]
+    );
+  }
   const filteredBms = options?.bookmakerId
     ? bookmakers.filter(
         (b) =>
