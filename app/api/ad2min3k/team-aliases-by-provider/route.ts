@@ -5,6 +5,12 @@ import {
   saveTeamAliasesByProvider,
   type TeamAliasesByProviderConfig,
 } from "@/lib/teamAliasesByProvider";
+import {
+  getCategoryMappingByProvider,
+  saveCategoryMappingByProvider,
+  getDefaultCategories,
+  type CategoryMappingByProviderConfig,
+} from "@/lib/categoryMappingByProvider";
 import { getCachedMatchSample } from "@/lib/quotes/providers/netwinCache";
 import { getBookmakers } from "@/lib/quotes/bookmakers";
 import { fetchDirectBookmakerQuotes } from "@/lib/quotes/providers/directBookmakerFetcher";
@@ -48,8 +54,13 @@ export async function GET() {
     }
   }
 
+  const categoryMapping = getCategoryMappingByProvider();
+  const defaultCategories = getDefaultCategories();
+
   return NextResponse.json({
     mapping,
+    categoryMapping,
+    defaultCategories,
     providers,
     samples,
     hint: "API Football usa nomi come Napoli, Torino, Inter. Confronta con samples per vedere differenze. Aggiungi mapping in teamAliasesByProvider: apiFootballName -> providerName.",
@@ -63,13 +74,19 @@ export async function PUT(req: Request) {
     return NextResponse.json({ error: "Non autorizzato" }, { status: 401 });
   }
   try {
-    const body = (await req.json()) as { mapping?: TeamAliasesByProviderConfig };
-    if (!body?.mapping || typeof body.mapping !== "object") {
-      return NextResponse.json({ error: "mapping richiesto" }, { status: 400 });
+    const body = (await req.json()) as {
+      mapping?: TeamAliasesByProviderConfig;
+      categoryMapping?: CategoryMappingByProviderConfig;
+    };
+    if (body?.mapping && typeof body.mapping === "object") {
+      saveTeamAliasesByProvider(body.mapping);
     }
-    saveTeamAliasesByProvider(body.mapping);
+    if (body?.categoryMapping && typeof body.categoryMapping === "object") {
+      saveCategoryMappingByProvider(body.categoryMapping);
+    }
     return NextResponse.json({ success: true });
-  } catch {
-    return NextResponse.json({ error: "Errore" }, { status: 500 });
+  } catch (e) {
+    const msg = e instanceof Error ? e.message : "Errore scrittura file";
+    return NextResponse.json({ error: msg }, { status: 500 });
   }
 }

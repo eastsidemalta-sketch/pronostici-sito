@@ -61,12 +61,14 @@ if [ ! -f .next/standalone/.env.local ] && [ ! -f .next/standalone/.env ]; then
 fi
 pm2 delete pronostici-test 2>/dev/null; pm2 start ecosystem.config.cjs --only pronostici-test
 wait_for_app "pronostici-test" 3001 || true
-# Invalida cache e pre-popola con dati freschi (evita vuoto al primo utente dopo deploy)
+# Invalida cache e pre-popola con dati freschi (chiama API Football + quote, evita vuoto al primo utente)
 CRON_SECRET=$(grep -E "^CRON_SECRET=" .next/standalone/.env.local 2>/dev/null | cut -d= -f2- | tr -d '"' | tr -d "'" || true)
 if [ -n "$CRON_SECRET" ]; then
-  echo "Warm cache IT+BR (bypass)..."
-  curl -s -H "Authorization: Bearer $CRON_SECRET" "http://127.0.0.1:3001/api/debug-home?bypass=1"
+  echo "Warm cache IT+BR (API Football + quote)..."
+  curl -s --max-time 120 -H "Authorization: Bearer $CRON_SECRET" "http://127.0.0.1:3001/api/debug-home?country=IT,BR&bypass=1" || true
   echo ""
+else
+  echo "ATTENZIONE: CRON_SECRET non impostato. Esegui manualmente per popolare la cache."
 fi
 echo ""
 echo "=== Deploy TEST completato ==="

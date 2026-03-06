@@ -1,0 +1,16 @@
+{
+  "netwinit": {
+    "1X2": ["1", "X", "2", "N"],
+    "Over/Under": ["Over", "Under", "Sopra", "Sotto", "Oltre", "O", "U"],
+    "Handicap": ["Casa", "Ospite", "Handicap", "Squadra 1", "Squadra 2"],
+    "Double Chance": ["1X", "12", "X2", "1 2", "X 2"],
+    "Gol/No Gol": ["Sì", "Si", "No", "Gol", "No Gol", "Sim", "Ja"]
+  },
+  "betboom": {
+    "1X2": ["Winner", "Result", "1", "X", "2", "Home", "Draw", "Away"],
+    "Over/Under": ["Over", "Under", "Acima", "Abaixo", "Mais", "Menos"],
+    "Handicap": ["Handicap", "Home", "Away"],
+    "Double Chance": ["1X", "12", "X2", "Home or Draw", "Home or Away", "Draw or Away"],
+    "Gol/No Gol": ["Yes", "No", "Sim", "Não", "Nao"]
+  }
+}
