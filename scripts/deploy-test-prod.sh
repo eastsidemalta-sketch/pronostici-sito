@@ -27,11 +27,16 @@ echo "=== Deploy TEST (produzione non toccata) ==="
 cd /var/www/pronostici-sito-test
 
 # 1. Salva i dati da test (modifiche admin) prima che git pull li sovrascriva
+# Escludi teamAliasesByProvider.json: viene dal repo, non da modifiche admin
 if [ -d ".next/standalone/data" ]; then
   echo "Sync data da test (preserva paesi, menu, bookmakers)..."
   mkdir -p data
   for f in .next/standalone/data/*; do
-    [ -e "$f" ] && [ -f "$f" ] && cp -f "$f" data/ 2>/dev/null || true
+    [ -e "$f" ] && [ -f "$f" ] || continue
+    case "$(basename "$f")" in
+      teamAliasesByProvider.json) continue ;;
+    esac
+    cp -f "$f" data/ 2>/dev/null || true
   done
   git add data/ 2>/dev/null || true
   if ! git diff --staged --quiet 2>/dev/null; then
