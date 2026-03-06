@@ -38,6 +38,7 @@ yarn-error.log*
 # Netwin cache (generata a runtime, condivisa tra worker)
 data/.netwin-cache.json
 data/.netwin-full.log
+data/.netwin-lista-codes.json
 
 # Log chiamate API (retention 7 giorni)
 data/.api-calls.log

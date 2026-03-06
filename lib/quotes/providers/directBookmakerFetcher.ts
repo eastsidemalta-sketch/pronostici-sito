@@ -3,6 +3,8 @@
  * Applica il mapping configurato e restituisce formato normalizzato.
  * Supporta risposta JSON e XML.
  */
+import { writeFileSync, mkdirSync, existsSync } from "fs";
+import path from "path";
 import type { Bookmaker } from "../bookmaker.types";
 import { logApiCall } from "@/lib/apiCallLog";
 import {
@@ -346,6 +348,42 @@ function extractTeamsFromAvvenimento(avv: Record<string, unknown>, manifestazion
     if (a && b) return { home: a, away: b };
   }
   return { home: "", away: "" };
+}
+
+/**
+ * Estrae i codici Lista da tutti i nodi Scommessa ricorsivamente.
+ * Usato per debug: verificare quali mercati (3, 7989, 8, 18, 15-17) sono presenti nella FULL.
+ */
+function collectListaCodesFromNode(node: unknown, seen: Set<number>): void {
+  if (!node || typeof node !== "object") return;
+  const o = node as Record<string, unknown>;
+  const scommesse = toArray((o.Scommessa ?? o.scommessa) as unknown);
+  for (const s of scommesse) {
+    if (s && typeof s === "object") {
+      const lista = getListaFromScommessa(s as Record<string, unknown>);
+      if (!Number.isNaN(lista)) seen.add(lista);
+    }
+  }
+  for (const key of ["Partita", "Incontro", "Evento", "Avvenimento", "Palinsesto", "Giornata", "Manifestazione"]) {
+    const children = toArray(o[key] as unknown);
+    for (const c of children) {
+      if (c && typeof c === "object") collectListaCodesFromNode(c, seen);
+    }
+  }
+}
+
+/** Estrae i codici Lista unici dalla risposta Exalogic/Netwin. */
+export function extractListaCodesFromExalogic(data: unknown): number[] {
+  const seen = new Set<number>();
+  const root = findEventsArray(data);
+  if (root) {
+    for (const item of root) {
+      if (item && typeof item === "object") collectListaCodesFromNode(item, seen);
+    }
+  } else if (data && typeof data === "object") {
+    collectListaCodesFromNode(data, seen);
+  }
+  return Array.from(seen).sort((a, b) => a - b);
 }
 
 /**
@@ -791,6 +829,28 @@ export async function fetchDirectBookmakerQuotes(
       if (cached) return cached;
     }
     return {};
+  }
+
+  if (isNetwin && netwinUseFull && useExalogic) {
+    const listaCodes = extractListaCodesFromExalogic(data);
+    const expected = [3, 8, 18, 7989, 15, 16, 17];
+    const found = expected.filter((c) => listaCodes.includes(c));
+    const missing = expected.filter((c) => !listaCodes.includes(c));
+    console.log(`[Netwin] FULL codici Lista trovati: [${listaCodes.join(", ")}]`);
+    if (missing.length > 0) {
+      console.warn(`[Netwin] Lista mancanti (attesi per O/U, Handicap, BTTS, DC): [${missing.join(", ")}]`);
+    }
+    try {
+      const dir = path.join(process.cwd(), "data");
+      if (!existsSync(dir)) mkdirSync(dir, { recursive: true });
+      writeFileSync(
+        path.join(dir, ".netwin-lista-codes.json"),
+        JSON.stringify({ listaCodes, found, missing, at: new Date().toISOString() }, null, 2),
+        "utf-8"
+      );
+    } catch {
+      // ignora errori scrittura debug
+    }
   }
 
   const events = useExalogic

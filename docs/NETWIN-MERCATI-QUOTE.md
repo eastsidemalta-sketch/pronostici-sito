@@ -89,7 +89,7 @@ Riferimento per verificare e sistemare i mercati oltre all'1X2.
 ## Come verificare
 
 1. **debug-quotes-match con raw=1** – mostra `matchRequested` con outcomes per la partita.
-2. **Estendere l'endpoint** – aggiungere `totals_25`, `spreads`, `btts`, `double_chance` a `matchRequested` per vedere i valori grezzi.
+2. **debug-netwin-lista** – dopo una FULL, mostra quali codici Lista (3, 7989, 8, 18, 15-17) sono presenti nel feed. Se 7989, 8, 18, 15-17 sono in `missing`, quei mercati non arrivano dalla FULL.
 3. **Confrontare con Netwin** – aprire la stessa partita su netwin.it e confrontare Over 2.5, Handicap, Gol/No Gol, Doppia chance.
 
 ---
