@@ -46,7 +46,9 @@ export async function GET(req: Request) {
           b.isActive &&
           (b.countries?.includes(country) || b.country === country || b.countryConfig?.[country])
       );
-      const rawByBookmaker: Record<string, { h2hCount: number; h2hSample: Array<{ homeTeam: string; awayTeam: string; outcomes?: unknown }>; _error?: string }> = {};
+      const rawByBookmaker: Record<string, { h2hCount: number; h2hSample: Array<{ homeTeam: string; awayTeam: string; outcomes?: unknown }>; matchRequested?: { homeTeam: string; awayTeam: string; outcomes: unknown }; _error?: string }> = {};
+      const homeNorm = (homeTeam || "").toLowerCase().trim();
+      const awayNorm = (awayTeam || "").toLowerCase().trim();
       for (const bm of bookmakers) {
         if (bm.apiProvider !== "direct") continue;
         try {
@@ -56,6 +58,11 @@ export async function GET(req: Request) {
             systemCodeOverride: systemCode,
           });
           const h2h = res.h2h ?? [];
+          const matchReq = h2h.find(
+            (q) =>
+              (q.homeTeam || "").toLowerCase().trim() === homeNorm &&
+              (q.awayTeam || "").toLowerCase().trim() === awayNorm
+          );
           rawByBookmaker[bm.name] = {
             h2hCount: h2h.length,
             h2hSample: h2h.slice(0, 15).map((q) => ({
@@ -63,6 +70,13 @@ export async function GET(req: Request) {
               awayTeam: q.awayTeam,
               outcomes: q.outcomes,
             })),
+            ...(matchReq && {
+              matchRequested: {
+                homeTeam: matchReq.homeTeam,
+                awayTeam: matchReq.awayTeam,
+                outcomes: matchReq.outcomes,
+              },
+            }),
           };
         } catch (err) {
           rawByBookmaker[bm.name] = {
@@ -76,7 +90,7 @@ export async function GET(req: Request) {
         ok: true,
         request: { homeTeam, awayTeam, leagueId, country, sportKey, forceFull, forceDelta, systemCode: systemCode || "(env)" },
         rawByBookmaker,
-        hint: "Netwin: ?forceDelta=1 per DELTA, ?forceFull=1 per FULL. Se h2hCount=0 con DELTA, serve prima una FULL per popolare la cache. ?systemCode=XXX per override.",
+        hint: "matchRequested = quota esatta dalla cache/API per la partita richiesta. Confronta outcomes (home=X, draw=Y, away=Z) con il sito Netwin per verificare correttezza.",
       });
     }
 
