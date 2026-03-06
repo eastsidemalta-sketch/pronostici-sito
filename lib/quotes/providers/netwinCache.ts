@@ -6,12 +6,18 @@
  * Regole API Netwin:
  * - FULL: può essere fatta solo ogni 3 ore
  * - DELTA: può essere fatta ogni 10 secondi, restituisce le quote modificate
+ *
+ * Cache su file: condivisa tra worker/processi (Next.js può usare più worker).
  */
+import { existsSync, readFileSync, writeFileSync, mkdirSync } from "fs";
+import path from "path";
 import type { DirectMultiMarketResult } from "./directBookmakerFetcher";
 import type { DirectQuote } from "./directBookmakerFetcher";
 
 const FULL_FETCH_INTERVAL_MS = 3 * 60 * 60 * 1000; // 3 ore (limite Netwin)
 const DELTA_MIN_INTERVAL_MS = 10 * 1000; // 10 secondi tra una DELTA e l'altra (limite Netwin)
+
+const CACHE_FILE = path.join(process.cwd(), "data", ".netwin-cache.json");
 
 let cache: { data: DirectMultiMarketResult; timestamp: number } | null = null;
 let lastDeltaCallAt: number | null = null;
@@ -73,21 +79,57 @@ export function recordDeltaCall(): void {
   lastDeltaCallAt = Date.now();
 }
 
+function loadFromFileCache(): { data: DirectMultiMarketResult; timestamp: number } | null {
+  try {
+    if (!existsSync(CACHE_FILE)) return null;
+    const raw = readFileSync(CACHE_FILE, "utf-8");
+    const parsed = JSON.parse(raw) as { data: DirectMultiMarketResult; timestamp: number };
+    if (!parsed?.data || typeof parsed.timestamp !== "number") return null;
+    if (Date.now() - parsed.timestamp > FULL_FETCH_INTERVAL_MS) return null;
+    return parsed;
+  } catch {
+    return null;
+  }
+}
+
+function saveToFileCache(data: DirectMultiMarketResult, timestamp: number): void {
+  try {
+    const dir = path.dirname(CACHE_FILE);
+    if (!existsSync(dir)) mkdirSync(dir, { recursive: true });
+    writeFileSync(CACHE_FILE, JSON.stringify({ data, timestamp }), "utf-8");
+  } catch (e) {
+    console.warn("[Netwin] Impossibile salvare cache su file:", e instanceof Error ? e.message : String(e));
+  }
+}
+
 export function getCached(): DirectMultiMarketResult | null {
-  if (!cache) return null;
-  if (Date.now() - cache.timestamp > FULL_FETCH_INTERVAL_MS) return null;
-  return cache.data;
+  if (cache && Date.now() - cache.timestamp <= FULL_FETCH_INTERVAL_MS) return cache.data;
+  const fromFile = loadFromFileCache();
+  if (fromFile) {
+    cache = fromFile;
+    return fromFile.data;
+  }
+  return null;
 }
 
 export function setCache(data: DirectMultiMarketResult): void {
-  cache = { data, timestamp: Date.now() };
+  const timestamp = Date.now();
+  cache = { data, timestamp };
   lastDeltaCallAt = null;
+  saveToFileCache(data, timestamp);
 }
 
 export function mergeDeltaWithCache(delta: DirectMultiMarketResult): DirectMultiMarketResult {
   const full = getCached();
   if (!full) return delta;
   return mergeMarketResults(full, delta);
+}
+
+/** Debug: campione di partite in cache (per verificare nomi squadre usati da Netwin) */
+export function getCachedMatchSample(limit = 50): Array<{ homeTeam: string; awayTeam: string }> {
+  const c = getCached();
+  const h2h = c?.h2h ?? [];
+  return h2h.slice(0, limit).map((q) => ({ homeTeam: q.homeTeam, awayTeam: q.awayTeam }));
 }
 
 /** Debug: info sulla cache Netwin (ultima FULL, prossima FULL consentita) */

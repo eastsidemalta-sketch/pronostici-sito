@@ -35,6 +35,9 @@ yarn-error.log*
 .env.local
 .env.*.local
 
+# Netwin cache (generata a runtime, condivisa tra worker)
+data/.netwin-cache.json
+
 # vercel
 .vercel
 
