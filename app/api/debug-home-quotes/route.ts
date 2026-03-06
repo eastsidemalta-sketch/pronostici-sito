@@ -38,12 +38,10 @@ export async function GET(req: Request) {
       const home = f.teams?.home?.name ?? "";
       const away = f.teams?.away?.name ?? "";
       const q = quotesMap[f.fixture.id];
-      const bookmakers = q
-        ? [
-            q.bookmaker1?.key,
-            q.bookmakerX?.key,
-            q.bookmaker2?.key,
-          ].filter(Boolean) as string[];
+      const rawKeys = q
+        ? [q.bookmaker1?.key, q.bookmakerX?.key, q.bookmaker2?.key]
+        : [];
+      const bookmakers: string[] = rawKeys.filter((k): k is string => Boolean(k));
       details.push({
         fixtureId: f.fixture.id,
         home,
