@@ -12,6 +12,7 @@ import { getMultiMarketQuotes } from "@/lib/quotes/quotesEngine";
 import { getSportKeyForLeague } from "@/lib/quotes/leagueToSportKey";
 import { matchTeamNames } from "@/lib/teamAliases";
 import { fetchDirectBookmakerQuotes } from "@/lib/quotes/providers/directBookmakerFetcher";
+import { getCacheDebugInfo } from "@/lib/quotes/providers/netwinCache";
 import { getBookmakers } from "@/lib/quotes/bookmakers";
 
 export async function GET(req: Request) {
@@ -100,6 +101,8 @@ export async function GET(req: Request) {
       }
     }
 
+    const netwinCacheInfo = netwinBm ? getCacheDebugInfo() : null;
+
     return NextResponse.json({
       ok: true,
       country,
@@ -108,7 +111,8 @@ export async function GET(req: Request) {
       netwinRawCount,
       netwinSample,
       matchTest,
-      hint: "Se netwinRawCount>0 ma netwinInQuotes=false, il problema è il matching nomi. Controlla teamAliasesByProvider e netwinSample vs firstFixtureHome/Away.",
+      netwinCacheInfo,
+      hint: "Se netwinRawCount>0 ma netwinInQuotes=false, il problema è il matching nomi. Se netwinCacheInfo.hasCache=false, la FULL non è mai riuscita: controlla .netwin-full.log in data/.",
     });
   } catch (e) {
     return NextResponse.json(

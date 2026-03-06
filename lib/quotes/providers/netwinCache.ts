@@ -191,6 +191,8 @@ export function getCacheDebugInfo(): {
   nextFullAllowedIso: string | null;
   h2hCount: number;
   shouldUseFull: boolean;
+  cacheFilePath: string;
+  cacheFileExists: boolean;
 } {
   let data = cache;
   if (!data) {
@@ -200,6 +202,9 @@ export function getCacheDebugInfo(): {
       data = fromFile;
     }
   }
+  const cacheFilePath = CACHE_FILE;
+  const cacheFileExists = existsSync(CACHE_FILE);
+
   if (!data) {
     return {
       hasCache: false,
@@ -209,6 +214,8 @@ export function getCacheDebugInfo(): {
       nextFullAllowedIso: null,
       h2hCount: 0,
       shouldUseFull: true,
+      cacheFilePath,
+      cacheFileExists,
     };
   }
   const nextFullAt = data.timestamp + FULL_FETCH_INTERVAL_MS;
@@ -220,5 +227,7 @@ export function getCacheDebugInfo(): {
     nextFullAllowedIso: new Date(nextFullAt).toISOString(),
     h2hCount: data.data.h2h?.length ?? 0,
     shouldUseFull: shouldUseFull(),
+    cacheFilePath,
+    cacheFileExists,
   };
 }
