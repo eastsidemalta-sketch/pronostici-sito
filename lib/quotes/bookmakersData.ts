@@ -199,6 +199,15 @@ function applyClientProfilesOverrides(bookmakers: Bookmaker[]): Bookmaker[] {
       if (profile.logoPath) updates.logoUrl = profile.logoPath;
       if (profile.faviconPath) updates.faviconUrl = profile.faviconPath;
       if (profile.remuneration) updates.remuneration = profile.remuneration;
+      // bonusDescription da clientProfiles ha priorità (evita sovrascrittura su deploy)
+      if (profile.bonusDescription) {
+        const country = (siteId || "").slice(0, 2);
+        if (country) {
+          const cc = { ...(bm.countryConfig || {}) };
+          cc[country] = { ...(cc[country] as object || {}), bonusDescription: profile.bonusDescription };
+          updates.countryConfig = cc;
+        }
+      }
 
       if (profile.api?.enabled && profile.api.endpoint) {
         updates.apiProvider = "direct";
