@@ -156,8 +156,10 @@ export async function GET(req: Request) {
   const codiceSitoOverride = searchParams.get("codiceSito");
   /** systemCode override: usa ?systemCode=XXX o env NETWIN_SYSTEM_CODE_OVERRIDE per test (evita lock con produzione) */
   const systemCodeOverride = searchParams.get("systemCode") ?? process.env.NETWIN_SYSTEM_CODE_OVERRIDE;
-  /** Solo DELTA per i test di configurazione — non consumare quota FULL. */
-  const requestType = "delta";
+  /** isLive override: ?isLive=0 o ?isLive=1 (default 0) */
+  const isLiveOverride = searchParams.get("isLive");
+  /** FULL per debug: prima chiamata richiede type=full. Usa ?type=delta per test incrementali. */
+  const requestType = searchParams.get("type") === "delta" ? "delta" : "full";
   const bookmakers = getBookmakers();
   const netwin = bookmakers.find(
     (b) => b.siteId === "IT-002" || b.siteId === "IT-0002" || b.id?.toLowerCase().includes("netwin")
@@ -174,7 +176,7 @@ export async function GET(req: Request) {
     netwin.apiRequestConfig.queryParams as Record<string, string>
   );
   params.set("type", requestType);
-  params.set("isLive", "0"); // Netwin richiede 0 o 1, non altri valori
+  params.set("isLive", isLiveOverride === "1" ? "1" : "0");
   if (codiceSitoOverride) params.set("codiceSito", codiceSitoOverride);
   if (systemCodeOverride) params.set("system_code", systemCodeOverride);
   const url = `${netwin.apiEndpoint}?${params}`;
@@ -206,8 +208,9 @@ export async function GET(req: Request) {
       return NextResponse.json({
         ok: false,
         error: "Netwin: parametro isLive non valido",
-        hint: "L'API richiede isLive=0 (prematch) o isLive=1 (live). Verifica che apiRequestConfig.queryParams abbia isLive: \"0\" in data/bookmakers.json.",
+        hint: "L'API richiede isLive=0 (prematch) o isLive=1 (live). Prova ?isLive=0 o ?isLive=1 nell'URL. Se persiste, contatta Netwin con requestUrl.",
         rawPreview: text.slice(0, 500),
+        requestUrl: url.replace(/system_code=[^&]+/, "system_code=***").replace(/apiKey=[^&]+/, "apiKey=***"),
       });
     }
 
