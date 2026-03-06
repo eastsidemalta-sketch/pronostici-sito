@@ -1,0 +1,132 @@
+[
+  {
+    "id": "betboom",
+    "siteId": "BR-0001",
+    "name": "Betboom",
+    "slug": "betboom",
+    "country": "BR",
+    "countries": [
+      "BR"
+    ],
+    "logoUrl": "/logos/betboom.png",
+    "faviconUrl": "/favicons/betboom.png",
+    "affiliateUrl": "https://click.betboom.com/0p7o0R0n",
+    "isActive": true,
+    "apiProvider": "direct",
+    "apiKey": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJleHAiOjQxMDc1NzUwMTR9.BtciHeEjQSXVf-huzVCzvyb-u6tuBZ30Oj8uf4rmtOs",
+    "apiBookmakerKey": "betboom",
+    "apiConfig": {
+      "markets": [
+        "h2h"
+      ]
+    },
+    "countryConfig": {
+      "BR": {
+        "bonusDescription": "Bônus de boas-vindas para novos apostadores.",
+        "links": [
+          {
+            "url": "https://click.betboom.com/0p7o0R0n",
+            "useCase": "scommetti"
+          },
+          {
+            "url": "https://click.betboom.com/0p7o0R0n",
+            "useCase": "registrati"
+          },
+          {
+            "url": "https://click.betboom.com/0p7o0R0n",
+            "useCase": "bonus"
+          }
+        ]
+      }
+    },
+    "apiEndpoint": "https://com-br-partner-feed.sporthub.bet/api/partner_feed/v1",
+    "apiAuthType": "bearer",
+    "apiRequestConfig": {
+      "method": "GET",
+      "queryParams": {
+        "partner_id": "7557"
+      }
+    },
+    "apiMappingConfig": {
+      "eventsPath": "$.data",
+      "homeTeam": "homeTeam",
+      "awayTeam": "awayTeam",
+      "odds1": "odds1",
+      "oddsX": "oddsX",
+      "odds2": "odds2"
+    }
+  },
+  {
+    "id": "netwinit",
+    "siteId": "IT-0002",
+    "name": "Netwin",
+    "slug": "netwinit",
+    "country": "IT",
+    "countries": [
+      "IT"
+    ],
+    "logoUrl": "/logos/netwin-it-2.png",
+    "faviconUrl": "/favicons/netwin-it.png",
+    "affiliateUrl": "https://m.netwin.it/redirect.aspx?mid=26&sid=6165&cid=&pid=&affid=3281",
+    "quoteButtonUrl": "https://m.netwin.it/redirect.aspx?mid=26&sid=6165&cid=&pid=&affid=3281",
+    "isActive": true,
+    "apiProvider": "direct",
+    "apiKey": "PLAYSIGNAL",
+    "apiBookmakerKey": "netwinit",
+    "apiConfig": {
+      "markets": [
+        "h2h"
+      ]
+    },
+    "apiEndpoint": "https://b2b.egamingsolutionsrl.it/WSSportFeed/get_eventi_psqf",
+    "apiAuthType": "header",
+    "apiRequestConfig": {
+      "method": "GET",
+      "queryParams": {
+        "system_code": "PLAYSIGNAL",
+        "type": "FULL",
+        "isLive": "0",
+        "codiceSito": "WINBET"
+      }
+    },
+    "apiMappingConfig": {
+      "eventsPath": "$",
+      "exalogic": true,
+      "homeTeam": "homeTeam",
+      "awayTeam": "awayTeam",
+      "odds1": "odds1",
+      "oddsX": "oddsX",
+      "odds2": "odds2",
+      "odds1Personalized": "quote_personalizzate.1",
+      "oddsXPersonalized": "quote_personalizzate.X",
+      "odds2Personalized": "quote_personalizzate.2"
+    },
+    "countryConfig": {
+      "IT": {
+        "bonusDescription": "300€ di Bonus totale : 250€ subito + 50€ di real bonus sul primo deposito",
+        "links": [
+          {
+            "url": "https://m.netwin.it/redirect.aspx?mid=26&sid=6165&cid=&pid=&affid=3281",
+            "useCase": "scommetti"
+          },
+          {
+            "url": "https://m.netwin.it/redirect.aspx?mid=26&sid=6165&cid=&pid=&affid=3281",
+            "useCase": "registrati"
+          },
+          {
+            "url": "https://m.netwin.it/redirect.aspx?mid=26&sid=6165&cid=&pid=&affid=3281",
+            "useCase": "bonus"
+          },
+          {
+            "url": "https://m.netwin.it/redirect.aspx?mid=26&sid=6165&cid=&pid=&affid=3281",
+            "useCase": "casino"
+          },
+          {
+            "url": "https://m.netwin.it/redirect.aspx?mid=26&sid=6165&cid=&pid=&affid=3281",
+            "useCase": "sport"
+          }
+        ]
+      }
+    }
+  }
+]
