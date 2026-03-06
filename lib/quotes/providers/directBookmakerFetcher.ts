@@ -636,10 +636,12 @@ export async function fetchDirectBookmakerQuotes(
   }
 
   const isNetwin = isNetwinBookmaker(bm.siteId, bm.id);
+  if (isNetwin) {
+    // Precarica cache da file PRIMA di decidere FULL/DELTA (utile se worker ha memoria vuota)
+    getCached();
+  }
   const netwinUseFull = options?.forceFull ? true : options?.forceDelta ? false : (isNetwin ? shouldUseFull() : true);
   if (isNetwin) {
-    // Precarica cache da file (utile se worker diverso ha cache in memoria vuota)
-    getCached();
     if (netwinUseFull) {
       console.log(`[Netwin] Richiesta FULL (cache vuota o scaduta)`);
     }
@@ -769,7 +771,8 @@ export async function fetchDirectBookmakerQuotes(
             errorRaw: text.slice(0, 1500).replace(/\s+/g, " ").trim(),
           });
         }
-        return {};
+        const cached = getCached();
+        return cached ?? {};
       }
     }
     data = parseApiResponse(text);
@@ -973,6 +976,11 @@ export async function fetchDirectBookmakerQuotes(
 
   if (endpoint?.includes("sporthub.bet")) {
     logApiCall("Betboom", "prematch", true, { count: result.h2h?.length });
+  }
+
+  if (isNetwin && (result.h2h?.length ?? 0) === 0) {
+    const cached = getCached();
+    if (cached && (cached.h2h?.length ?? 0) > 0) return cached;
   }
   return result;
 }
