@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 /**
  * Mostra i tentativi FULL Netwin (successi e errori) da data/.netwin-full.log.
- * Retention automatica: 24 ore.
+ * Retention automatica: 7 giorni.
  *
  * Uso:
  *   node scripts/check-netwin-full-log.mjs              # tutte le FULL nel log

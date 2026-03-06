@@ -19,7 +19,7 @@ const DELTA_MIN_INTERVAL_MS = 10 * 1000; // 10 secondi tra una DELTA e l'altra (
 
 const CACHE_FILE = path.join(process.cwd(), "data", ".netwin-cache.json");
 const FULL_LOG_FILE = path.join(process.cwd(), "data", ".netwin-full.log");
-const FULL_LOG_RETENTION_MS = 24 * 60 * 60 * 1000; // 24 ore
+const FULL_LOG_RETENTION_MS = 7 * 24 * 60 * 60 * 1000; // 7 giorni
 
 let cache: { data: DirectMultiMarketResult; timestamp: number } | null = null;
 let lastDeltaCallAt: number | null = null;
@@ -129,7 +129,7 @@ export function logFullAttempt(
   }
 }
 
-/** Rimuove voci più vecchie di 24 ore */
+/** Rimuove voci più vecchie di 7 giorni */
 function trimLogToRetention(): void {
   try {
     if (!existsSync(FULL_LOG_FILE)) return;
