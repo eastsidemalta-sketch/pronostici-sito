@@ -37,6 +37,7 @@ yarn-error.log*
 
 # Netwin cache (generata a runtime, condivisa tra worker)
 data/.netwin-cache.json
+data/.netwin-full-success.log
 
 # vercel
 .vercel

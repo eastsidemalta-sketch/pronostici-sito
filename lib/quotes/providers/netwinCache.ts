@@ -9,7 +9,7 @@
  *
  * Cache su file: condivisa tra worker/processi (Next.js può usare più worker).
  */
-import { existsSync, readFileSync, writeFileSync, mkdirSync } from "fs";
+import { existsSync, readFileSync, writeFileSync, mkdirSync, appendFileSync } from "fs";
 import path from "path";
 import type { DirectMultiMarketResult } from "./directBookmakerFetcher";
 import type { DirectQuote } from "./directBookmakerFetcher";
@@ -18,6 +18,7 @@ const FULL_FETCH_INTERVAL_MS = 3 * 60 * 60 * 1000; // 3 ore (limite Netwin)
 const DELTA_MIN_INTERVAL_MS = 10 * 1000; // 10 secondi tra una DELTA e l'altra (limite Netwin)
 
 const CACHE_FILE = path.join(process.cwd(), "data", ".netwin-cache.json");
+const FULL_LOG_FILE = path.join(process.cwd(), "data", ".netwin-full-success.log");
 
 let cache: { data: DirectMultiMarketResult; timestamp: number } | null = null;
 let lastDeltaCallAt: number | null = null;
@@ -102,6 +103,23 @@ function saveToFileCache(data: DirectMultiMarketResult, timestamp: number): void
   }
 }
 
+/** Registra una FULL andata a buon fine (per verifica log) */
+function logFullSuccess(timestamp: number, h2hCount: number): void {
+  try {
+    const dir = path.dirname(FULL_LOG_FILE);
+    if (!existsSync(dir)) mkdirSync(dir, { recursive: true });
+    const line =
+      JSON.stringify({
+        timestamp,
+        iso: new Date(timestamp).toISOString(),
+        h2hCount,
+      }) + "\n";
+    appendFileSync(FULL_LOG_FILE, line, "utf-8");
+  } catch {
+    // ignora errori di log
+  }
+}
+
 export function getCached(): DirectMultiMarketResult | null {
   if (cache && Date.now() - cache.timestamp <= FULL_FETCH_INTERVAL_MS) return cache.data;
   const fromFile = loadFromFileCache();
@@ -117,6 +135,7 @@ export function setCache(data: DirectMultiMarketResult): void {
   cache = { data, timestamp };
   lastDeltaCallAt = null;
   saveToFileCache(data, timestamp);
+  logFullSuccess(timestamp, data.h2h?.length ?? 0);
 }
 
 export function mergeDeltaWithCache(delta: DirectMultiMarketResult): DirectMultiMarketResult {
