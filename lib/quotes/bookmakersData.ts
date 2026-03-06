@@ -120,6 +120,10 @@ type ClientProfile = {
   logoPath?: string;
   faviconPath?: string;
   bonusDescription?: string;
+  /** Attiva box bonus sotto "Tutte le quote" */
+  matchBoxBonusEnabled?: boolean;
+  /** Testo bottone nel box (es. "RECEBA 10 BLR") */
+  matchBoxButtonText?: string;
   /** Testo commissione (es. "Revenue Share 40%") - informativo */
   commission?: string;
   /** Remunerazione applicata al bookmaker */
@@ -199,17 +203,20 @@ function applyClientProfilesOverrides(bookmakers: Bookmaker[]): Bookmaker[] {
       if (profile.logoPath) updates.logoUrl = profile.logoPath;
       if (profile.faviconPath) updates.faviconUrl = profile.faviconPath;
       if (profile.remuneration) updates.remuneration = profile.remuneration;
-      // bonusDescription da clientProfiles ha priorità (evita sovrascrittura su deploy)
-      if (profile.bonusDescription) {
+      // bonusDescription e matchBox da clientProfiles hanno priorità (evita sovrascrittura su deploy)
+      if (profile.bonusDescription || profile.matchBoxBonusEnabled || profile.matchBoxButtonText) {
         const country = (siteId || "").slice(0, 2);
         if (country) {
           const cc = { ...(bm.countryConfig || {}) };
           const existing = (cc[country] || {}) as Partial<BookmakerCountryConfig>;
-          cc[country] = {
+          const merged: Partial<BookmakerCountryConfig> = {
             ...existing,
-            bonusDescription: profile.bonusDescription,
             links: existing.links ?? [],
-          } as BookmakerCountryConfig;
+          };
+          if (profile.bonusDescription) merged.bonusDescription = profile.bonusDescription;
+          if (profile.matchBoxBonusEnabled !== undefined) merged.matchBoxBonusEnabled = profile.matchBoxBonusEnabled;
+          if (profile.matchBoxButtonText) merged.matchBoxButtonText = profile.matchBoxButtonText;
+          cc[country] = merged as BookmakerCountryConfig;
           updates.countryConfig = cc;
         }
       }

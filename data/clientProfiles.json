@@ -6,6 +6,8 @@
     "bookmakerId": "betboom",
     "affiliateUrl": "https://click.betboom.com/0p7o0R0n",
     "bonusDescription": "Receba 10 BLR em Apostas Grátis para desportos, com rollover x1 e possibilidade de ganho máximo até 350 BLR, para utilizar nos seus eventos desportivos favoritos.",
+    "matchBoxBonusEnabled": true,
+    "matchBoxButtonText": "RECEBA 10 BLR",
     "logoPath": "/logos/betboom.png",
     "faviconPath": "/favicons/betboom.png",
     "commission": "Revenue Share 40%",
