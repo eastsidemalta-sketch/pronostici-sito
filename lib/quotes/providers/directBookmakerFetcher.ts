@@ -629,11 +629,10 @@ export async function fetchDirectBookmakerQuotes(
     if (netwinUseFull) {
       console.log(`[Netwin] Richiesta FULL (cache vuota o scaduta)`);
     }
-    // Netwin richiede isLive come primo parametro nell'URL
-    const isLiveVal = (queryParams as Record<string, string>).isLive ?? (queryParams as Record<string, string>).is_live ?? (queryParams as Record<string, string>).islive ?? "0";
+    // Rimuovi isLive dalla richiesta: l'API restituisce "Error isLive" anche con isLive=0.
+    // Prova senza: alcuni endpoint potrebbero defaultare a prematch.
     const { isLive: _i, is_live: _il, islive: _ii, ...rest } = queryParams as Record<string, string>;
     queryParams = {
-      isLive: isLiveVal,
       ...rest,
       type: netwinUseFull ? "full" : "delta",
     };
@@ -653,7 +652,7 @@ export async function fetchDirectBookmakerQuotes(
     bm.apiSecret ?? undefined,
     authType,
     method === "GET" ? queryParams : undefined,
-    isNetwin ? ["isLive", "system_code", "type", "codiceSito", "v_sport", "v_scommesse"] : undefined
+    isNetwin ? ["system_code", "type", "codiceSito", "v_sport", "v_scommesse"] : undefined
   );
 
   const headers = { ...buildHeaders(apiKey, bm.apiSecret ?? undefined, authType), ...(reqConfig.headers ?? {}) };
