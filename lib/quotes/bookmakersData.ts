@@ -1,4 +1,4 @@
-import { Bookmaker } from "./bookmaker.types";
+import { Bookmaker, type BookmakerCountryConfig } from "./bookmaker.types";
 import { readFileSync, writeFileSync, mkdirSync, existsSync } from "fs";
 import path from "path";
 
@@ -204,7 +204,12 @@ function applyClientProfilesOverrides(bookmakers: Bookmaker[]): Bookmaker[] {
         const country = (siteId || "").slice(0, 2);
         if (country) {
           const cc = { ...(bm.countryConfig || {}) };
-          cc[country] = { ...(cc[country] as object || {}), bonusDescription: profile.bonusDescription };
+          const existing = (cc[country] || {}) as Partial<BookmakerCountryConfig>;
+          cc[country] = {
+            ...existing,
+            bonusDescription: profile.bonusDescription,
+            links: existing.links ?? [],
+          } as BookmakerCountryConfig;
           updates.countryConfig = cc;
         }
       }
