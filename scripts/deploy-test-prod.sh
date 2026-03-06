@@ -27,6 +27,7 @@ echo "=== Deploy TEST (produzione non toccata) ==="
 cd /var/www/pronostici-sito-test
 git pull origin main
 mkdir -p public/uploads
+rm -rf .next
 npm ci
 npm run build
 cp -r public .next/standalone/ 2>/dev/null || true
