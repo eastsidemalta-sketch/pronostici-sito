@@ -676,6 +676,10 @@ export async function fetchDirectBookmakerQuotes(
     cache: "no-store",
   });
 
+  if (isNetwin && netwinUseFull) {
+    console.log(`[Netwin] FULL risposta: HTTP ${res.status}`);
+  }
+
   if (!res.ok) {
     if (isNetwin && netwinUseFull) {
       console.warn(`[Netwin] FULL fallita: HTTP ${res.status}`);
@@ -693,7 +697,10 @@ export async function fetchDirectBookmakerQuotes(
   try {
     const text = await res.text();
     data = parseApiResponse(text);
-  } catch {
+  } catch (e) {
+    if (isNetwin && netwinUseFull) {
+      console.warn(`[Netwin] FULL parse fallito:`, e instanceof Error ? e.message : String(e));
+    }
     if (isNetwin && !netwinUseFull) {
       const cached = getCached();
       if (cached) return cached;
@@ -704,6 +711,9 @@ export async function fetchDirectBookmakerQuotes(
   const events = useExalogic
     ? flattenExalogicEvents(data)
     : getEventsArray(data, eventsPath);
+  if (isNetwin && netwinUseFull) {
+    console.log(`[Netwin] FULL estratti ${events.length} eventi`);
+  }
   const stakesConfig = mapping.stakes1X2;
   const result: DirectMultiMarketResult = {
     h2h: [],
