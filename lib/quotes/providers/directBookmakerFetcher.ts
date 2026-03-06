@@ -634,7 +634,7 @@ export async function fetchDirectBookmakerQuotes(
     queryParams = {
       isLive: "0",
       ...rest,
-      type: netwinUseFull ? "full" : "delta",
+      type: netwinUseFull ? "FULL" : "delta",
     };
     const systemCode =
       options?.systemCodeOverride ?? process.env.NETWIN_SYSTEM_CODE_OVERRIDE;
@@ -732,7 +732,9 @@ export async function fetchDirectBookmakerQuotes(
       if (text.includes("isLive") && /can be 0 or 1/i.test(text)) {
         if (netwinUseFull) {
           const raw = text.slice(0, 300).replace(/\s+/g, " ");
-          console.warn(`[Netwin] FULL isLive error. Raw: ${raw}`);
+          const urlParams = new URL(url).searchParams;
+          const isLiveVal = urlParams.get("isLive") ?? urlParams.get("IsLive") ?? "(mancante)";
+          console.warn(`[Netwin] FULL isLive error. Raw: ${raw}. URL isLive param: ${isLiveVal}`);
         }
         return {};
       }
