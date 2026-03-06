@@ -156,10 +156,12 @@ export async function GET(req: Request) {
   const codiceSitoOverride = searchParams.get("codiceSito");
   /** systemCode override: usa ?systemCode=XXX o env NETWIN_SYSTEM_CODE_OVERRIDE per test (evita lock con produzione) */
   const systemCodeOverride = searchParams.get("systemCode") ?? process.env.NETWIN_SYSTEM_CODE_OVERRIDE;
-  /** isLive override: ?isLive=0 o ?isLive=1 (default 0) */
+  /** isLive override: ?isLive=0 o ?isLive=1 (default 0). ?tryIslive=1 usa "islive" invece di "isLive" */
   const isLiveOverride = searchParams.get("isLive");
-  /** FULL per debug: prima chiamata richiede type=full. Usa ?type=delta per test incrementali. */
-  const requestType = searchParams.get("type") === "delta" ? "delta" : "full";
+  const tryIsliveLowercase = searchParams.get("tryIslive") === "1";
+  /** FULL per debug. L'API può richiedere type=FULL (maiuscolo). Usa ?type=delta per test incrementali. */
+  const typeParam = searchParams.get("type");
+  const requestType = typeParam === "delta" ? "delta" : "FULL";
   const bookmakers = getBookmakers();
   const netwin = bookmakers.find(
     (b) => b.siteId === "IT-002" || b.siteId === "IT-0002" || b.id?.toLowerCase().includes("netwin")
@@ -172,11 +174,17 @@ export async function GET(req: Request) {
     });
   }
 
-  const params = new URLSearchParams(
-    netwin.apiRequestConfig.queryParams as Record<string, string>
-  );
+  const q = netwin.apiRequestConfig.queryParams as Record<string, string>;
+  const params = new URLSearchParams();
+  for (const [k, v] of Object.entries(q)) {
+    if (k.toLowerCase() === "islive") continue; // gestito sotto
+    if (v != null && String(v).trim() !== "") params.set(k, String(v).trim());
+  }
   params.set("type", requestType);
-  params.set("isLive", isLiveOverride === "1" ? "1" : "0");
+  const isLiveVal = isLiveOverride === "1" ? "1" : "0";
+  params.delete("isLive");
+  params.delete("islive");
+  params.set(tryIsliveLowercase ? "islive" : "isLive", isLiveVal);
   if (codiceSitoOverride) params.set("codiceSito", codiceSitoOverride);
   if (systemCodeOverride) params.set("system_code", systemCodeOverride);
   const url = `${netwin.apiEndpoint}?${params}`;
@@ -208,7 +216,7 @@ export async function GET(req: Request) {
       return NextResponse.json({
         ok: false,
         error: "Netwin: parametro isLive non valido",
-        hint: "L'API richiede isLive=0 (prematch) o isLive=1 (live). Prova ?isLive=0 o ?isLive=1 nell'URL. Se persiste, contatta Netwin con requestUrl.",
+        hint: "Prova ?tryIslive=1 per usare 'islive' invece di 'isLive', oppure contatta Netwin con requestUrl.",
         rawPreview: text.slice(0, 500),
         requestUrl: url.replace(/system_code=[^&]+/, "system_code=***").replace(/apiKey=[^&]+/, "apiKey=***"),
       });
