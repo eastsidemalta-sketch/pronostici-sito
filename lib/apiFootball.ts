@@ -1,3 +1,4 @@
+import { logApiCall } from "./apiCallLog";
 import { getEnabledLeagueIds } from "./leaguesConfig";
 import { getTeamFixturesWithFallback, getCachedFixtureDetail, setCachedFixtureDetail } from "./teamFixturesCache";
 
@@ -286,6 +287,7 @@ export async function getUpcomingFixtures(leagueIds?: number[]) {
       new Date(a.fixture.date).getTime() - new Date(b.fixture.date).getTime()
   );
 
+  logApiCall("API Football", "fixtures", true, { count: upcoming.length });
   return upcoming as any[];
 }
 

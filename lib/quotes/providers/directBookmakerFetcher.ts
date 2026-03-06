@@ -4,6 +4,7 @@
  * Supporta risposta JSON e XML.
  */
 import type { Bookmaker } from "../bookmaker.types";
+import { logApiCall } from "@/lib/apiCallLog";
 import {
   isNetwinBookmaker,
   shouldUseFull,
@@ -911,6 +912,7 @@ export async function fetchDirectBookmakerQuotes(
       });
     } else {
       recordDeltaCall();
+      logApiCall("Netwin", "DELTA", true, { count: result.h2h?.length });
       return mergeDeltaWithCache(result);
     }
   }
@@ -962,6 +964,9 @@ export async function fetchDirectBookmakerQuotes(
     }
   }
 
+  if (endpoint?.includes("sporthub.bet")) {
+    logApiCall("Betboom", "prematch", true, { count: result.h2h?.length });
+  }
   return result;
 }
 

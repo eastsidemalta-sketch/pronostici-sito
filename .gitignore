@@ -39,6 +39,9 @@ yarn-error.log*
 data/.netwin-cache.json
 data/.netwin-full.log
 
+# Log chiamate API (retention 7 giorni)
+data/.api-calls.log
+
 # vercel
 .vercel
 

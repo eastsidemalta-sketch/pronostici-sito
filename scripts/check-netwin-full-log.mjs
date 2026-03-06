@@ -17,19 +17,28 @@ import { fileURLToPath } from "url";
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const ROOT = path.join(__dirname, "..");
-const LOG_FILE = path.join(ROOT, "data", ".netwin-full.log");
+
+// L'app PM2 scrive in .next/standalone/data/ (cwd = standalone). Lo script può essere in project root.
+const CANDIDATES = [
+  path.join(ROOT, ".next", "standalone", "data", ".netwin-full.log"),
+  path.join(ROOT, "data", ".netwin-full.log"),
+];
+const LOG_FILE = CANDIDATES.find((p) => existsSync(p)) ?? CANDIDATES[0];
 
 const args = process.argv.slice(2);
 const hoursIdx = args.indexOf("--hours");
 const hours = hoursIdx >= 0 && args[hoursIdx + 1] ? parseInt(args[hoursIdx + 1], 10) : null;
 
 if (!existsSync(LOG_FILE)) {
-  console.log("Nessun log FULL trovato:", LOG_FILE);
+  console.log("Nessun log FULL trovato. Percorsi controllati:");
+  CANDIDATES.forEach((p) => console.log("  -", p));
   console.log("Il file viene creato quando una FULL Netwin viene tentata (successo o errore).");
   process.exit(0);
 }
 
 const now = Date.now();
+// Log usato (per debug)
+if (process.env.DEBUG) console.log("Log letto da:", LOG_FILE);
 const cutoff = hours ? now - hours * 60 * 60 * 1000 : 0;
 
 const raw = readFileSync(LOG_FILE, "utf-8");

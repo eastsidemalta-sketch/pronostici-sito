@@ -104,7 +104,7 @@ function saveToFileCache(data: DirectMultiMarketResult, timestamp: number): void
   }
 }
 
-/** Registra tentativo FULL (successo o errore). Retention 24h. */
+/** Registra tentativo FULL (successo o errore). Retention 7 giorni. */
 export function logFullAttempt(
   success: boolean,
   details: { url?: string; h2hCount?: number; error?: string; errorRaw?: string }

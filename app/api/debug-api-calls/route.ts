@@ -1,11 +1,14 @@
 /**
  * GET /api/debug-api-calls
  * Report delle chiamate API con colonne: Provider | Tipo | Endpoint | Trigger | Frequenza | Stato | Link
+ * + Log ultime 7 giorni di tutte le chiamate API
  *
  * ?format=html = pagina HTML con tabella
+ * ?hours=168 = log ultimi 7 giorni (default 24)
  */
 import { NextResponse } from "next/server";
 import { getCacheDebugInfo } from "@/lib/quotes/providers/netwinCache";
+import { readApiCallLog, readNetwinFullLog } from "@/lib/apiCallLog";
 
 /** Report righe: tutte le chiamate API esterne */
 type ReportRow = {
@@ -85,11 +88,18 @@ function buildReport(base: string): ReportRow[] {
 export async function GET(request: Request) {
   const { searchParams } = new URL(request.url);
   const format = searchParams.get("format");
+  const hours = Math.min(168, Math.max(1, parseInt(searchParams.get("hours") ?? "24", 10) || 24));
 
   const url = new URL(request.url);
   const base = `${url.protocol}//${url.host}`;
 
   const report = buildReport(base);
+
+  // Log unificato: api-calls + netwin-full (ultimi N giorni)
+  const apiLog = readApiCallLog(hours);
+  const netwinLog = readNetwinFullLog(hours);
+  const allLog = [...netwinLog.map((e) => ({ ...e, source: "netwin-full" })), ...apiLog.map((e) => ({ ...e, source: "api-calls" }))];
+  allLog.sort((a, b) => (b.timestamp ?? 0) - (a.timestamp ?? 0));
 
   if (format === "html") {
     const html = `<!DOCTYPE html>
@@ -127,6 +137,26 @@ ${report
   .join("")}
 </tbody>
 </table>
+
+<h2 style="margin-top:2rem">Log chiamate API (ultimi ${hours}h, retention 7 giorni)</h2>
+<table border="1" cellpadding="8" style="border-collapse:collapse;width:100%;font-size:13px">
+<thead><tr style="background:#f0f0f0">
+<th>Data/Ora</th><th>Provider</th><th>Tipo</th><th>Esito</th><th>Count</th><th>Errore</th>
+</tr></thead>
+<tbody>
+${allLog.slice(0, 100).map((e) => `
+<tr>
+<td>${(e as { iso?: string }).iso?.slice(0, 19) ?? "-"}</td>
+<td>${(e as { provider?: string }).provider ?? "-"}</td>
+<td>${(e as { type?: string }).type ?? "-"}</td>
+<td>${(e as { success?: boolean }).success ? "OK" : "ERR"}</td>
+<td>${(e as { count?: number; h2hCount?: number }).count ?? (e as { h2hCount?: number }).h2hCount ?? "-"}</td>
+<td>${(e as { error?: string }).error ? String((e as { error?: string }).error).slice(0, 80) + "..." : "-"}</td>
+</tr>`).join("")}
+</tbody>
+</table>
+${allLog.length === 0 ? "<p><em>Nessuna chiamata registrata. Le chiamate vengono loggate automaticamente (retention 7 giorni).</em></p>" : ""}
+<p style="margin-top:1rem"><small>Ore: <a href="${base}/api/debug-api-calls?format=html&hours=24">24</a> | <a href="${base}/api/debug-api-calls?format=html&hours=168">168 (7 giorni)</a></small></p>
 <p style="margin-top:2rem"><small>JSON: <a href="${base}/api/debug-api-calls">/api/debug-api-calls</a></small></p>
 </body>
 </html>`;
@@ -139,5 +169,6 @@ ${report
     ok: true,
     base,
     report,
+    log: { hours, entries: allLog.slice(0, 50), total: allLog.length },
   });
 }
