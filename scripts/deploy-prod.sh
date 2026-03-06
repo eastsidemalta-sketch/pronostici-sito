@@ -25,6 +25,22 @@ wait_for_app() {
 
 echo "=== Deploy PRODUZIONE ==="
 cd /var/www/pronostici-sito
+
+# 1. Salva i dati da produzione (admin edits) prima che git pull li sovrascriva
+if [ -d ".next/standalone/data" ]; then
+  echo "Sync data da produzione..."
+  mkdir -p data
+  for f in .next/standalone/data/*; do
+    [ -e "$f" ] && [ -f "$f" ] && cp -f "$f" data/ 2>/dev/null || true
+  done
+  git add data/ 2>/dev/null || true
+  if ! git diff --staged --quiet 2>/dev/null; then
+    git commit -m "Sync data da produzione" || true
+    git push origin main 2>/dev/null || echo "  ATTENZIONE: push fallito. Sul Mac: scp -r user@server:$PWD/data ./data && git add data && git commit -m 'Sync data' && git push"
+  fi
+fi
+
+# 2. Pull ultimo codice
 git pull origin main
 mkdir -p public/uploads
 rm -rf .next
@@ -32,6 +48,7 @@ npm ci
 npm run build
 cp -r public .next/standalone/ 2>/dev/null || true
 cp -r .next/static .next/standalone/.next/ 2>/dev/null || true
+cp -r .next/server/chunks .next/standalone/.next/server/ 2>/dev/null || true
 node scripts/remove-netwin-from-bookmakers.mjs 2>/dev/null || true
 node scripts/add-netwin-it0002.mjs 2>/dev/null || true
 cp -r data .next/standalone/ 2>/dev/null || true

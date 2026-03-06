@@ -615,8 +615,8 @@ export async function fetchDirectBookmakerQuotes(
     if (netwinUseFull) {
       console.log(`[Netwin] Richiesta FULL (cache vuota o scaduta)`);
     }
-    // Netwin: alcuni endpoint richiedono is_live invece di isLive
-    const isLiveKey = process.env.NETWIN_ISLIVE_PARAM === "isLive" ? "isLive" : "is_live";
+    // Netwin: prova islive, is_live o isLive (env NETWIN_ISLIVE_PARAM=isLive|is_live|islive)
+    const isLiveKey = process.env.NETWIN_ISLIVE_PARAM || "islive";
     const { isLive: _i, is_live: _il, islive: _ii, ...rest } = queryParams as Record<string, string>;
     queryParams = {
       ...rest,
