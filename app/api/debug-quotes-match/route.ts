@@ -18,6 +18,9 @@ export async function GET(req: Request) {
   const leagueIdParam = searchParams.get("leagueId");
   const country = searchParams.get("country") ?? "BR";
   const raw = searchParams.get("raw") === "1";
+  const forceFull = searchParams.get("forceFull") === "1";
+  const forceDelta = searchParams.get("forceDelta") === "1";
+  const systemCode = searchParams.get("systemCode") ?? undefined;
 
   if (!homeTeam || !awayTeam) {
     return NextResponse.json({
@@ -47,7 +50,11 @@ export async function GET(req: Request) {
       for (const bm of bookmakers) {
         if (bm.apiProvider !== "direct") continue;
         try {
-          const res = await fetchDirectBookmakerQuotes(bm, leagueId);
+          const res = await fetchDirectBookmakerQuotes(bm, leagueId, {
+            forceFull: forceFull || undefined,
+            forceDelta: forceDelta || undefined,
+            systemCodeOverride: systemCode,
+          });
           const h2h = res.h2h ?? [];
           rawByBookmaker[bm.name] = {
             h2hCount: h2h.length,
@@ -67,9 +74,9 @@ export async function GET(req: Request) {
       }
       return NextResponse.json({
         ok: true,
-        request: { homeTeam, awayTeam, leagueId, country, sportKey },
+        request: { homeTeam, awayTeam, leagueId, country, sportKey, forceFull, forceDelta, systemCode: systemCode || "(env)" },
         rawByBookmaker,
-        hint: "Questi sono i dati GREZZI da ogni bookmaker (senza filtro per partita). Se h2hCount=0 per Netwin, il feed non restituisce quote. Se h2hSample contiene la partita ma con nomi diversi, aggiungi alias in data/teamAliases.json",
+        hint: "Netwin: ?forceDelta=1 per DELTA, ?forceFull=1 per FULL. Se h2hCount=0 con DELTA, serve prima una FULL per popolare la cache. ?systemCode=XXX per override.",
       });
     }
 

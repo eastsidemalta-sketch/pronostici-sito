@@ -572,7 +572,7 @@ function extractDoubleChanceFromStakes(stakes: unknown[]): { homeOrDraw: number;
  */
 export type DirectMultiMarketResult = Partial<Record<DirectMarketKey, DirectQuote[]>>;
 
-export type FetchDirectOptions = { forceDelta?: boolean; systemCodeOverride?: string };
+export type FetchDirectOptions = { forceDelta?: boolean; forceFull?: boolean; systemCodeOverride?: string };
 
 export async function fetchDirectBookmakerQuotes(
   bm: Bookmaker,
@@ -610,14 +610,16 @@ export async function fetchDirectBookmakerQuotes(
   }
 
   const isNetwin = isNetwinBookmaker(bm.siteId, bm.id);
-  const netwinUseFull = options?.forceDelta ? false : (isNetwin ? shouldUseFull() : true);
+  const netwinUseFull = options?.forceFull ? true : options?.forceDelta ? false : (isNetwin ? shouldUseFull() : true);
   if (isNetwin) {
     queryParams = {
       ...queryParams,
       type: netwinUseFull ? "full" : "delta",
       isLive: "0", // Netwin richiede 0 (prematch) o 1 (live)
     };
-    if (options?.systemCodeOverride) queryParams = { ...queryParams, system_code: options.systemCodeOverride };
+    const systemCode =
+      options?.systemCodeOverride ?? process.env.NETWIN_SYSTEM_CODE_OVERRIDE;
+    if (systemCode) queryParams = { ...queryParams, system_code: systemCode };
   }
 
   if (isNetwin && !netwinUseFull && !options?.forceDelta && !canDoDelta()) {
