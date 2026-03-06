@@ -75,7 +75,12 @@
     "apiBookmakerKey": "netwinit",
     "apiConfig": {
       "markets": [
-        "h2h"
+        "h2h",
+        "spreads",
+        "totals_25",
+        "totals_15",
+        "btts",
+        "double_chance"
       ]
     },
     "apiEndpoint": "https://b2b.egamingsolutionsrl.it/WSSportFeed/get_eventi_psqf",

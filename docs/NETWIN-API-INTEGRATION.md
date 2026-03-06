@@ -19,7 +19,7 @@ Vedi [NETWIN-SPORTS-MARKETS.md](./NETWIN-SPORTS-MARKETS.md) per la struttura di 
 | isLive      | `0` = prematch, `1` = live     | `0` |
 | v_sport     | ID sport separati da `-` (calcio = ?) | *(da Netwin)* |
 | v_scommesse | ID AAMS scommesse 1X2 separati da `-` | *(da Netwin)* |
-| codiceSito  | Codice sito per quote custom   | *(da Netwin)* |
+| codiceSito  | Codice sito per quote custom. Determina quali leghe/competizioni sono nel feed (es. WINBET può includere solo campionati italiani) | *(da Netwin)* |
 
 ## Quote personalizzate
 
@@ -58,6 +58,10 @@ Nei principali campionati il feed include quote personalizzate per il mercato 1X
 ## Esempio risposta JSON
 
 Per definire il mapping (homeTeam, awayTeam, odds1, oddsX, odds2) serve un **esempio di risposta JSON** dell’endpoint. Inviare un sample per configurare `apiMappingConfig`.
+
+## Verificare quali leghe sono nel feed
+
+Apri `/api/debug-netwin-feed?explore=1` e controlla `explore.manifestazioni`: elenca le competizioni presenti nel feed (es. "ITALIA - I DIVISIONE", "GERMANIA - BUNDESLIGA"). Se la Bundesliga o altre leghe non compaiono, il `codiceSito` (es. WINBET) potrebbe essere configurato solo per il mercato italiano. Contattare Netwin per chiedere l’inclusione di altre leghe o un `codiceSito` alternativo.
 
 ## Prossimi passi
 

@@ -111,4 +111,11 @@ Formato: ID separati da `-` (es. `1-2-3-12`)
 "v_scommesse": "3-4-7989-15-16-17-15529-17875-23052-8-7-5-18-22286-23140-22296-22284-570-571-19-420-421-561-12562-9942-9943-27905-16474-110-7842-14863-26-28-9056-8291-30-31-191-2832-22580-20540-6-51-52-982-983-1127-4156-6321-6322-6513"
 ```
 
-Il fetcher attuale estrae solo **Quote 1X2** (codice 3) tramite `find1X2Scommessa` / `Lista=1`. Per supportare altri mercati (Handicap, Over/Under, Doppia chance, ecc.) serve estendere `directBookmakerFetcher.ts` con mapping per i codici v_scommesse.
+Il fetcher estrae **tutti i mercati** configurati in v_scommesse:
+- **1X2** (codice 1, 3) → `h2h`
+- **Double Chance** (15, 16, 17) → `double_chance`
+- **Handicap** (8) → `spreads`
+- **Over/Under** (7989) → `totals_25`, `totals_15`
+- **Gol/No Gol** (18) → `btts`
+
+Le Scommesse vengono convertite in stakes sintetici (`scommesseToStakes`) e poi elaborate da `extract*FromStakes` (come per Betboom).
