@@ -348,10 +348,7 @@ export async function GET(req: Request) {
       let directQuotes: string[] = [];
       let directMultiMarket: Record<string, unknown> | undefined;
       try {
-        const directResult = await fetchDirectBookmakerQuotes(netwin!, 135, {
-          forceDelta: true,
-          ...(systemCodeOverride && { systemCodeOverride }),
-        });
+        const directResult = await fetchDirectBookmakerQuotes(netwin!, 135);
         const h2h = directResult.h2h ?? [];
         directQuotes = h2h.map((q) => `${q.homeTeam} - ${q.awayTeam}`);
         directMultiMarket = {
