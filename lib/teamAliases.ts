@@ -1,9 +1,11 @@
 /**
  * Alias per matching nomi squadre tra API-Football e bookmaker.
  * Formato: canonical (API-Football) -> [varianti usate dai bookmaker]
+ * Per mapping per-provider: data/teamAliasesByProvider.json
  */
 import { existsSync, readFileSync } from "fs";
 import path from "path";
+import { matchTeamNamesForProvider } from "./teamAliasesByProvider";
 
 const DATA_PATH = path.join(process.cwd(), "data", "teamAliases.json");
 
@@ -23,11 +25,19 @@ export function getTeamAliases(): TeamAliasesConfig {
 
 /**
  * Verifica se due nomi squadra corrispondono (con alias).
+ * @param providerName - nome usato dal provider (quote.homeTeam)
+ * @param apiFootballName - nome da API Football (fixture.teams.home.name)
+ * @param providerKey - opzionale: apiBookmakerKey (netwinit, betboom) per mapping per-provider
  */
-export function matchTeamNames(a: string, b: string): boolean {
-  if (!a || !b) return false;
-  const aNorm = a.toLowerCase().trim();
-  const bNorm = b.toLowerCase().trim();
+export function matchTeamNames(
+  providerName: string,
+  apiFootballName: string,
+  providerKey?: string
+): boolean {
+  if (!providerName || !apiFootballName) return false;
+  if (providerKey && matchTeamNamesForProvider(providerName, apiFootballName, providerKey)) return true;
+  const aNorm = providerName.toLowerCase().trim();
+  const bNorm = apiFootballName.toLowerCase().trim();
   if (aNorm === bNorm) return true;
   if (aNorm.includes(bNorm) || bNorm.includes(aNorm)) return true;
   if (aNorm.split(/\s+/)[0] === bNorm.split(/\s+/)[0]) return true;

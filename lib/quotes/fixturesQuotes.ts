@@ -4,7 +4,15 @@ import { getBookmakers, getBookmakerDisplayName } from "./bookmakers";
 import { getBookmakerUrl } from "./bookmakerUrls";
 import { matchTeamNames } from "@/lib/teamAliases";
 
-const matchTeam = (a: string, b: string) => matchTeamNames(a, b);
+const matchTeam = (
+  providerHome: string,
+  providerAway: string,
+  apiFootballHome: string,
+  apiFootballAway: string,
+  bookmakerKey?: string
+) =>
+  matchTeamNames(providerHome, apiFootballHome, bookmakerKey) &&
+  matchTeamNames(providerAway, apiFootballAway, bookmakerKey);
 
 export type FixtureQuoteSummary = {
   best1: number;
@@ -89,8 +97,8 @@ export async function getQuotesForFixtures(
     for (const fixture of leagueFixtures) {
       const home = fixture.teams?.home?.name || "";
       const away = fixture.teams?.away?.name || "";
-      const fixtureQuotes = h2h.filter(
-        (q) => matchTeam(q.homeTeam || "", home) && matchTeam(q.awayTeam || "", away)
+      const fixtureQuotes = h2h.filter((q) =>
+        matchTeam(q.homeTeam || "", q.awayTeam || "", home, away, q.bookmakerKey)
       );
 
       if (fixtureQuotes.length === 0) continue;

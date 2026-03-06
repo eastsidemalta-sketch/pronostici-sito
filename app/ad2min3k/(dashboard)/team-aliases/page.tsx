@@ -80,6 +80,12 @@ export default function AdminTeamAliasesPage() {
         <Link href="/ad2min3k" className="text-sm text-neutral-600 hover:text-neutral-900">
           ← Dashboard
         </Link>
+        <Link
+          href="/ad2min3k/team-aliases-by-provider"
+          className="text-sm text-emerald-600 hover:text-emerald-800"
+        >
+          Mapping per provider (Netwin, Betboom) →
+        </Link>
       </div>
 
       <h2 className="text-2xl font-semibold mb-2">Alias nomi squadre</h2>

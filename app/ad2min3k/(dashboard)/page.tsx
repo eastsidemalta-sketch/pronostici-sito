@@ -70,6 +70,15 @@ export default function AdminDashboardPage() {
           </p>
         </Link>
         <Link
+          href="/ad2min3k/team-aliases-by-provider"
+          className="rounded-xl border bg-white p-6 shadow-sm hover:border-emerald-500 hover:shadow transition"
+        >
+          <h3 className="font-semibold">Mapping per provider</h3>
+          <p className="mt-2 text-sm text-neutral-600">
+            API Football ↔ Netwin, Betboom: definisci i match per ogni cliente
+          </p>
+        </Link>
+        <Link
           href="/ad2min3k/matching-report"
           className="rounded-xl border bg-white p-6 shadow-sm hover:border-emerald-500 hover:shadow transition"
         >

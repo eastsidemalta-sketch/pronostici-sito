@@ -4,20 +4,30 @@ import { matchTeamNames } from "@/lib/teamAliases";
 import { compareBookmakers } from "./bookmakerRanking";
 import type { RemunerationConfig } from "./bookmaker.types";
 
-const matchTeam = (a: string, b: string) => matchTeamNames(a, b);
+function matchTeam(
+  providerHome: string,
+  providerAway: string,
+  apiFootballHome: string,
+  apiFootballAway: string,
+  bookmakerKey?: string
+) {
+  return (
+    matchTeamNames(providerHome, apiFootballHome, bookmakerKey) &&
+    matchTeamNames(providerAway, apiFootballAway, bookmakerKey)
+  );
+}
 
-function filterByMatch<T extends { homeTeam?: string; awayTeam?: string }>(
+function filterByMatch<T extends { homeTeam?: string; awayTeam?: string; bookmakerKey?: string }>(
   items: T[],
   home?: string,
   away?: string
 ): T[] {
   if (!home || !away) return items;
-  const h = home.toLowerCase().trim();
-  const a = away.toLowerCase().trim();
   return items.filter((q) => {
-    const qHome = (q.homeTeam || "").toLowerCase().trim();
-    const qAway = (q.awayTeam || "").toLowerCase().trim();
-    return matchTeam(qHome, h) && matchTeam(qAway, a);
+    const qHome = q.homeTeam || "";
+    const qAway = q.awayTeam || "";
+    const bmKey = (q as { bookmakerKey?: string }).bookmakerKey;
+    return matchTeam(qHome, qAway, home, away, bmKey);
   });
 }
 
