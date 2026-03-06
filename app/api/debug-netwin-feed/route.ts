@@ -2,6 +2,7 @@
  * GET /api/debug-netwin-feed
  * Fetch raw Netwin API e restituisce la struttura per verificare il mapping.
  * ?explore=1 = esplora tutto il feed e lista manifestazioni + tutte le partite estratte.
+ * Per i test di configurazione usa SOLO richieste DELTA (quota FULL limitata, max 1 ogni 2-3h).
  * Usa la config da bookmakers.json (Netwin IT-002).
  */
 import { NextResponse } from "next/server";
@@ -153,9 +154,13 @@ export async function GET(req: Request) {
   const { searchParams } = new URL(req.url);
   const explore = searchParams.get("explore") === "1";
   const codiceSitoOverride = searchParams.get("codiceSito");
+  /** systemCode override: usa ?systemCode=XXX o env NETWIN_SYSTEM_CODE_OVERRIDE per test (evita lock con produzione) */
+  const systemCodeOverride = searchParams.get("systemCode") ?? process.env.NETWIN_SYSTEM_CODE_OVERRIDE;
+  /** Solo DELTA per i test di configurazione — non consumare quota FULL. */
+  const requestType = "delta";
   const bookmakers = getBookmakers();
   const netwin = bookmakers.find(
-    (b) => b.siteId === "IT-002" || b.id?.toLowerCase().includes("netwin")
+    (b) => b.siteId === "IT-002" || b.siteId === "IT-0002" || b.id?.toLowerCase().includes("netwin")
   );
 
   if (!netwin?.apiEndpoint || !netwin.apiRequestConfig?.queryParams) {
@@ -168,7 +173,9 @@ export async function GET(req: Request) {
   const params = new URLSearchParams(
     netwin.apiRequestConfig.queryParams as Record<string, string>
   );
+  params.set("type", requestType);
   if (codiceSitoOverride) params.set("codiceSito", codiceSitoOverride);
+  if (systemCodeOverride) params.set("system_code", systemCodeOverride);
   const url = `${netwin.apiEndpoint}?${params}`;
 
   try {
@@ -179,6 +186,22 @@ export async function GET(req: Request) {
 
     const res = await fetch(url, { headers });
     const text = await res.text();
+
+    /** Netwin restituisce testo quando una FULL è in corso — intercetta prima del parse */
+    const isLockError =
+      text.includes("hash_lock") ||
+      /richiesta\s+FULL/i.test(text) ||
+      /FULL\s+e['']\s+gia['']?\s+in\s+corso/i.test(text) ||
+      (text.includes("Attenzione") && text.includes("FULL") && text.includes("in corso"));
+    if (isLockError) {
+      return NextResponse.json({
+        ok: false,
+        error: "Netwin: una richiesta FULL è già in corso",
+        hint: "L'API blocca le richieste finché la FULL non termina. Soluzioni: (1) Attendi 5-10 min e riprova. (2) Chiedi a Netwin un system_code separato per test (es. PLAYSIGNAL_TEST) e usa ?systemCode=PLAYSIGNAL_TEST oppure env NETWIN_SYSTEM_CODE_OVERRIDE.",
+        rawPreview: text.slice(0, 500),
+      });
+    }
+
     let data: unknown;
     try {
       data = parseResponse(text);
@@ -309,6 +332,7 @@ export async function GET(req: Request) {
       manifestazioni: string[];
       matchPairs: string[];
       directQuotes: string[];
+      directMultiMarket?: Record<string, unknown>;
       italiaSerieA?: { avvCount: number; firstAvvKeys?: string[]; nestedCount?: number; sampleNested?: unknown; aliasSample?: unknown };
       foundSerieAMatches?: string[];
       hierarchy?: {
@@ -322,10 +346,25 @@ export async function GET(req: Request) {
     if (explore) {
       const { manifestazioni, matchPairs } = exploreFeed(data);
       let directQuotes: string[] = [];
+      let directMultiMarket: Record<string, unknown> | undefined;
       try {
-        const directResult = await fetchDirectBookmakerQuotes(netwin!, 135);
+        const directResult = await fetchDirectBookmakerQuotes(netwin!, 135, {
+          forceDelta: true,
+          ...(systemCodeOverride && { systemCodeOverride }),
+        });
         const h2h = directResult.h2h ?? [];
         directQuotes = h2h.map((q) => `${q.homeTeam} - ${q.awayTeam}`);
+        directMultiMarket = {
+          h2hCount: h2h.length,
+          spreadsCount: (directResult.spreads ?? []).length,
+          totals_25Count: (directResult.totals_25 ?? []).length,
+          totals_15Count: (directResult.totals_15 ?? []).length,
+          bttsCount: (directResult.btts ?? []).length,
+          double_chanceCount: (directResult.double_chance ?? []).length,
+          sampleSpreads: (directResult.spreads ?? []).slice(0, 2),
+          sampleBtts: (directResult.btts ?? []).slice(0, 2),
+          sampleDc: (directResult.double_chance ?? []).slice(0, 2),
+        };
       } catch {
         directQuotes = ["(errore fetch)"];
       }
@@ -374,6 +413,7 @@ export async function GET(req: Request) {
         manifestazioni,
         matchPairs,
         directQuotes,
+        ...(directMultiMarket && { directMultiMarket }),
         italiaSerieA,
         foundSerieAMatches: foundSerieA,
         hierarchy: {
@@ -389,6 +429,8 @@ export async function GET(req: Request) {
     return NextResponse.json({
       ok: true,
       httpStatus: res.status,
+      requestType,
+      ...(systemCodeOverride && { systemCodeUsed: systemCodeOverride }),
       url: url.replace(/system_code=[^&]+/, "system_code=***"),
       rootKeys: keys,
       eventsPath,
