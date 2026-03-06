@@ -82,10 +82,24 @@ function buildUrl(
   apiKey: string,
   apiSecret: string | undefined,
   authType: string,
-  queryParams?: Record<string, string>
+  queryParams?: Record<string, string>,
+  /** Per Netwin: ordine parametri (isLive deve essere primo) */
+  orderedKeys?: string[]
 ): string {
   let url = endpoint;
-  const params = new URLSearchParams(queryParams ?? {});
+  const q = queryParams ?? {};
+  let params: URLSearchParams;
+  if (orderedKeys?.length) {
+    params = new URLSearchParams();
+    for (const k of orderedKeys) {
+      if (q[k] != null && String(q[k]).trim() !== "") params.set(k, String(q[k]).trim());
+    }
+    for (const [k, v] of Object.entries(q)) {
+      if (!orderedKeys.includes(k) && v != null && String(v).trim() !== "") params.set(k, String(v).trim());
+    }
+  } else {
+    params = new URLSearchParams(q);
+  }
 
   if (authType === "query") {
     params.set("apiKey", apiKey);
@@ -615,13 +629,13 @@ export async function fetchDirectBookmakerQuotes(
     if (netwinUseFull) {
       console.log(`[Netwin] Richiesta FULL (cache vuota o scaduta)`);
     }
-    // Netwin: prova islive, is_live o isLive (env NETWIN_ISLIVE_PARAM=isLive|is_live|islive)
-    const isLiveKey = process.env.NETWIN_ISLIVE_PARAM || "islive";
+    // Netwin richiede isLive come primo parametro nell'URL
+    const isLiveVal = (queryParams as Record<string, string>).isLive ?? (queryParams as Record<string, string>).is_live ?? (queryParams as Record<string, string>).islive ?? "0";
     const { isLive: _i, is_live: _il, islive: _ii, ...rest } = queryParams as Record<string, string>;
     queryParams = {
+      isLive: isLiveVal,
       ...rest,
       type: netwinUseFull ? "full" : "delta",
-      [isLiveKey]: "0", // Netwin richiede 0 (prematch) o 1 (live)
     };
     const systemCode =
       options?.systemCodeOverride ?? process.env.NETWIN_SYSTEM_CODE_OVERRIDE;
@@ -638,7 +652,8 @@ export async function fetchDirectBookmakerQuotes(
     apiKey,
     bm.apiSecret ?? undefined,
     authType,
-    method === "GET" ? queryParams : undefined
+    method === "GET" ? queryParams : undefined,
+    isNetwin ? ["isLive", "system_code", "type", "codiceSito", "v_sport", "v_scommesse"] : undefined
   );
 
   const headers = { ...buildHeaders(apiKey, bm.apiSecret ?? undefined, authType), ...(reqConfig.headers ?? {}) };
