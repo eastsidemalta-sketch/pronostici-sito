@@ -61,6 +61,11 @@ if [ ! -f .next/standalone/.env.local ] && [ ! -f .next/standalone/.env ]; then
 fi
 pm2 delete pronostici-test 2>/dev/null; pm2 start ecosystem.config.cjs --only pronostici-test
 wait_for_app "pronostici-test" 3001 || true
+# Invalida cache Redis home (evita dati stale dopo deploy)
+CRON_SECRET=$(grep -E "^CRON_SECRET=" .next/standalone/.env.local 2>/dev/null | cut -d= -f2- | tr -d '"' | tr -d "'" || true)
+if [ -n "$CRON_SECRET" ]; then
+  curl -s -H "Authorization: Bearer $CRON_SECRET" "http://127.0.0.1:3001/api/invalidate-cache" 2>/dev/null && echo "Cache Redis invalidata" || true
+fi
 echo ""
 echo "=== Deploy TEST completato ==="
 echo "Verifica il sito test. Poi promuovi a produzione:"

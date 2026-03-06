@@ -91,6 +91,11 @@ cp scripts/start-standalone.sh .next/standalone/ 2>/dev/null || true
 chmod +x .next/standalone/start-standalone.sh 2>/dev/null || true
 pm2 delete pronostici 2>/dev/null; pm2 start "$PROD_DIR/ecosystem.config.cjs" --only pronostici
 wait_for_app "pronostici" 3000 || true
+# Invalida cache Redis home
+CRON_SECRET=$(grep -E "^CRON_SECRET=" "$PROD_DIR/.next/standalone/.env.local" 2>/dev/null | cut -d= -f2- | tr -d '"' | tr -d "'" || true)
+if [ -n "$CRON_SECRET" ]; then
+  curl -s -H "Authorization: Bearer $CRON_SECRET" "http://127.0.0.1:3000/api/invalidate-cache" 2>/dev/null && echo "Cache Redis invalidata" || true
+fi
 if ! curl -s -o /dev/null -w "%{http_code}" "http://127.0.0.1:3000" 2>/dev/null | grep -qE "^(200|301|302|307)$"; then
   echo ""
   echo "=== Ultimi log pronostici (diagnostica) ==="
