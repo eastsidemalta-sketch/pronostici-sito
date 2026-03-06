@@ -1,0 +1,358 @@
+{
+  "lastRun": "2026-03-06T21:42:12.100Z",
+  "summary": {
+    "totalFixtures": 84,
+    "totalMatches": 3,
+    "totalUnmatched": 9,
+    "byBookmaker": {
+      "betboom": {
+        "matched": 3,
+        "unmatched": 9
+      },
+      "netwinit": {
+        "matched": 0,
+        "unmatched": 0
+      }
+    }
+  },
+  "matches": [
+    {
+      "fixtureId": 1388530,
+      "leagueId": 78,
+      "leagueName": "Bundesliga",
+      "apiHome": "FC St. Pauli",
+      "apiAway": "Eintracht Frankfurt",
+      "bookmakerKey": "betboom",
+      "bookmakerName": "Betboom",
+      "bmHome": "St. Pauli",
+      "bmAway": "Eintracht Frankfurt",
+      "odds": {
+        "home": 2.75,
+        "draw": 3.3,
+        "away": 2.55
+      },
+      "matched": true
+    },
+    {
+      "fixtureId": 1388531,
+      "leagueId": 78,
+      "leagueName": "Bundesliga",
+      "apiHome": "Union Berlin",
+      "apiAway": "Werder Bremen",
+      "bookmakerKey": "betboom",
+      "bookmakerName": "Betboom",
+      "bmHome": "Union Berlin",
+      "bmAway": "Werder Bremen",
+      "odds": {
+        "home": 2.27,
+        "draw": 3.3,
+        "away": 3.15
+      },
+      "matched": true
+    },
+    {
+      "fixtureId": 1388534,
+      "leagueId": 78,
+      "leagueName": "Bundesliga",
+      "apiHome": "Borussia Mönchengladbach",
+      "apiAway": "FC St. Pauli",
+      "bookmakerKey": "betboom",
+      "bookmakerName": "Betboom",
+      "bmHome": "Borussia Monchengladbach",
+      "bmAway": "St. Pauli",
+      "odds": {
+        "home": 1.94,
+        "draw": 3.35,
+        "away": 3.9
+      },
+      "matched": true
+    }
+  ],
+  "unmatched": [
+    {
+      "fixtureId": 1388525,
+      "leagueId": 78,
+      "leagueName": "Bundesliga",
+      "apiHome": "1. FC Köln",
+      "apiAway": "Borussia Dortmund",
+      "bookmakerKey": "betboom",
+      "bookmakerName": "Betboom",
+      "bmHome": "Koln",
+      "bmAway": "Borussia Dortmund",
+      "odds": {
+        "home": 4.1,
+        "draw": 4,
+        "away": 1.79
+      },
+      "matched": false
+    },
+    {
+      "fixtureId": 1388530,
+      "leagueId": 78,
+      "leagueName": "Bundesliga",
+      "apiHome": "FC St. Pauli",
+      "apiAway": "Eintracht Frankfurt",
+      "bookmakerKey": "betboom",
+      "bookmakerName": "Betboom",
+      "bmHome": "FC Ingolstadt 04",
+      "bmAway": "SC Verl",
+      "odds": {
+        "home": 2.91,
+        "draw": 3.67,
+        "away": 2.17
+      },
+      "matched": false
+    },
+    {
+      "fixtureId": 1388530,
+      "leagueId": 78,
+      "leagueName": "Bundesliga",
+      "apiHome": "FC St. Pauli",
+      "apiAway": "Eintracht Frankfurt",
+      "bookmakerKey": "betboom",
+      "bookmakerName": "Betboom",
+      "bmHome": "Paderborn 07",
+      "bmAway": "Eintracht Braunschweig",
+      "odds": {
+        "home": 1.48,
+        "draw": 4.5,
+        "away": 6.2
+      },
+      "matched": false
+    },
+    {
+      "fixtureId": 1388530,
+      "leagueId": 78,
+      "leagueName": "Bundesliga",
+      "apiHome": "FC St. Pauli",
+      "apiAway": "Eintracht Frankfurt",
+      "bookmakerKey": "betboom",
+      "bookmakerName": "Betboom",
+      "bmHome": "Bayern Alzenau",
+      "bmAway": "Eintracht Trier",
+      "odds": {
+        "home": 2.92,
+        "draw": 4.12,
+        "away": 1.96
+      },
+      "matched": false
+    },
+    {
+      "fixtureId": 1388530,
+      "leagueId": 78,
+      "leagueName": "Bundesliga",
+      "apiHome": "FC St. Pauli",
+      "apiAway": "Eintracht Frankfurt",
+      "bookmakerKey": "betboom",
+      "bookmakerName": "Betboom",
+      "bmHome": "FC 08 Homburg",
+      "bmAway": "Kickers Offenbach",
+      "odds": {
+        "home": 1.58,
+        "draw": 3.76,
+        "away": 5.05
+      },
+      "matched": false
+    },
+    {
+      "fixtureId": 1388530,
+      "leagueId": 78,
+      "leagueName": "Bundesliga",
+      "apiHome": "FC St. Pauli",
+      "apiAway": "Eintracht Frankfurt",
+      "bookmakerKey": "betboom",
+      "bookmakerName": "Betboom",
+      "bmHome": "FC Bocholt",
+      "bmAway": "Fortuna Koln",
+      "odds": {
+        "home": 4.54,
+        "draw": 3.79,
+        "away": 1.63
+      },
+      "matched": false
+    },
+    {
+      "fixtureId": 1388531,
+      "leagueId": 78,
+      "leagueName": "Bundesliga",
+      "apiHome": "Union Berlin",
+      "apiAway": "Werder Bremen",
+      "bookmakerKey": "betboom",
+      "bookmakerName": "Betboom",
+      "bmHome": "Blau-Weiss Lohne",
+      "bmAway": "Werder Bremen II",
+      "odds": {
+        "home": 2.44,
+        "draw": 3.98,
+        "away": 2.31
+      },
+      "matched": false
+    },
+    {
+      "fixtureId": 1388534,
+      "leagueId": 78,
+      "leagueName": "Bundesliga",
+      "apiHome": "Borussia Mönchengladbach",
+      "apiAway": "FC St. Pauli",
+      "bookmakerKey": "betboom",
+      "bookmakerName": "Betboom",
+      "bmHome": "Borussia Dortmund",
+      "bmAway": "Augsburg",
+      "odds": {
+        "home": 1.38,
+        "draw": 5,
+        "away": 7
+      },
+      "matched": false
+    },
+    {
+      "fixtureId": 1388534,
+      "leagueId": 78,
+      "leagueName": "Bundesliga",
+      "apiHome": "Borussia Mönchengladbach",
+      "apiAway": "FC St. Pauli",
+      "bookmakerKey": "betboom",
+      "bookmakerName": "Betboom",
+      "bmHome": "Borussia Monchengladbach II",
+      "bmAway": "Koln II",
+      "odds": {
+        "home": 2.07,
+        "draw": 3.6,
+        "away": 3
+      },
+      "matched": false
+    }
+  ],
+  "teamSuggestions": [
+    {
+      "apiFootball": "FC St. Pauli",
+      "bookmakerVariant": "FC Ingolstadt 04",
+      "bookmakerId": "betboom",
+      "bookmakerName": "Betboom",
+      "fixtureId": 1388530,
+      "match": "home"
+    },
+    {
+      "apiFootball": "Eintracht Frankfurt",
+      "bookmakerVariant": "Eintracht Braunschweig",
+      "bookmakerId": "betboom",
+      "bookmakerName": "Betboom",
+      "fixtureId": 1388530,
+      "match": "away"
+    },
+    {
+      "apiFootball": "Eintracht Frankfurt",
+      "bookmakerVariant": "Eintracht Trier",
+      "bookmakerId": "betboom",
+      "bookmakerName": "Betboom",
+      "fixtureId": 1388530,
+      "match": "away"
+    },
+    {
+      "apiFootball": "FC St. Pauli",
+      "bookmakerVariant": "FC 08 Homburg",
+      "bookmakerId": "betboom",
+      "bookmakerName": "Betboom",
+      "fixtureId": 1388530,
+      "match": "home"
+    },
+    {
+      "apiFootball": "FC St. Pauli",
+      "bookmakerVariant": "FC Bocholt",
+      "bookmakerId": "betboom",
+      "bookmakerName": "Betboom",
+      "fixtureId": 1388530,
+      "match": "home"
+    },
+    {
+      "apiFootball": "Werder Bremen",
+      "bookmakerVariant": "Werder Bremen II",
+      "bookmakerId": "betboom",
+      "bookmakerName": "Betboom",
+      "fixtureId": 1388531,
+      "match": "away"
+    },
+    {
+      "apiFootball": "Borussia Mönchengladbach",
+      "bookmakerVariant": "Borussia Dortmund",
+      "bookmakerId": "betboom",
+      "bookmakerName": "Betboom",
+      "fixtureId": 1388534,
+      "match": "home"
+    },
+    {
+      "apiFootball": "Borussia Mönchengladbach",
+      "bookmakerVariant": "Borussia Monchengladbach II",
+      "bookmakerId": "betboom",
+      "bookmakerName": "Betboom",
+      "fixtureId": 1388534,
+      "match": "home"
+    }
+  ],
+  "leagueSuggestions": [
+    {
+      "leagueId": 135,
+      "leagueName": "Serie A",
+      "bookmakerId": "netwinit",
+      "bookmakerName": "Netwin",
+      "suggestedValue": "serie_a",
+      "reason": "no_mapping"
+    },
+    {
+      "leagueId": 78,
+      "leagueName": "Bundesliga",
+      "bookmakerId": "netwinit",
+      "bookmakerName": "Netwin",
+      "suggestedValue": "bundesliga",
+      "reason": "no_mapping"
+    },
+    {
+      "leagueId": 148,
+      "leagueName": "Second Amateur Division - ACFF",
+      "bookmakerId": "betboom",
+      "bookmakerName": "Betboom",
+      "suggestedValue": "second_amateur_division_-_acff",
+      "reason": "no_mapping"
+    },
+    {
+      "leagueId": 148,
+      "leagueName": "Second Amateur Division - ACFF",
+      "bookmakerId": "netwinit",
+      "bookmakerName": "Netwin",
+      "suggestedValue": "second_amateur_division_-_acff",
+      "reason": "no_mapping"
+    },
+    {
+      "leagueId": 2,
+      "leagueName": "UEFA Champions League",
+      "bookmakerId": "betboom",
+      "bookmakerName": "Betboom",
+      "suggestedValue": "uefa_champions_league",
+      "reason": "no_mapping"
+    },
+    {
+      "leagueId": 2,
+      "leagueName": "UEFA Champions League",
+      "bookmakerId": "netwinit",
+      "bookmakerName": "Netwin",
+      "suggestedValue": "uefa_champions_league",
+      "reason": "no_mapping"
+    },
+    {
+      "leagueId": 3,
+      "leagueName": "UEFA Europa League",
+      "bookmakerId": "betboom",
+      "bookmakerName": "Betboom",
+      "suggestedValue": "uefa_europa_league",
+      "reason": "no_mapping"
+    },
+    {
+      "leagueId": 3,
+      "leagueName": "UEFA Europa League",
+      "bookmakerId": "netwinit",
+      "bookmakerName": "Netwin",
+      "suggestedValue": "uefa_europa_league",
+      "reason": "no_mapping"
+    }
+  ]
+}
