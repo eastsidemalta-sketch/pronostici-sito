@@ -40,8 +40,8 @@ if [ -d ".next/standalone/data" ]; then
   fi
 fi
 
-# 2. Pull ultimo codice
-git pull origin main
+# 2. Pull ultimo codice (--rebase gestisce commit locale "Sync data" non pushato)
+git pull --rebase origin main
 mkdir -p public/uploads
 rm -rf .next
 npm ci

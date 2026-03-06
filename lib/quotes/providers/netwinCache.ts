@@ -192,7 +192,15 @@ export function getCacheDebugInfo(): {
   h2hCount: number;
   shouldUseFull: boolean;
 } {
-  if (!cache) {
+  let data = cache;
+  if (!data) {
+    const fromFile = loadFromFileCache();
+    if (fromFile) {
+      cache = fromFile;
+      data = fromFile;
+    }
+  }
+  if (!data) {
     return {
       hasCache: false,
       lastFullTimestamp: null,
@@ -203,14 +211,14 @@ export function getCacheDebugInfo(): {
       shouldUseFull: true,
     };
   }
-  const nextFullAt = cache.timestamp + FULL_FETCH_INTERVAL_MS;
+  const nextFullAt = data.timestamp + FULL_FETCH_INTERVAL_MS;
   return {
     hasCache: true,
-    lastFullTimestamp: cache.timestamp,
-    lastFullIso: new Date(cache.timestamp).toISOString(),
+    lastFullTimestamp: data.timestamp,
+    lastFullIso: new Date(data.timestamp).toISOString(),
     nextFullAllowedAt: nextFullAt,
     nextFullAllowedIso: new Date(nextFullAt).toISOString(),
-    h2hCount: cache.data.h2h?.length ?? 0,
+    h2hCount: data.data.h2h?.length ?? 0,
     shouldUseFull: shouldUseFull(),
   };
 }
