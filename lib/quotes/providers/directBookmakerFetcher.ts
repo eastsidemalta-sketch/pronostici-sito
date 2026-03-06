@@ -696,6 +696,26 @@ export async function fetchDirectBookmakerQuotes(
   let data: unknown;
   try {
     const text = await res.text();
+    /** Netwin restituisce testo per errori (non JSON/XML) — intercetta prima del parse */
+    if (isNetwin) {
+      const isLockError =
+        text.includes("hash_lock") ||
+        /richiesta\s+FULL/i.test(text) ||
+        /FULL\s+.*\s+in\s+corso/i.test(text);
+      if (isLockError) {
+        if (netwinUseFull) {
+          console.warn(`[Netwin] FULL bloccata: richiesta FULL già in corso (hash_lock). Riprova tra qualche minuto.`);
+        }
+        const cached = getCached();
+        return cached ?? {};
+      }
+      if (text.includes("isLive") && /can be 0 or 1/i.test(text)) {
+        if (netwinUseFull) {
+          console.warn(`[Netwin] FULL fallita: parametro isLive non valido`);
+        }
+        return {};
+      }
+    }
     data = parseApiResponse(text);
   } catch (e) {
     if (isNetwin && netwinUseFull) {
