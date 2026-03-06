@@ -58,11 +58,15 @@ export async function GET(req: Request) {
             systemCodeOverride: systemCode,
           });
           const h2h = res.h2h ?? [];
-          const matchReq = h2h.find(
-            (q) =>
-              (q.homeTeam || "").toLowerCase().trim() === homeNorm &&
-              (q.awayTeam || "").toLowerCase().trim() === awayNorm
-          );
+          const matchReq = h2h.find((q) => {
+            const qh = (q.homeTeam || "").toLowerCase().trim();
+            const qa = (q.awayTeam || "").toLowerCase().trim();
+            return (
+              (qh === homeNorm && qa === awayNorm) ||
+              (qh.includes(homeNorm) && qa.includes(awayNorm)) ||
+              (homeNorm.includes(qh) && awayNorm.includes(qa))
+            );
+          });
           rawByBookmaker[bm.name] = {
             h2hCount: h2h.length,
             h2hSample: h2h.slice(0, 15).map((q) => ({
