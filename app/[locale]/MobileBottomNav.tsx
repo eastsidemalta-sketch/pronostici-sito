@@ -119,7 +119,7 @@ export default function MobileBottomNav() {
   const searchParams = useSearchParams();
   const t = useTranslations("common");
 
-  // Verde solo per l'ultimo bottone su cui si è cliccato (una sola categoria attiva) su cui si è cliccato (una sola categoria attiva)
+  // Verde solo per l'ultimo bottone su cui si è cliccato (una sola categoria attiva)
   const path = pathname.replace(/\/$/, "").split("/").filter(Boolean);
   const tab = searchParams.get("tab");
   const isOnPronosticiQuote = pathname.includes("pronostici-quote");

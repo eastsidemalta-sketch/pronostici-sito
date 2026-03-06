@@ -17,6 +17,7 @@ import MobileMenuWrapper from "./MobileMenuWrapper";
 import HeaderCountrySelector from "./HeaderCountrySelector";
 import BaseSchemaJsonLd from "./BaseSchemaJsonLd";
 import { RichText } from "@/lib/components/RichText";
+import { Suspense } from "react";
 
 type Props = {
   children: React.ReactNode;
@@ -163,7 +164,9 @@ export default async function LocaleLayout({ children, params }: Props) {
         </div>
       </footer>
 
-      <MobileBottomNav />
+      <Suspense fallback={null}>
+        <MobileBottomNav />
+      </Suspense>
       <CookieConsent />
     </MobileMenuWrapper>
     </NextIntlClientProvider>
