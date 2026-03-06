@@ -46,9 +46,18 @@ export async function GET(req: Request) {
           b.isActive &&
           (b.countries?.includes(country) || b.country === country || b.countryConfig?.[country])
       );
-      const rawByBookmaker: Record<string, { h2hCount: number; h2hSample: Array<{ homeTeam: string; awayTeam: string; outcomes?: unknown }>; matchRequested?: { homeTeam: string; awayTeam: string; outcomes: unknown }; _error?: string }> = {};
+      const rawByBookmaker: Record<string, { h2hCount: number; h2hSample: Array<{ homeTeam: string; awayTeam: string; outcomes?: unknown }>; matchRequested?: Record<string, unknown>; _error?: string }> = {};
       const homeNorm = (homeTeam || "").toLowerCase().trim();
       const awayNorm = (awayTeam || "").toLowerCase().trim();
+      const matchFilter = (q: { homeTeam?: string; awayTeam?: string }) => {
+        const qh = (q.homeTeam || "").toLowerCase().trim();
+        const qa = (q.awayTeam || "").toLowerCase().trim();
+        return (
+          (qh === homeNorm && qa === awayNorm) ||
+          (qh.includes(homeNorm) && qa.includes(awayNorm)) ||
+          (homeNorm.includes(qh) && awayNorm.includes(qa))
+        );
+      };
       for (const bm of bookmakers) {
         if (bm.apiProvider !== "direct") continue;
         try {
@@ -58,15 +67,31 @@ export async function GET(req: Request) {
             systemCodeOverride: systemCode,
           });
           const h2h = res.h2h ?? [];
-          const matchReq = h2h.find((q) => {
-            const qh = (q.homeTeam || "").toLowerCase().trim();
-            const qa = (q.awayTeam || "").toLowerCase().trim();
-            return (
-              (qh === homeNorm && qa === awayNorm) ||
-              (qh.includes(homeNorm) && qa.includes(awayNorm)) ||
-              (homeNorm.includes(qh) && awayNorm.includes(qa))
-            );
-          });
+          const matchH2h = h2h.find(matchFilter);
+          const matchSpreads = (res.spreads ?? []).filter(matchFilter);
+          const matchTotals25 = (res.totals_25 ?? []).find(matchFilter);
+          const matchTotals15 = (res.totals_15 ?? []).find(matchFilter);
+          const matchBtts = (res.btts ?? []).find(matchFilter);
+          const matchDc = (res.double_chance ?? []).find(matchFilter);
+          const matchRequested: Record<string, unknown> = {};
+          if (matchH2h) {
+            matchRequested.h2h = { home: matchH2h.outcomes?.home, draw: matchH2h.outcomes?.draw, away: matchH2h.outcomes?.away };
+          }
+          if (matchSpreads.length > 0) {
+            matchRequested.spreads = matchSpreads.map((s) => s.outcomes);
+          }
+          if (matchTotals25) {
+            matchRequested.totals_25 = matchTotals25.outcomes;
+          }
+          if (matchTotals15) {
+            matchRequested.totals_15 = matchTotals15.outcomes;
+          }
+          if (matchBtts) {
+            matchRequested.btts = matchBtts.outcomes;
+          }
+          if (matchDc) {
+            matchRequested.double_chance = matchDc.outcomes;
+          }
           rawByBookmaker[bm.name] = {
             h2hCount: h2h.length,
             h2hSample: h2h.slice(0, 15).map((q) => ({
@@ -74,11 +99,11 @@ export async function GET(req: Request) {
               awayTeam: q.awayTeam,
               outcomes: q.outcomes,
             })),
-            ...(matchReq && {
+            ...(Object.keys(matchRequested).length > 0 && {
               matchRequested: {
-                homeTeam: matchReq.homeTeam,
-                awayTeam: matchReq.awayTeam,
-                outcomes: matchReq.outcomes,
+                homeTeam: matchH2h?.homeTeam ?? matchSpreads[0]?.homeTeam ?? matchTotals25?.homeTeam,
+                awayTeam: matchH2h?.awayTeam ?? matchSpreads[0]?.awayTeam ?? matchTotals25?.awayTeam,
+                ...matchRequested,
               },
             }),
           };
@@ -94,7 +119,7 @@ export async function GET(req: Request) {
         ok: true,
         request: { homeTeam, awayTeam, leagueId, country, sportKey, forceFull, forceDelta, systemCode: systemCode || "(env)" },
         rawByBookmaker,
-        hint: "matchRequested = quota esatta dalla cache/API per la partita richiesta. Confronta outcomes (home=X, draw=Y, away=Z) con il sito Netwin per verificare correttezza.",
+        hint: "matchRequested = quote dalla cache per la partita. h2h (1X2), totals_25 (Over/Under 2.5), totals_15, spreads (Handicap), btts (Gol/No Gol), double_chance. Confronta con netwin.it.",
       });
     }
 
