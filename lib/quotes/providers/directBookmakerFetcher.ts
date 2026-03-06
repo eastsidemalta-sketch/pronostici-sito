@@ -155,6 +155,25 @@ function toArray<T>(v: T | T[] | null | undefined): T[] {
 }
 
 /**
+ * Estrae la quota da QuotePersonalizzate se popolato, altrimenti da quota.
+ * QuotePersonalizzate può essere: numero, stringa "default=X", o stringa numerica.
+ */
+function getQuotaFromEsito(esito: Record<string, unknown>): number {
+  const quota = typeof esito.quota === "number" ? esito.quota : parseFloat(String(esito.quota ?? 0)) || 0;
+  const qp = esito.QuotePersonalizzate;
+  if (qp == null || qp === "") return quota;
+  let quotaPers = 0;
+  if (typeof qp === "number" && qp > 0) {
+    quotaPers = qp;
+  } else if (typeof qp === "string" && qp.trim()) {
+    const str = qp.trim();
+    const numStr = str.startsWith("default=") ? str.replace("default=", "").trim() : str;
+    quotaPers = parseFloat(numStr) || 0;
+  }
+  return quotaPers > 0 ? quotaPers : quota;
+}
+
+/**
  * Estrae quote 1X2 da Scommessa (Esito con descr "1","X","2" o cod 1,2,3).
  * Lista=1 tipicamente indica mercato 1X2.
  */
@@ -168,15 +187,9 @@ function extract1X2FromScommessa(scommessa: Record<string, unknown>): {
   for (const e of esiti) {
     if (!e || typeof e !== "object") continue;
     const o = e as Record<string, unknown>;
-    const quota = typeof o.quota === "number" ? o.quota : parseFloat(String(o.quota ?? 0)) || 0;
+    const q = getQuotaFromEsito(o);
     const descr = String(o.descr ?? "").trim().toUpperCase();
     const cod = typeof o.cod === "number" ? o.cod : parseInt(String(o.cod ?? 0), 10);
-    const qp = o.QuotePersonalizzate;
-    const quotaPers =
-      typeof qp === "string" && qp.startsWith("default=")
-        ? parseFloat(qp.replace("default=", "")) || 0
-        : 0;
-    const q = quotaPers > 0 ? quotaPers : quota;
     if (descr === "1" || cod === 1) out.odds1 = q;
     else if (descr === "X" || descr === "N" || cod === 2) out.oddsX = q;
     else if (descr === "2" || cod === 3) out.odds2 = q;
@@ -231,13 +244,7 @@ function scommesseToStakes(scommesse: unknown[]): Array<{ market_id?: number; ma
     const esiti = toArray(o.Esito ?? o.esito);
     const getQuota = (e: unknown) => {
       if (!e || typeof e !== "object") return 0;
-      const r = e as Record<string, unknown>;
-      const qp = r.QuotePersonalizzate;
-      const quotaPers = typeof qp === "string" && qp.toString().startsWith("default=")
-        ? parseFloat(String(qp).replace("default=", "")) || 0
-        : 0;
-      const quota = typeof r.quota === "number" ? r.quota : parseFloat(String(r.quota ?? 0)) || 0;
-      return quotaPers > 0 ? quotaPers : quota;
+      return getQuotaFromEsito(e as Record<string, unknown>);
     };
     const getDescr = (e: unknown) => {
       const r = e as Record<string, unknown>;
