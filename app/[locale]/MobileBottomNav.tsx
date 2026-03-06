@@ -114,12 +114,12 @@ function SitesIcon({ active }: { active: boolean }) {
   );
 }
 
-export default function MobileBottomNav() {
+/** Contenuto nav: usa useSearchParams solo dopo mount client (evita suspend/error SSR) */
+function MobileBottomNavContent() {
   const pathname = usePathname();
   const searchParams = useSearchParams();
   const t = useTranslations("common");
 
-  // Verde solo per l'ultimo bottone su cui si è cliccato (una sola categoria attiva)
   const path = pathname.replace(/\/$/, "").split("/").filter(Boolean);
   const tab = searchParams.get("tab");
   const isOnPronosticiQuote = pathname.includes("pronostici-quote");
@@ -183,10 +183,14 @@ export default function MobileBottomNav() {
     </nav>
   );
 
+  return createPortal(navContent, document.body);
+}
+
+export default function MobileBottomNav() {
   const [mounted, setMounted] = useState(false);
   useEffect(() => setMounted(true), []);
 
-  /* Oddschecker: nav sempre in body via portal, mai nel layout tree */
+  /* Render solo su client: evita useSearchParams in SSR (causa error/suspend) */
   if (!mounted || typeof document === "undefined") return null;
-  return createPortal(navContent, document.body);
+  return <MobileBottomNavContent />;
 }
