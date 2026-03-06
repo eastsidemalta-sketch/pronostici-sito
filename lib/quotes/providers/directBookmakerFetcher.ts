@@ -191,9 +191,9 @@ function find1X2Scommessa(scommesse: unknown[]): Record<string, unknown> | null 
   for (const s of scommesse) {
     if (!s || typeof s !== "object") continue;
     const o = s as Record<string, unknown>;
-    const lista = o.Lista != null ? parseInt(String(o.Lista), 10) : NaN;
+    const lista = getListaFromScommessa(o);
     if (lista === 1 || lista === 3) return o;
-    const esiti = toArray(o.Esito);
+    const esiti = toArray(o.Esito ?? o.esito);
     if (esiti.length >= 3) {
       const descrs = new Set(esiti.map((e) => String((e as Record<string, unknown>)?.descr ?? "").trim().toUpperCase()));
       if (descrs.has("1") && (descrs.has("X") || descrs.has("N")) && descrs.has("2")) return o;
@@ -211,6 +211,14 @@ const NETWIN_LISTA = {
   BTTS: [18] as number[],
 };
 
+/** Estrae il codice mercato da Scommessa (Lista, cod, Codice) */
+function getListaFromScommessa(o: Record<string, unknown>): number {
+  const val = o.Lista ?? o.lista ?? o.cod ?? o.Cod ?? o.Codice ?? o.codice;
+  if (val == null) return NaN;
+  const n = parseInt(String(val), 10);
+  return Number.isNaN(n) ? NaN : n;
+}
+
 /**
  * Converte Scommesse Exalogic/Netwin in formato stakes per extract*FromStakes.
  */
@@ -219,8 +227,8 @@ function scommesseToStakes(scommesse: unknown[]): Array<{ market_id?: number; ma
   for (const s of scommesse) {
     if (!s || typeof s !== "object") continue;
     const o = s as Record<string, unknown>;
-    const lista = o.Lista != null ? parseInt(String(o.Lista), 10) : NaN;
-    const esiti = toArray(o.Esito);
+    const lista = getListaFromScommessa(o);
+    const esiti = toArray(o.Esito ?? o.esito);
     const getQuota = (e: unknown) => {
       if (!e || typeof e !== "object") return 0;
       const r = e as Record<string, unknown>;
@@ -231,14 +239,24 @@ function scommesseToStakes(scommesse: unknown[]): Array<{ market_id?: number; ma
       const quota = typeof r.quota === "number" ? r.quota : parseFloat(String(r.quota ?? 0)) || 0;
       return quotaPers > 0 ? quotaPers : quota;
     };
-    const getDescr = (e: unknown) => String((e as Record<string, unknown>)?.descr ?? "").trim();
+    const getDescr = (e: unknown) => {
+      const r = e as Record<string, unknown>;
+      return String(r?.descr ?? r?.Descr ?? "").trim();
+    };
 
     if (NETWIN_LISTA.H2H.includes(lista)) {
+      const outcomeMap: Record<string, number> = { "1": 1, "X": 2, "2": 3 };
       for (const e of esiti) {
         const d = getDescr(e).toUpperCase();
         const name = d === "N" ? "X" : d;
         if (["1", "X", "2"].includes(name)) {
-          stakes.push({ market_id: 1, market_name: "Winner", name, factor: getQuota(e) });
+          stakes.push({
+            market_id: 1,
+            market_name: "Winner",
+            outcome_id: outcomeMap[name],
+            name,
+            factor: getQuota(e),
+          });
         }
       }
     } else if (NETWIN_LISTA.DOUBLE_CHANCE.includes(lista)) {
@@ -274,7 +292,7 @@ function scommesseToStakes(scommesse: unknown[]): Array<{ market_id?: number; ma
     } else if (NETWIN_LISTA.BTTS.includes(lista)) {
       for (const e of esiti) {
         const d = getDescr(e).toLowerCase();
-        const name = /s[iì]|yes|sim|ja/.test(d) ? "Yes" : /no|não|nao|nein/.test(d) ? "No" : null;
+        const name = /s[iì]|yes|sim|ja|^gol$/.test(d) ? "Yes" : /no|não|nao|nein|no\s*gol/.test(d) ? "No" : null;
         if (name) stakes.push({ market_id: 14, market_name: "Both Teams To Score", name, factor: getQuota(e) });
       }
     }
@@ -299,6 +317,23 @@ function extractTeamsFromAvvenimento(avv: Record<string, unknown>, manifestazion
 }
 
 /**
+ * Raccoglie tutte le Scommesse da un nodo e dai suoi discendenti (Partita, Incontro, ecc.).
+ * Utile quando DC/O/U/Handicap/BTTS sono in nodi annidati diversi dall'1X2.
+ */
+function collectAllScommesse(node: Record<string, unknown>): unknown[] {
+  const out = toArray((node.Scommessa ?? node.scommessa) as unknown);
+  for (const key of ["Partita", "Incontro", "Evento", "Avvenimento", "Palinsesto", "Giornata"]) {
+    const children = toArray(node[key] as unknown);
+    for (const c of children) {
+      if (c && typeof c === "object") {
+        out.push(...collectAllScommesse(c as Record<string, unknown>));
+      }
+    }
+  }
+  return out;
+}
+
+/**
  * Processa un singolo Avvenimento/Partita/Incontro: se ha Scommessa 1X2, aggiunge a out.
  * Per Netwin/Exalogic costruisce anche stakes sintetici da tutte le Scommesse (DC, O/U, Handicap, BTTS).
  */
@@ -307,7 +342,7 @@ function processExalogicNode(
   parentManifestazione?: Record<string, unknown>,
   out: Array<Record<string, unknown>> = []
 ): void {
-  const scommesse = toArray(node.Scommessa as unknown);
+  const scommesse = collectAllScommesse(node);
   const s1x2 = find1X2Scommessa(scommesse);
   if (!s1x2) {
     for (const key of ["Partita", "Incontro", "Evento", "Avvenimento", "Palinsesto", "Giornata"]) {
@@ -408,6 +443,8 @@ function extract1X2FromStakes(
     else if (outcomeId === idX) out.oddsX = factor;
     else if (outcomeId === id2) out.odds2 = factor;
     else if (name && drawNames.has(name)) out.oddsX = factor;
+    else if (name === "1") out.odds1 = factor;
+    else if (name === "2") out.odds2 = factor;
     else if (name && homeNorm && name.includes(homeNorm)) out.odds1 = factor;
     else if (name && awayNorm && name.includes(awayNorm)) out.odds2 = factor;
   }
@@ -528,9 +565,12 @@ function extractDoubleChanceFromStakes(stakes: unknown[]): { homeOrDraw: number;
  */
 export type DirectMultiMarketResult = Partial<Record<DirectMarketKey, DirectQuote[]>>;
 
+export type FetchDirectOptions = { forceDelta?: boolean; systemCodeOverride?: string };
+
 export async function fetchDirectBookmakerQuotes(
   bm: Bookmaker,
-  leagueId?: number
+  leagueId?: number,
+  options?: FetchDirectOptions
 ): Promise<DirectMultiMarketResult> {
   const endpoint = bm.apiEndpoint;
   const mapping = bm.apiMappingConfig;
@@ -563,12 +603,17 @@ export async function fetchDirectBookmakerQuotes(
   }
 
   const isNetwin = isNetwinBookmaker(bm.siteId, bm.id);
-  const netwinUseFull = isNetwin ? shouldUseFull() : true;
+  const netwinUseFull = options?.forceDelta ? false : (isNetwin ? shouldUseFull() : true);
   if (isNetwin) {
-    queryParams = { ...queryParams, type: netwinUseFull ? "full" : "delta" };
+    queryParams = {
+      ...queryParams,
+      type: netwinUseFull ? "full" : "delta",
+      isLive: "0", // Netwin richiede 0 (prematch) o 1 (live)
+    };
+    if (options?.systemCodeOverride) queryParams = { ...queryParams, system_code: options.systemCodeOverride };
   }
 
-  if (isNetwin && !netwinUseFull && !canDoDelta()) {
+  if (isNetwin && !netwinUseFull && !options?.forceDelta && !canDoDelta()) {
     const cached = getCached();
     return cached ?? {};
   }

@@ -174,6 +174,7 @@ export async function GET(req: Request) {
     netwin.apiRequestConfig.queryParams as Record<string, string>
   );
   params.set("type", requestType);
+  params.set("isLive", "0"); // Netwin richiede 0 o 1, non altri valori
   if (codiceSitoOverride) params.set("codiceSito", codiceSitoOverride);
   if (systemCodeOverride) params.set("system_code", systemCodeOverride);
   const url = `${netwin.apiEndpoint}?${params}`;
@@ -187,7 +188,7 @@ export async function GET(req: Request) {
     const res = await fetch(url, { headers });
     const text = await res.text();
 
-    /** Netwin restituisce testo quando una FULL è in corso — intercetta prima del parse */
+    /** Netwin restituisce testo per errori — intercetta prima del parse */
     const isLockError =
       text.includes("hash_lock") ||
       /richiesta\s+FULL/i.test(text) ||
@@ -198,6 +199,14 @@ export async function GET(req: Request) {
         ok: false,
         error: "Netwin: una richiesta FULL è già in corso",
         hint: "L'API blocca le richieste finché la FULL non termina. Soluzioni: (1) Attendi 5-10 min e riprova. (2) Chiedi a Netwin un system_code separato per test (es. PLAYSIGNAL_TEST) e usa ?systemCode=PLAYSIGNAL_TEST oppure env NETWIN_SYSTEM_CODE_OVERRIDE.",
+        rawPreview: text.slice(0, 500),
+      });
+    }
+    if (text.includes("isLive") && /can be 0 or 1/i.test(text)) {
+      return NextResponse.json({
+        ok: false,
+        error: "Netwin: parametro isLive non valido",
+        hint: "L'API richiede isLive=0 (prematch) o isLive=1 (live). Verifica che apiRequestConfig.queryParams abbia isLive: \"0\" in data/bookmakers.json.",
         rawPreview: text.slice(0, 500),
       });
     }
