@@ -86,7 +86,9 @@
         "system_code": "PLAYSIGNAL",
         "type": "FULL",
         "isLive": "0",
-        "codiceSito": "WINBET"
+        "codiceSito": "WINBET",
+        "v_sport": "1-2-3-12",
+        "v_scommesse": "3-4-7989-15-16-17-15529-17875-23052-8-7-5-18-22286-23140-22296-22284-570-571-19-420-421-561-12562-9942-9943-27905-16474-110-7842-14863-26-28-9056-8291-30-31-191-2832-22580-20540-6-51-52-982-983-1127-4156-6321-6322-6513"
       }
     },
     "apiMappingConfig": {
@@ -99,7 +101,11 @@
       "odds2": "odds2",
       "odds1Personalized": "quote_personalizzate.1",
       "oddsXPersonalized": "quote_personalizzate.X",
-      "odds2Personalized": "quote_personalizzate.2"
+      "odds2Personalized": "quote_personalizzate.2",
+      "stakes1X2": {
+        "stakesPath": "stakes",
+        "marketName": "Winner"
+      }
     },
     "countryConfig": {
       "IT": {

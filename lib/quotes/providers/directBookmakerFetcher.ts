@@ -4,6 +4,15 @@
  * Supporta risposta JSON e XML.
  */
 import type { Bookmaker } from "../bookmaker.types";
+import {
+  isNetwinBookmaker,
+  shouldUseFull,
+  setCache,
+  mergeDeltaWithCache,
+  getCached,
+  canDoDelta,
+  recordDeltaCall,
+} from "./netwinCache";
 
 /** Cache Betboom category IDs (TTL 1h) per fallback quando non in config */
 let betboomCategoriesCache: { ids: number[]; expires: number } | null = null;
@@ -176,13 +185,14 @@ function extract1X2FromScommessa(scommessa: Record<string, unknown>): {
 }
 
 /**
- * Trova la Scommessa 1X2 (Lista=1 o Esito con 3 outcome 1,X,2).
+ * Trova la Scommessa 1X2 (Lista=1, Lista=3, o Esito con 3 outcome 1,X,2).
  */
 function find1X2Scommessa(scommesse: unknown[]): Record<string, unknown> | null {
   for (const s of scommesse) {
     if (!s || typeof s !== "object") continue;
     const o = s as Record<string, unknown>;
-    if (o.Lista === 1 || o.Lista === "1") return o;
+    const lista = o.Lista != null ? parseInt(String(o.Lista), 10) : NaN;
+    if (lista === 1 || lista === 3) return o;
     const esiti = toArray(o.Esito);
     if (esiti.length >= 3) {
       const descrs = new Set(esiti.map((e) => String((e as Record<string, unknown>)?.descr ?? "").trim().toUpperCase()));
@@ -190,6 +200,86 @@ function find1X2Scommessa(scommesse: unknown[]): Record<string, unknown> | null 
     }
   }
   return null;
+}
+
+/** Codici Lista Netwin per mercati calcio (v_scommesse) */
+const NETWIN_LISTA = {
+  H2H: [1, 3] as number[],
+  DOUBLE_CHANCE: [15, 16, 17] as number[],
+  HANDICAP: [8] as number[],
+  TOTALS: [7989] as number[],
+  BTTS: [18] as number[],
+};
+
+/**
+ * Converte Scommesse Exalogic/Netwin in formato stakes per extract*FromStakes.
+ */
+function scommesseToStakes(scommesse: unknown[]): Array<{ market_id?: number; market_name?: string; name?: string; factor?: number }> {
+  const stakes: StakeLike[] = [];
+  for (const s of scommesse) {
+    if (!s || typeof s !== "object") continue;
+    const o = s as Record<string, unknown>;
+    const lista = o.Lista != null ? parseInt(String(o.Lista), 10) : NaN;
+    const esiti = toArray(o.Esito);
+    const getQuota = (e: unknown) => {
+      if (!e || typeof e !== "object") return 0;
+      const r = e as Record<string, unknown>;
+      const qp = r.QuotePersonalizzate;
+      const quotaPers = typeof qp === "string" && qp.toString().startsWith("default=")
+        ? parseFloat(String(qp).replace("default=", "")) || 0
+        : 0;
+      const quota = typeof r.quota === "number" ? r.quota : parseFloat(String(r.quota ?? 0)) || 0;
+      return quotaPers > 0 ? quotaPers : quota;
+    };
+    const getDescr = (e: unknown) => String((e as Record<string, unknown>)?.descr ?? "").trim();
+
+    if (NETWIN_LISTA.H2H.includes(lista)) {
+      for (const e of esiti) {
+        const d = getDescr(e).toUpperCase();
+        const name = d === "N" ? "X" : d;
+        if (["1", "X", "2"].includes(name)) {
+          stakes.push({ market_id: 1, market_name: "Winner", name, factor: getQuota(e) });
+        }
+      }
+    } else if (NETWIN_LISTA.DOUBLE_CHANCE.includes(lista)) {
+      const dcMap: Record<string, string> = { "1X": "1X", "12": "12", "1 2": "12", "X2": "X2", "X 2": "X2" };
+      for (const e of esiti) {
+        const d = getDescr(e).replace(/\s+/g, "");
+        const name = dcMap[d] ?? d;
+        if (name) stakes.push({ market_id: 20, market_name: "Double Chance", name, factor: getQuota(e) });
+      }
+    } else if (NETWIN_LISTA.HANDICAP.includes(lista)) {
+      const handicapRe = /([+-]?\d+[,.]?\d*)/;
+      for (const e of esiti) {
+        const d = getDescr(e);
+        const m = d.match(handicapRe);
+        const point = m ? parseFloat(m[1].replace(",", ".")) : 0;
+        const isHome = /casa|home|1|squadra\s*1/i.test(d) || (!/ospite|away|2|squadra\s*2/i.test(d) && point > 0);
+        const name = isHome ? `Home ${point >= 0 ? "+" : ""}${point}` : `Away ${point >= 0 ? "+" : ""}${point}`;
+        stakes.push({ market_id: 2, market_name: "Handicap", name, factor: getQuota(e) });
+      }
+    } else if (NETWIN_LISTA.TOTALS.includes(lista)) {
+      const overRe = /over|sopra|oltre|o\s*(\d+[,.]?\d*)|^\s*o\s*(\d+[,.]?\d*)/i;
+      const underRe = /under|sotto|meno|u\s*(\d+[,.]?\d*)|^\s*u\s*(\d+[,.]?\d*)/i;
+      const numRe = /(\d+[,.]?\d*)/;
+      for (const e of esiti) {
+        const d = getDescr(e);
+        const isOver = overRe.test(d);
+        const isUnder = underRe.test(d);
+        const numMatch = d.match(numRe);
+        const line = numMatch ? parseFloat(numMatch[1].replace(",", ".")) : 2.5;
+        const name = isOver ? `Over ${line}` : isUnder ? `Under ${line}` : null;
+        if (name) stakes.push({ market_id: 3, market_name: "Total", name, factor: getQuota(e) });
+      }
+    } else if (NETWIN_LISTA.BTTS.includes(lista)) {
+      for (const e of esiti) {
+        const d = getDescr(e).toLowerCase();
+        const name = /s[iì]|yes|sim|ja/.test(d) ? "Yes" : /no|não|nao|nein/.test(d) ? "No" : null;
+        if (name) stakes.push({ market_id: 14, market_name: "Both Teams To Score", name, factor: getQuota(e) });
+      }
+    }
+  }
+  return stakes;
 }
 
 /**
@@ -210,6 +300,7 @@ function extractTeamsFromAvvenimento(avv: Record<string, unknown>, manifestazion
 
 /**
  * Processa un singolo Avvenimento/Partita/Incontro: se ha Scommessa 1X2, aggiunge a out.
+ * Per Netwin/Exalogic costruisce anche stakes sintetici da tutte le Scommesse (DC, O/U, Handicap, BTTS).
  */
 function processExalogicNode(
   node: Record<string, unknown>,
@@ -231,13 +322,16 @@ function processExalogicNode(
   if (odds1 <= 0 && oddsX <= 0 && odds2 <= 0) return;
   const { home, away } = extractTeamsFromAvvenimento(node, parentManifestazione);
   if (!home || !away) return;
-  out.push({
+  const stakes = scommesseToStakes(scommesse);
+  const ev: Record<string, unknown> = {
     homeTeam: home,
     awayTeam: away,
     odds1,
     oddsX,
     odds2,
-  } as Record<string, unknown>);
+  };
+  if (stakes.length > 0) ev.stakes = stakes;
+  out.push(ev);
 }
 
 /**
@@ -468,6 +562,17 @@ export async function fetchDirectBookmakerQuotes(
     };
   }
 
+  const isNetwin = isNetwinBookmaker(bm.siteId, bm.id);
+  const netwinUseFull = isNetwin ? shouldUseFull() : true;
+  if (isNetwin) {
+    queryParams = { ...queryParams, type: netwinUseFull ? "full" : "delta" };
+  }
+
+  if (isNetwin && !netwinUseFull && !canDoDelta()) {
+    const cached = getCached();
+    return cached ?? {};
+  }
+
   const url = buildUrl(
     endpoint,
     apiKey,
@@ -516,6 +621,10 @@ export async function fetchDirectBookmakerQuotes(
 
   if (!res.ok) {
     console.warn(`Direct API ${bm.name}: HTTP ${res.status}`);
+    if (isNetwin && !netwinUseFull) {
+      const cached = getCached();
+      if (cached) return cached;
+    }
     return {};
   }
 
@@ -524,6 +633,10 @@ export async function fetchDirectBookmakerQuotes(
     const text = await res.text();
     data = parseApiResponse(text);
   } catch {
+    if (isNetwin && !netwinUseFull) {
+      const cached = getCached();
+      if (cached) return cached;
+    }
     return {};
   }
 
@@ -637,5 +750,13 @@ export async function fetchDirectBookmakerQuotes(
     }
   }
 
+  if (isNetwin) {
+    if (netwinUseFull) {
+      setCache(result);
+    } else {
+      recordDeltaCall();
+      return mergeDeltaWithCache(result);
+    }
+  }
   return result;
 }
