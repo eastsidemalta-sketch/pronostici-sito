@@ -612,6 +612,9 @@ export async function fetchDirectBookmakerQuotes(
   const isNetwin = isNetwinBookmaker(bm.siteId, bm.id);
   const netwinUseFull = options?.forceFull ? true : options?.forceDelta ? false : (isNetwin ? shouldUseFull() : true);
   if (isNetwin) {
+    if (netwinUseFull) {
+      console.log(`[Netwin] Richiesta FULL (cache vuota o scaduta)`);
+    }
     queryParams = {
       ...queryParams,
       type: netwinUseFull ? "full" : "delta",
@@ -674,7 +677,11 @@ export async function fetchDirectBookmakerQuotes(
   });
 
   if (!res.ok) {
-    console.warn(`Direct API ${bm.name}: HTTP ${res.status}`);
+    if (isNetwin && netwinUseFull) {
+      console.warn(`[Netwin] FULL fallita: HTTP ${res.status}`);
+    } else {
+      console.warn(`Direct API ${bm.name}: HTTP ${res.status}`);
+    }
     if (isNetwin && !netwinUseFull) {
       const cached = getCached();
       if (cached) return cached;
@@ -806,6 +813,8 @@ export async function fetchDirectBookmakerQuotes(
 
   if (isNetwin) {
     if (netwinUseFull) {
+      const h2hCount = result.h2h?.length ?? 0;
+      console.log(`[Netwin] FULL OK: ${h2hCount} partite in cache`);
       setCache(result);
     } else {
       recordDeltaCall();
