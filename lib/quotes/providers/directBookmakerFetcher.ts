@@ -12,6 +12,7 @@ import {
   getCached,
   canDoDelta,
   recordDeltaCall,
+  logFullAttempt,
 } from "./netwinCache";
 
 /** Cache Betboom category IDs (TTL 1h) per fallback quando non in config */
@@ -696,6 +697,11 @@ export async function fetchDirectBookmakerQuotes(
     cache: "no-store",
   });
 
+  const text = await res.text();
+  const maskUrlForLog = (u: string) =>
+    u.replace(/system_code=[^&]+/i, "system_code=***").replace(/apiKey=[^&]+/i, "apiKey=***");
+  const netwinUrl = isNetwin && netwinUseFull ? maskUrlForLog(url) : undefined;
+
   if (isNetwin && netwinUseFull) {
     console.log(`[Netwin] FULL risposta: HTTP ${res.status}`);
   }
@@ -703,6 +709,11 @@ export async function fetchDirectBookmakerQuotes(
   if (!res.ok) {
     if (isNetwin && netwinUseFull) {
       console.warn(`[Netwin] FULL fallita: HTTP ${res.status}`);
+      logFullAttempt(false, {
+        url: netwinUrl,
+        error: `HTTP ${res.status}`,
+        errorRaw: text.slice(0, 1500).replace(/\s+/g, " ").trim(),
+      });
     } else {
       console.warn(`Direct API ${bm.name}: HTTP ${res.status}`);
     }
@@ -715,7 +726,6 @@ export async function fetchDirectBookmakerQuotes(
 
   let data: unknown;
   try {
-    const text = await res.text();
     /** Netwin restituisce testo per errori (non JSON/XML) — intercetta prima del parse */
     if (isNetwin) {
       const isLockError =
@@ -725,6 +735,11 @@ export async function fetchDirectBookmakerQuotes(
       if (isLockError) {
         if (netwinUseFull) {
           console.warn(`[Netwin] FULL bloccata: richiesta FULL già in corso (hash_lock). Riprova tra qualche minuto.`);
+          logFullAttempt(false, {
+            url: netwinUrl,
+            error: "hash_lock (FULL già in corso)",
+            errorRaw: text.slice(0, 1500).replace(/\s+/g, " ").trim(),
+          });
         }
         const cached = getCached();
         return cached ?? {};
@@ -735,6 +750,11 @@ export async function fetchDirectBookmakerQuotes(
           const urlParams = new URL(url).searchParams;
           const isLiveVal = urlParams.get("isLive") ?? urlParams.get("IsLive") ?? "(mancante)";
           console.warn(`[Netwin] FULL isLive error. Raw: ${raw}. URL isLive param: ${isLiveVal}`);
+          logFullAttempt(false, {
+            url: netwinUrl,
+            error: "isLive non valido",
+            errorRaw: text.slice(0, 1500).replace(/\s+/g, " ").trim(),
+          });
         }
         return {};
       }
@@ -742,7 +762,13 @@ export async function fetchDirectBookmakerQuotes(
     data = parseApiResponse(text);
   } catch (e) {
     if (isNetwin && netwinUseFull) {
-      console.warn(`[Netwin] FULL parse fallito:`, e instanceof Error ? e.message : String(e));
+      const msg = e instanceof Error ? e.message : String(e);
+      console.warn(`[Netwin] FULL parse fallito:`, msg);
+      logFullAttempt(false, {
+        url: netwinUrl,
+        error: `Parse fallito: ${msg.slice(0, 150)}`,
+        errorRaw: text.slice(0, 1500).replace(/\s+/g, " ").trim(),
+      });
     }
     if (isNetwin && !netwinUseFull) {
       const cached = getCached();
@@ -869,6 +895,10 @@ export async function fetchDirectBookmakerQuotes(
       const h2hCount = result.h2h?.length ?? 0;
       console.log(`[Netwin] FULL OK: ${h2hCount} partite in cache`);
       setCache(result);
+      logFullAttempt(true, {
+        url: maskUrlForLog(url),
+        h2hCount,
+      });
     } else {
       recordDeltaCall();
       return mergeDeltaWithCache(result);

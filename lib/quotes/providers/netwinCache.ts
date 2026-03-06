@@ -18,7 +18,8 @@ const FULL_FETCH_INTERVAL_MS = 3 * 60 * 60 * 1000; // 3 ore (limite Netwin)
 const DELTA_MIN_INTERVAL_MS = 10 * 1000; // 10 secondi tra una DELTA e l'altra (limite Netwin)
 
 const CACHE_FILE = path.join(process.cwd(), "data", ".netwin-cache.json");
-const FULL_LOG_FILE = path.join(process.cwd(), "data", ".netwin-full-success.log");
+const FULL_LOG_FILE = path.join(process.cwd(), "data", ".netwin-full.log");
+const FULL_LOG_RETENTION_MS = 24 * 60 * 60 * 1000; // 24 ore
 
 let cache: { data: DirectMultiMarketResult; timestamp: number } | null = null;
 let lastDeltaCallAt: number | null = null;
@@ -103,20 +104,51 @@ function saveToFileCache(data: DirectMultiMarketResult, timestamp: number): void
   }
 }
 
-/** Registra una FULL andata a buon fine (per verifica log) */
-function logFullSuccess(timestamp: number, h2hCount: number): void {
+/** Registra tentativo FULL (successo o errore). Retention 24h. */
+export function logFullAttempt(
+  success: boolean,
+  details: { url?: string; h2hCount?: number; error?: string; errorRaw?: string }
+): void {
   try {
     const dir = path.dirname(FULL_LOG_FILE);
     if (!existsSync(dir)) mkdirSync(dir, { recursive: true });
-    const line =
-      JSON.stringify({
-        timestamp,
-        iso: new Date(timestamp).toISOString(),
-        h2hCount,
-      }) + "\n";
-    appendFileSync(FULL_LOG_FILE, line, "utf-8");
+    const timestamp = Date.now();
+    const entry: Record<string, unknown> = {
+      timestamp,
+      iso: new Date(timestamp).toISOString(),
+      success,
+      ...(details.url && { url: details.url }),
+      ...(success && details.h2hCount != null && { h2hCount: details.h2hCount }),
+      ...(!success && details.error && { error: details.error }),
+      ...(!success && details.errorRaw && { errorRaw: details.errorRaw }),
+    };
+    appendFileSync(FULL_LOG_FILE, JSON.stringify(entry) + "\n", "utf-8");
+    trimLogToRetention();
   } catch {
     // ignora errori di log
+  }
+}
+
+/** Rimuove voci più vecchie di 24 ore */
+function trimLogToRetention(): void {
+  try {
+    if (!existsSync(FULL_LOG_FILE)) return;
+    const raw = readFileSync(FULL_LOG_FILE, "utf-8");
+    const lines = raw.trim().split("\n").filter(Boolean);
+    const cutoff = Date.now() - FULL_LOG_RETENTION_MS;
+    const kept = lines.filter((line) => {
+      try {
+        const e = JSON.parse(line);
+        return e.timestamp >= cutoff;
+      } catch {
+        return true;
+      }
+    });
+    if (kept.length < lines.length) {
+      writeFileSync(FULL_LOG_FILE, kept.join("\n") + (kept.length ? "\n" : ""), "utf-8");
+    }
+  } catch {
+    // ignora
   }
 }
 
@@ -135,7 +167,6 @@ export function setCache(data: DirectMultiMarketResult): void {
   cache = { data, timestamp };
   lastDeltaCallAt = null;
   saveToFileCache(data, timestamp);
-  logFullSuccess(timestamp, data.h2h?.length ?? 0);
 }
 
 export function mergeDeltaWithCache(delta: DirectMultiMarketResult): DirectMultiMarketResult {
