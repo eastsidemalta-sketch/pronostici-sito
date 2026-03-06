@@ -89,3 +89,36 @@ export function mergeDeltaWithCache(delta: DirectMultiMarketResult): DirectMulti
   if (!full) return delta;
   return mergeMarketResults(full, delta);
 }
+
+/** Debug: info sulla cache Netwin (ultima FULL, prossima FULL consentita) */
+export function getCacheDebugInfo(): {
+  hasCache: boolean;
+  lastFullTimestamp: number | null;
+  lastFullIso: string | null;
+  nextFullAllowedAt: number | null;
+  nextFullAllowedIso: string | null;
+  h2hCount: number;
+  shouldUseFull: boolean;
+} {
+  if (!cache) {
+    return {
+      hasCache: false,
+      lastFullTimestamp: null,
+      lastFullIso: null,
+      nextFullAllowedAt: null,
+      nextFullAllowedIso: null,
+      h2hCount: 0,
+      shouldUseFull: true,
+    };
+  }
+  const nextFullAt = cache.timestamp + FULL_FETCH_INTERVAL_MS;
+  return {
+    hasCache: true,
+    lastFullTimestamp: cache.timestamp,
+    lastFullIso: new Date(cache.timestamp).toISOString(),
+    nextFullAllowedAt: nextFullAt,
+    nextFullAllowedIso: new Date(nextFullAt).toISOString(),
+    h2hCount: cache.data.h2h?.length ?? 0,
+    shouldUseFull: shouldUseFull(),
+  };
+}
