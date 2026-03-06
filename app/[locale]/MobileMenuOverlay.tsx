@@ -154,14 +154,14 @@ export default function MobileMenuOverlay() {
                 <span className="font-medium uppercase tracking-wide">{t("home")}</span>
                 <ChevronRightIcon />
               </Link>
-              <button
-                type="button"
-                onClick={() => setView("sports")}
+              <Link
+                href="/"
+                onClick={closeMenu}
                 className="flex w-full items-center justify-between gap-3 border-b border-[var(--card-border)] py-3 transition hover:bg-[var(--background)]"
               >
                 <span className="font-medium uppercase tracking-wide">{t("quotes")}</span>
                 <ChevronRightIcon />
-              </button>
+              </Link>
               <button
                 type="button"
                 onClick={() => setView("sports")}

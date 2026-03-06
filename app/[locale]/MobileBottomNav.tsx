@@ -4,7 +4,6 @@ import { usePathname } from "@/i18n/navigation";
 import { Link } from "@/i18n/navigation";
 import { useSearchParams } from "next/navigation";
 import { useTranslations } from "next-intl";
-import { useMobileMenu } from "./MobileMenuContext";
 import { useEffect, useState } from "react";
 import { createPortal } from "react-dom";
 
@@ -119,15 +118,14 @@ export default function MobileBottomNav() {
   const pathname = usePathname();
   const searchParams = useSearchParams();
   const t = useTranslations("common");
-  const { openMenu } = useMobileMenu();
 
-  // Verde solo per l'ultimo bottone su cui si è cliccato (una sola categoria attiva)
+  // Verde solo per l'ultimo bottone su cui si è cliccato (una sola categoria attiva) su cui si è cliccato (una sola categoria attiva)
   const path = pathname.replace(/\/$/, "").split("/").filter(Boolean);
   const tab = searchParams.get("tab");
   const isOnPronosticiQuote = pathname.includes("pronostici-quote");
 
   const isHome = path.length <= 1;
-  const isQuote = isOnPronosticiQuote && tab !== "pronostici";
+  const isQuote = (isHome && tab !== "pronostici") || (isOnPronosticiQuote && tab !== "pronostici");
   const isPronostici = tab === "pronostici" && (isOnPronosticiQuote || isHome);
   const isBonus = pathname.includes("bonus");
   const isSiti = pathname.includes("siti-scommesse");
@@ -135,7 +133,7 @@ export default function MobileBottomNav() {
   const navContent = (
     <nav
       data-mobile-bottom-nav
-      className="fixed left-0 right-0 bottom-0 z-50 flex min-h-[66px] max-h-[90px] items-center justify-around border-t border-[var(--card-border)] bg-[var(--nav-bar-bg)] pb-[max(env(safe-area-inset-bottom),10px)] pt-2 md:hidden"
+      className="fixed left-0 right-0 bottom-0 z-50 flex min-h-[66px] max-h-[90px] items-center justify-around gap-0.5 border-t border-[var(--card-border)] bg-[var(--nav-bar-bg)] px-4 pb-[max(env(safe-area-inset-bottom),10px)] pt-2 md:hidden"
     >
       <Link
         href="/"
@@ -146,16 +144,15 @@ export default function MobileBottomNav() {
           Home
         </span>
       </Link>
-      <button
-        type="button"
-        onClick={() => openMenu("sports")}
+      <Link
+        href="/"
         className="flex min-w-0 flex-1 flex-col items-center gap-0.5 px-0.5 py-2 active:opacity-70"
       >
         <OddsIcon active={isQuote} />
         <span className={`text-[9px] font-medium ${isQuote ? "text-[var(--nav-bar-active)]" : "text-[var(--nav-bar-inactive)]"}`}>
           {t("quotes")}
         </span>
-      </button>
+      </Link>
       <Link
         href="/?tab=pronostici"
         className="flex min-w-0 flex-1 flex-col items-center gap-0.5 px-0.5 py-2 active:opacity-70"
@@ -165,16 +162,15 @@ export default function MobileBottomNav() {
           {t("predictions")}
         </span>
       </Link>
-      <button
-        type="button"
-        onClick={() => openMenu("main")}
+      <Link
+        href="/bonus"
         className="flex min-w-0 flex-1 flex-col items-center gap-0.5 px-0.5 py-2 active:opacity-70"
       >
         <BonusIcon active={isBonus} />
         <span className={`text-[9px] font-medium ${isBonus ? "text-[var(--nav-bar-active)]" : "text-[var(--nav-bar-inactive)]"}`}>
           {t("bonus")}
         </span>
-      </button>
+      </Link>
       <Link
         href="/siti-scommesse"
         className="flex min-w-0 flex-1 flex-col items-center gap-0.5 px-0.5 py-2 active:opacity-70"
