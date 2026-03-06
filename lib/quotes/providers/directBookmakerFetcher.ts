@@ -465,7 +465,8 @@ function extract1X2FromStakes(
     const o = s as Record<string, unknown>;
     const mkt = String(o.market_name ?? "").toLowerCase();
     if (mkt !== marketName) continue;
-    if (o.period_id != null && o.period_id !== "") continue;
+    // Escludi stakes con period_id (1° tempo, 2° tempo). Betboom live: period_id "0" = partita intera, ma Netwin non usa period_id
+    if (o.period_id != null && o.period_id !== "" && String(o.period_id).trim() !== "0") continue;
     const factor = typeof o.factor === "number" ? o.factor : parseFloat(String(o.factor ?? 0)) || 0;
     const outcomeId = typeof o.outcome_id === "number" ? o.outcome_id : parseInt(String(o.outcome_id ?? 0), 10);
     const name = String(o.name ?? "").toLowerCase().trim();
@@ -499,7 +500,7 @@ function extractHandicapFromStakes(
     const mid = typeof s.market_id === "number" ? s.market_id : parseInt(String(s.market_id ?? 0), 10);
     const mkt = String(s.market_name ?? "").toLowerCase();
     if (mid !== 2 && mkt !== "handicap") continue;
-    if (s.period_id != null && s.period_id !== "") continue;
+    if (s.period_id != null && s.period_id !== "" && String(s.period_id).trim() !== "0") continue;
     const factor = typeof s.factor === "number" ? s.factor : parseFloat(String(s.factor ?? 0)) || 0;
     const name = String(s.name ?? "").toLowerCase();
     const match = name.match(handicapRe);
@@ -535,7 +536,7 @@ function extractTotalsFromStakes(stakes: unknown[]): { over25: number; under25: 
     const mid = typeof s.market_id === "number" ? s.market_id : parseInt(String(s.market_id ?? 0), 10);
     const mkt = String(s.market_name ?? "").toLowerCase();
     if (mid !== 3 && mid !== 79120 && !mkt.includes("total")) continue;
-    if (s.period_id != null && s.period_id !== "") continue;
+    if (s.period_id != null && s.period_id !== "" && String(s.period_id).trim() !== "0") continue;
     const factor = typeof s.factor === "number" ? s.factor : parseFloat(String(s.factor ?? 0)) || 0;
     const name = String(s.name ?? "");
     const isOver = overRe.test(name);
@@ -560,7 +561,7 @@ function extractBttsFromStakes(stakes: unknown[]): { yes: number; no: number } {
     const mid = typeof s.market_id === "number" ? s.market_id : parseInt(String(s.market_id ?? 0), 10);
     const mkt = String(s.market_name ?? "").toLowerCase();
     if (mid !== 14 && !mkt.includes("both") && !mkt.includes("btts") && !mkt.includes("score")) continue;
-    if (s.period_id != null && s.period_id !== "") continue;
+    if (s.period_id != null && s.period_id !== "" && String(s.period_id).trim() !== "0") continue;
     const factor = typeof s.factor === "number" ? s.factor : parseFloat(String(s.factor ?? 0)) || 0;
     const name = String(s.name ?? "").toLowerCase();
     if (name === "yes" || name === "sì" || name === "si" || name === "sim") out.yes = factor;
@@ -580,7 +581,7 @@ function extractDoubleChanceFromStakes(stakes: unknown[]): { homeOrDraw: number;
     const mid = typeof s.market_id === "number" ? s.market_id : parseInt(String(s.market_id ?? 0), 10);
     const mkt = String(s.market_name ?? "").toLowerCase();
     if (mid !== 20 && !mkt.includes("double") && !mkt.includes("chance")) continue;
-    if (s.period_id != null && s.period_id !== "") continue;
+    if (s.period_id != null && s.period_id !== "" && String(s.period_id).trim() !== "0") continue;
     const factor = typeof s.factor === "number" ? s.factor : parseFloat(String(s.factor ?? 0)) || 0;
     const name = String(s.name ?? "");
     if (dc1X.test(name)) out.homeOrDraw = factor;
@@ -913,5 +914,69 @@ export async function fetchDirectBookmakerQuotes(
       return mergeDeltaWithCache(result);
     }
   }
+
+  // Betboom/Sporthub: fetch anche partite live (type: "live") e merge con prematch
+  if (endpoint?.includes("sporthub.bet") && method === "POST" && body) {
+    try {
+      const bodyObj = JSON.parse(body) as Record<string, unknown>;
+      if (bodyObj.type === "prematch") {
+        const bodyLive = { ...bodyObj, type: "live" };
+        const resLive = await fetch(url, {
+          method,
+          headers,
+          body: JSON.stringify(bodyLive),
+          cache: "no-store",
+        });
+        if (resLive.ok) {
+          const dataLive = parseApiResponse(await resLive.text()) as Record<string, unknown>;
+          const eventsLive = getEventsArray(dataLive, eventsPath);
+          const stakesConfig = mapping.stakes1X2;
+          if (stakesConfig && eventsLive.length > 0) {
+            for (const ev of eventsLive) {
+              if (ev == null || typeof ev !== "object") continue;
+              const homeTeam = getString(ev, homeTeamPath);
+              const awayTeam = getString(ev, awayTeamPath);
+              if (!homeTeam || !awayTeam) continue;
+              const baseQuote = {
+                homeTeam,
+                awayTeam,
+                bookmakerKey: bm.id,
+                bookmaker: getBookmakerDisplayName(bm),
+              };
+              const stakesPath = stakesConfig.stakesPath ?? "stakes";
+              const stakesVal = getByPath(ev, stakesPath);
+              const stakesArr = Array.isArray(stakesVal) ? stakesVal : [];
+              const extracted1X2 = extract1X2FromStakes(stakesArr, homeTeam, awayTeam, stakesConfig as { marketName?: string; outcomeId1?: number; outcomeIdX?: number; outcomeId2?: number; stakesPath?: string });
+              if (extracted1X2.odds1 > 0 || extracted1X2.oddsX > 0 || extracted1X2.odds2 > 0) {
+                mergeQuoteIntoResult(result, "h2h", {
+                  ...baseQuote,
+                  outcomes: { home: extracted1X2.odds1, draw: extracted1X2.oddsX, away: extracted1X2.odds2 },
+                });
+              }
+            }
+          }
+        }
+      }
+    } catch {
+      // Ignora errori fetch live
+    }
+  }
+
   return result;
+}
+
+/** Aggiunge o sostituisce una quote in result[market] per (homeTeam, awayTeam). Preferisce la nuova se già presente. */
+function mergeQuoteIntoResult(
+  result: DirectMultiMarketResult,
+  market: keyof DirectMultiMarketResult,
+  quote: DirectQuote
+): void {
+  const arr = result[market];
+  if (!Array.isArray(arr)) return;
+  const key = `${(quote.homeTeam || "").toLowerCase()}|${(quote.awayTeam || "").toLowerCase()}`;
+  const idx = arr.findIndex(
+    (q) => `${(q.homeTeam || "").toLowerCase()}|${(q.awayTeam || "").toLowerCase()}` === key
+  );
+  if (idx >= 0) arr[idx] = quote;
+  else arr.push(quote);
 }

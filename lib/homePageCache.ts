@@ -94,7 +94,8 @@ export async function getCachedHomeData(
       const raw = await redis.get(key);
       if (raw) {
         const parsed = JSON.parse(raw) as CachedHomeData;
-        if (parsed?.fixtures && parsed?.quotesMap && parsed?.predictionsMap) {
+        // Usa cache solo se ha partite: evita di servire dati vuoti per 90s (es. API down al warm)
+        if (parsed?.fixtures?.length > 0 && parsed?.quotesMap && parsed?.predictionsMap) {
           return parsed;
         }
       }

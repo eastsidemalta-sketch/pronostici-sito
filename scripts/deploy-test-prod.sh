@@ -25,6 +25,22 @@ wait_for_app() {
 
 echo "=== Deploy TEST (produzione non toccata) ==="
 cd /var/www/pronostici-sito-test
+
+# 1. Salva i dati da test (modifiche admin) prima che git pull li sovrascriva
+if [ -d ".next/standalone/data" ]; then
+  echo "Sync data da test (preserva paesi, menu, bookmakers)..."
+  mkdir -p data
+  for f in .next/standalone/data/*; do
+    [ -e "$f" ] && [ -f "$f" ] && cp -f "$f" data/ 2>/dev/null || true
+  done
+  git add data/ 2>/dev/null || true
+  if ! git diff --staged --quiet 2>/dev/null; then
+    git commit -m "Sync data da test" || true
+    git push origin main 2>/dev/null || echo "  ATTENZIONE: push fallito. Esegui manualmente: git push"
+  fi
+fi
+
+# 2. Pull ultimo codice
 git pull origin main
 mkdir -p public/uploads
 rm -rf .next

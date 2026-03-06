@@ -3,7 +3,7 @@
 # Copia data/ da test a prod (bookmakers, config admin) e fa deploy prod.
 # Eseguire sul droplet: bash scripts/deploy-promote-test-to-prod.sh
 #
-# Flusso: 1) pull prod (reset locale se conflitti) 2) copia data da test 3) build + restart
+# Flusso: 1) backup data prod nel repo 2) pull 3) copia data da test 4) build + restart
 
 set -e
 
@@ -32,9 +32,23 @@ wait_for_app() {
 
 echo "=== Promozione TEST → PRODUZIONE ==="
 
-# 1. Aggiorna codice prod (reset locale se ci sono conflitti)
-echo "1. Aggiorno codice produzione..."
+# 1. Salva i dati di produzione nel repo PRIMA di sovrascrivere (così non perdiamo paesi/menu)
 cd "$PROD_DIR"
+if [ -d ".next/standalone/data" ]; then
+  echo "1a. Salvo dati produzione nel repo (backup prima della promozione)..."
+  mkdir -p data
+  for f in .next/standalone/data/*; do
+    [ -e "$f" ] && [ -f "$f" ] && cp -f "$f" data/ 2>/dev/null || true
+  done
+  git add data/ 2>/dev/null || true
+  if ! git diff --staged --quiet 2>/dev/null; then
+    git commit -m "Sync data da produzione (backup pre-promozione)" || true
+    git push origin main 2>/dev/null || echo "   ATTENZIONE: push fallito"
+  fi
+fi
+
+# 2. Aggiorna codice prod (reset locale se ci sono conflitti)
+echo "1b. Aggiorno codice produzione..."
 git fetch origin main
 if ! git pull origin main 2>/dev/null; then
   echo "   Conflitti locali, ripristino a origin/main..."
@@ -42,30 +56,29 @@ if ! git pull origin main 2>/dev/null; then
   git clean -fd data/ 2>/dev/null || true
 fi
 
-# 2. Normalizza Netwin: solo IT-0002 (rimuovi IT-002, aggiungi IT-0002 se manca)
-# Esegui su TEST e su PROD (prod potrebbe avere data da git clean)
+# 3. Copia data da test a prod (test è la source of truth per la promozione)
 if [ -d "$TEST_DIR/data" ]; then
-  echo "2a. Normalizzo Netwin su test..."
+  echo "3a. Normalizzo Netwin su test..."
   (cd "$TEST_DIR" && node scripts/remove-netwin-from-bookmakers.mjs) || true
   (cd "$TEST_DIR" && node scripts/add-netwin-it0002.mjs) || true
   echo ""
-  echo "2b. Copio data/ da test a prod..."
+  echo "3b. Copio data/ da test a prod..."
   mkdir -p "$PROD_DIR/data"
   for f in "$TEST_DIR/data"/*; do
     [ -e "$f" ] && cp -f "$f" "$PROD_DIR/data/" 2>/dev/null || true
   done
-  echo "2c. Normalizzo Netwin su prod (dopo copia)..."
+  echo "3c. Normalizzo Netwin su prod (dopo copia)..."
   (cd "$PROD_DIR" && node scripts/remove-netwin-from-bookmakers.mjs) || true
   (cd "$PROD_DIR" && node scripts/add-netwin-it0002.mjs) || true
   pm2 restart pronostici-test 2>/dev/null || true
   echo "   OK"
 else
-  echo "2. Cartella data test non trovata"
+  echo "3. Cartella data test non trovata"
 fi
 
-# 3. Build e restart (standalone come test)
+# 4. Build e restart produzione
 echo ""
-echo "3. Build e restart produzione..."
+echo "4. Build e restart produzione..."
 mkdir -p public/uploads
 rm -rf .next
 npm ci
