@@ -222,14 +222,14 @@ function extract1X2FromScommessa(scommessa: Record<string, unknown>, divisor = 1
 }
 
 /**
- * Trova la Scommessa 1X2 (Lista=1, Lista=3, o Esito con 3 outcome 1,X,2).
+ * Trova la Scommessa 1X2. Per Netwin il mercato 1X2 è codice 3 (non 1).
  */
 function find1X2Scommessa(scommesse: unknown[]): Record<string, unknown> | null {
   for (const s of scommesse) {
     if (!s || typeof s !== "object") continue;
     const o = s as Record<string, unknown>;
     const lista = getListaFromScommessa(o);
-    if (lista === 1 || lista === 3) return o;
+    if (lista === 3) return o;
     const esiti = toArray(o.Esito ?? o.esito);
     if (esiti.length >= 3) {
       const descrs = new Set(esiti.map((e) => String((e as Record<string, unknown>)?.descr ?? "").trim().toUpperCase()));
@@ -239,9 +239,9 @@ function find1X2Scommessa(scommesse: unknown[]): Record<string, unknown> | null 
   return null;
 }
 
-/** Codici Lista Netwin per mercati calcio (v_scommesse) */
+/** Codici Lista Netwin per mercati calcio (v_scommesse). 1X2 = 3 (non 1). */
 const NETWIN_LISTA = {
-  H2H: [1, 3] as number[],
+  H2H: [3] as number[],
   DOUBLE_CHANCE: [15, 16, 17] as number[],
   HANDICAP: [8] as number[],
   TOTALS: [7989] as number[],

@@ -112,7 +112,7 @@ Formato: ID separati da `-` (es. `1-2-3-12`)
 ```
 
 Il fetcher estrae **tutti i mercati** configurati in v_scommesse:
-- **1X2** (codice 1, 3) → `h2h`
+- **1X2** (codice 3, non 1) → `h2h`
 - **Double Chance** (15, 16, 17) → `double_chance`
 - **Handicap** (8) → `spreads`
 - **Over/Under** (7989) → `totals_25`, `totals_15`

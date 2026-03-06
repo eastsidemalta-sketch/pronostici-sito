@@ -1,6 +1,11 @@
 /**
  * Cache Redis per dati home page.
- * TTL 90 sec: riduce chiamate API, pagina veloce anche con 0 utenti.
+ *
+ * Strategia a due livelli:
+ * 1. Cache principale (90s): dati freschi, riduce chiamate API.
+ * 2. Cache "last known good" (6h): se API Football restituisce vuoto, mostriamo
+ *    comunque i dati dell'ultimo aggiornamento riuscito invece di una pagina vuota.
+ *
  * Con cron che fa warm ogni 2 min, i dati sono sempre pronti.
  */
 
@@ -11,7 +16,9 @@ import { getLeagueIdsForAllSports } from "./homeMenuData";
 import { isSportEnabledForCountry } from "./sportsPerCountryData";
 
 const CACHE_TTL_SEC = 90;
+const FALLBACK_TTL_SEC = 6 * 60 * 60; // 6 ore: dati da mostrare se API restituisce vuoto
 const KEY_PREFIX = "home:data:";
+const FALLBACK_KEY_PREFIX = "home:data:lastGood:";
 
 let redisClient: import("ioredis").default | null = null;
 
@@ -81,9 +88,12 @@ export async function getCachedHomeData(
   const redis = getRedis();
   const key = `${KEY_PREFIX}${country}`;
 
+  const fallbackKey = `${FALLBACK_KEY_PREFIX}${country}`;
+
   if (bypassCache && redis) {
     try {
       await redis.del(key);
+      await redis.del(fallbackKey);
     } catch {
       // Ignora
     }
@@ -108,7 +118,22 @@ export async function getCachedHomeData(
 
   if (redis) {
     try {
-      await redis.set(key, JSON.stringify(data), "EX", CACHE_TTL_SEC);
+      if (data.fixtures.length > 0) {
+        await redis.set(key, JSON.stringify(data), "EX", CACHE_TTL_SEC);
+        await redis.set(fallbackKey, JSON.stringify(data), "EX", FALLBACK_TTL_SEC);
+      } else {
+        // API ha restituito vuoto: usa last known good se disponibile
+        const fallbackRaw = await redis.get(fallbackKey);
+        if (fallbackRaw) {
+          const fallback = JSON.parse(fallbackRaw) as CachedHomeData;
+          if (fallback?.fixtures?.length > 0 && fallback?.quotesMap && fallback?.predictionsMap) {
+            console.warn(`[homePageCache] API returned empty for ${country}, using last known good (${fallback.fixtures.length} fixtures)`);
+            await redis.set(key, JSON.stringify(fallback), "EX", CACHE_TTL_SEC);
+            return fallback;
+          }
+        }
+        // Non memorizziamo vuoto in main: il prossimo request riproverà il fetch
+      }
     } catch {
       // Ignora errori scrittura cache
     }
@@ -127,9 +152,12 @@ export async function invalidateHomeCache(country: string): Promise<void> {
   try {
     if (country === "*") {
       const keys = await redis.keys(`${KEY_PREFIX}*`);
+      const fallbackKeys = await redis.keys(`${FALLBACK_KEY_PREFIX}*`);
       if (keys.length > 0) await redis.del(...keys);
+      if (fallbackKeys.length > 0) await redis.del(...fallbackKeys);
     } else {
       await redis.del(`${KEY_PREFIX}${country}`);
+      await redis.del(`${FALLBACK_KEY_PREFIX}${country}`);
     }
   } catch {
     // Ignora errori

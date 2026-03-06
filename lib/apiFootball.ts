@@ -242,15 +242,37 @@ export async function getUpcomingFixtures(leagueIds?: number[]) {
     }
   }
 
-  let results = await Promise.all(leagues.map((lid) => fetchLeague(lid)));
-  let totalFirst = results.reduce((s, arr) => s + arr.length, 0);
-  if (totalFirst === 0 && leagues.length > 0) {
-    await new Promise((r) => setTimeout(r, 800));
-    results = await Promise.all(leagues.map((lid) => fetchLeague(lid)));
-    totalFirst = results.reduce((s, arr) => s + arr.length, 0);
+  // Richieste in batch di 4 per ridurre rate limit (API Football può throttlare)
+  const BATCH_SIZE = 4;
+  const results: any[][] = [];
+  for (let i = 0; i < leagues.length; i += BATCH_SIZE) {
+    const batch = leagues.slice(i, i + BATCH_SIZE);
+    const batchResults = await Promise.all(batch.map((lid) => fetchLeague(lid)));
+    results.push(...batchResults);
+    if (i + BATCH_SIZE < leagues.length) {
+      await new Promise((r) => setTimeout(r, 250));
+    }
   }
-  if (totalFirst === 0 && leagues.includes(BR_LEAGUE_ID)) {
-    const nextSeason = today.getFullYear();
+
+  const nextSeason = today.getFullYear();
+  // Fallback per leghe che restituiscono 0: retry con stessa season, poi prova next season
+  for (let i = 0; i < leagues.length; i++) {
+    if (results[i].length > 0) continue;
+    const leagueId = leagues[i];
+    await new Promise((r) => setTimeout(r, 400));
+    const retry = await fetchLeague(leagueId, season);
+    if (retry.length > 0) {
+      results[i] = retry;
+      continue;
+    }
+    const next = await fetchLeague(leagueId, nextSeason);
+    if (next.length > 0) {
+      results[i] = next;
+      console.warn(`[API Football] league ${leagueId} vuota per season ${season}, usata season ${nextSeason}`);
+    }
+  }
+
+  if (results.reduce((s, arr) => s + arr.length, 0) === 0 && leagues.includes(BR_LEAGUE_ID)) {
     const brazilFixtures = await fetchLeague(BR_LEAGUE_ID, nextSeason);
     if (brazilFixtures.length > 0) {
       const idx = leagues.indexOf(BR_LEAGUE_ID);

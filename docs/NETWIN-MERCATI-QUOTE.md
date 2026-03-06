@@ -4,7 +4,7 @@ Riferimento per verificare e sistemare i mercati oltre all'1X2.
 
 ---
 
-## 1. **1X2 (h2h)** – Codice Lista 1, 3
+## 1. **1X2 (h2h)** – Codice Lista 3
 
 **Output:** `{ home, draw, away }`
 
@@ -78,7 +78,7 @@ Riferimento per verificare e sistemare i mercati oltre all'1X2.
 
 | Codice | Mercato        | Chiave output   |
 |--------|----------------|------------------|
-| 1, 3   | 1X2            | h2h              |
+| 3      | 1X2            | h2h              |
 | 7989   | Over/Under     | totals_25, totals_15 |
 | 8      | Handicap       | spreads          |
 | 18     | Gol/No Gol     | btts             |

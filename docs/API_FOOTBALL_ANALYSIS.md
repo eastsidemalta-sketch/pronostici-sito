@@ -104,6 +104,24 @@ Analisi completa di tutte le chiamate all'API API-Football (v3.football.api-spor
 
 ---
 
+## Strategia cache Home (lib/homePageCache.ts)
+
+Quando API Football non restituisce partite (rate limit, errore, leghe mancanti), la home mostrerebbe una pagina vuota. Per evitarlo usiamo una **cache a due livelli**:
+
+| Livello | Chiave Redis | TTL | Uso |
+|---------|--------------|-----|-----|
+| **Principale** | `home:data:{country}` | 90s | Dati freschi, usati per servire la pagina |
+| **Last known good** | `home:data:lastGood:{country}` | 6h | Fallback quando l'API restituisce vuoto |
+
+**Flusso:**
+1. Fetch fresco da API Football
+2. Se restituisce partite → aggiorna entrambe le cache, ritorna i dati
+3. Se restituisce vuoto → legge `lastGood`; se ha dati validi, li ritorna (e li scrive in cache principale per 90s)
+4. Se nessun fallback disponibile → ritorna vuoto
+
+**Invalidazione:** `invalidateHomeCache(country)` cancella entrambe le chiavi.
+
+
 ## Riepilogo numerico (stima per utente attivo)
 
 - **1 visita home**: ~34 chiamate
