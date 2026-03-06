@@ -731,7 +731,8 @@ export async function fetchDirectBookmakerQuotes(
       }
       if (text.includes("isLive") && /can be 0 or 1/i.test(text)) {
         if (netwinUseFull) {
-          console.warn(`[Netwin] FULL fallita: parametro isLive non valido. Raw (200 char):`, text.slice(0, 200));
+          const raw = text.slice(0, 300).replace(/\s+/g, " ");
+          console.warn(`[Netwin] FULL isLive error. Raw: ${raw}`);
         }
         return {};
       }
