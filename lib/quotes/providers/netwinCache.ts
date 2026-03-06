@@ -1,17 +1,17 @@
 /**
- * Cache per Netwin (IT-0002): FULL ogni 2.5h, DELTA per le altre richieste.
- * FULL = dati completi, DELTA = solo aggiornamenti da mergare sulla base FULL.
+ * Cache per Netwin (IT-0002): FULL ogni 3h, DELTA per le altre richieste.
+ * FULL = dati completi (bloccata: max 1 ogni 3 ore).
+ * DELTA = solo quote modificate, max 1 ogni 10 secondi.
  *
- * Regole API:
- * - Prima chiamata: sempre FULL (stabilisce connessione)
- * - Chiamate successive: DELTA, max 1 ogni 5 secondi
- * - FULL periodico: ogni 2-3 ore
+ * Regole API Netwin:
+ * - FULL: può essere fatta solo ogni 3 ore
+ * - DELTA: può essere fatta ogni 10 secondi, restituisce le quote modificate
  */
 import type { DirectMultiMarketResult } from "./directBookmakerFetcher";
 import type { DirectQuote } from "./directBookmakerFetcher";
 
-const FULL_FETCH_INTERVAL_MS = 2.5 * 60 * 60 * 1000; // 2.5 ore
-const DELTA_MIN_INTERVAL_MS = 5 * 1000; // 5 secondi tra una DELTA e l'altra
+const FULL_FETCH_INTERVAL_MS = 3 * 60 * 60 * 1000; // 3 ore (limite Netwin)
+const DELTA_MIN_INTERVAL_MS = 10 * 1000; // 10 secondi tra una DELTA e l'altra (limite Netwin)
 
 let cache: { data: DirectMultiMarketResult; timestamp: number } | null = null;
 let lastDeltaCallAt: number | null = null;
@@ -63,7 +63,7 @@ export function shouldUseFull(): boolean {
   return Date.now() - cache.timestamp > FULL_FETCH_INTERVAL_MS;
 }
 
-/** true se possiamo fare una chiamata DELTA (rispetta intervallo 5 sec) */
+/** true se possiamo fare una chiamata DELTA (rispetta intervallo 10 sec) */
 export function canDoDelta(): boolean {
   if (!lastDeltaCallAt) return true;
   return Date.now() - lastDeltaCallAt >= DELTA_MIN_INTERVAL_MS;
