@@ -169,30 +169,38 @@ function toArray<T>(v: T | T[] | null | undefined): T[] {
   return Array.isArray(v) ? v : [v];
 }
 
+/** Netwin/Exalogic: quote in formato intero (es. 115 = 1.15). Divisore 100. */
+const NETWIN_QUOTA_DIVISOR = 100;
+
 /**
  * Estrae la quota da QuotePersonalizzate se popolato, altrimenti da quota.
  * QuotePersonalizzate può essere: numero, stringa "default=X", o stringa numerica.
+ * Per Netwin/Exalogic: divide per NETWIN_QUOTA_DIVISOR (1150 → 11.5, 114 → 1.14).
  */
-function getQuotaFromEsito(esito: Record<string, unknown>): number {
+function getQuotaFromEsito(esito: Record<string, unknown>, divisor = 1): number {
   const quota = typeof esito.quota === "number" ? esito.quota : parseFloat(String(esito.quota ?? 0)) || 0;
   const qp = esito.QuotePersonalizzate;
-  if (qp == null || qp === "") return quota;
-  let quotaPers = 0;
-  if (typeof qp === "number" && qp > 0) {
-    quotaPers = qp;
-  } else if (typeof qp === "string" && qp.trim()) {
-    const str = qp.trim();
-    const numStr = str.startsWith("default=") ? str.replace("default=", "").trim() : str;
-    quotaPers = parseFloat(numStr) || 0;
+  let raw = quota;
+  if (qp != null && qp !== "") {
+    let quotaPers = 0;
+    if (typeof qp === "number" && qp > 0) {
+      quotaPers = qp;
+    } else if (typeof qp === "string" && qp.trim()) {
+      const str = qp.trim();
+      const numStr = str.startsWith("default=") ? str.replace("default=", "").trim() : str;
+      quotaPers = parseFloat(numStr) || 0;
+    }
+    if (quotaPers > 0) raw = quotaPers;
   }
-  return quotaPers > 0 ? quotaPers : quota;
+  return raw / divisor;
 }
 
 /**
  * Estrae quote 1X2 da Scommessa (Esito con descr "1","X","2" o cod 1,2,3).
  * Lista=1 tipicamente indica mercato 1X2.
+ * divisor: per Netwin/Exalogic usa 100 (quote in formato intero).
  */
-function extract1X2FromScommessa(scommessa: Record<string, unknown>): {
+function extract1X2FromScommessa(scommessa: Record<string, unknown>, divisor = 1): {
   odds1: number;
   oddsX: number;
   odds2: number;
@@ -202,7 +210,7 @@ function extract1X2FromScommessa(scommessa: Record<string, unknown>): {
   for (const e of esiti) {
     if (!e || typeof e !== "object") continue;
     const o = e as Record<string, unknown>;
-    const q = getQuotaFromEsito(o);
+    const q = getQuotaFromEsito(o, divisor);
     const descr = String(o.descr ?? "").trim().toUpperCase();
     const cod = typeof o.cod === "number" ? o.cod : parseInt(String(o.cod ?? 0), 10);
     if (descr === "1" || cod === 1) out.odds1 = q;
@@ -249,8 +257,9 @@ function getListaFromScommessa(o: Record<string, unknown>): number {
 
 /**
  * Converte Scommesse Exalogic/Netwin in formato stakes per extract*FromStakes.
+ * divisor: per Netwin usa 100 (quote in formato intero).
  */
-function scommesseToStakes(scommesse: unknown[]): Array<{ market_id?: number; market_name?: string; name?: string; factor?: number }> {
+function scommesseToStakes(scommesse: unknown[], divisor = 1): Array<{ market_id?: number; market_name?: string; name?: string; factor?: number }> {
   const stakes: StakeLike[] = [];
   for (const s of scommesse) {
     if (!s || typeof s !== "object") continue;
@@ -259,7 +268,7 @@ function scommesseToStakes(scommesse: unknown[]): Array<{ market_id?: number; ma
     const esiti = toArray(o.Esito ?? o.esito);
     const getQuota = (e: unknown) => {
       if (!e || typeof e !== "object") return 0;
-      return getQuotaFromEsito(e as Record<string, unknown>);
+      return getQuotaFromEsito(e as Record<string, unknown>, divisor);
     };
     const getDescr = (e: unknown) => {
       const r = e as Record<string, unknown>;
@@ -375,11 +384,11 @@ function processExalogicNode(
     }
     return;
   }
-  const { odds1, oddsX, odds2 } = extract1X2FromScommessa(s1x2);
+  const { odds1, oddsX, odds2 } = extract1X2FromScommessa(s1x2, NETWIN_QUOTA_DIVISOR);
   if (odds1 <= 0 && oddsX <= 0 && odds2 <= 0) return;
   const { home, away } = extractTeamsFromAvvenimento(node, parentManifestazione);
   if (!home || !away) return;
-  const stakes = scommesseToStakes(scommesse);
+  const stakes = scommesseToStakes(scommesse, NETWIN_QUOTA_DIVISOR);
   const ev: Record<string, unknown> = {
     homeTeam: home,
     awayTeam: away,
