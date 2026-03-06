@@ -156,9 +156,9 @@ export async function GET(req: Request) {
   const codiceSitoOverride = searchParams.get("codiceSito");
   /** systemCode override: usa ?systemCode=XXX o env NETWIN_SYSTEM_CODE_OVERRIDE per test (evita lock con produzione) */
   const systemCodeOverride = searchParams.get("systemCode") ?? process.env.NETWIN_SYSTEM_CODE_OVERRIDE;
-  /** isLive override: ?isLive=0 o ?isLive=1 (default 0). ?tryIslive=1 usa "islive" invece di "isLive" */
+  /** isLive override: ?isLive=0 o ?isLive=1. ?tryIslive=1 usa "islive", ?tryIslive=2 usa "is_live" */
   const isLiveOverride = searchParams.get("isLive");
-  const tryIsliveLowercase = searchParams.get("tryIslive") === "1";
+  const tryIslive = searchParams.get("tryIslive");
   /** FULL per debug. L'API può richiedere type=FULL (maiuscolo). Usa ?type=delta per test incrementali. */
   const typeParam = searchParams.get("type");
   const requestType = typeParam === "delta" ? "delta" : "FULL";
@@ -175,16 +175,16 @@ export async function GET(req: Request) {
   }
 
   const q = netwin.apiRequestConfig.queryParams as Record<string, string>;
+  const isLiveVal = isLiveOverride === "1" ? "1" : "0";
+  const isLiveKey = tryIslive === "2" ? "is_live" : tryIslive === "1" ? "islive" : "isLive";
   const params = new URLSearchParams();
+  // isLive per primo: alcune API lo richiedono in posizione specifica
+  params.set(isLiveKey, isLiveVal);
   for (const [k, v] of Object.entries(q)) {
-    if (k.toLowerCase() === "islive") continue; // gestito sotto
+    if (k.toLowerCase() === "islive" || k === "is_live") continue;
     if (v != null && String(v).trim() !== "") params.set(k, String(v).trim());
   }
   params.set("type", requestType);
-  const isLiveVal = isLiveOverride === "1" ? "1" : "0";
-  params.delete("isLive");
-  params.delete("islive");
-  params.set(tryIsliveLowercase ? "islive" : "isLive", isLiveVal);
   if (codiceSitoOverride) params.set("codiceSito", codiceSitoOverride);
   if (systemCodeOverride) params.set("system_code", systemCodeOverride);
   const url = `${netwin.apiEndpoint}?${params}`;
@@ -193,6 +193,9 @@ export async function GET(req: Request) {
     const headers: Record<string, string> = { Accept: "application/json, application/xml" };
     if (netwin.apiAuthType === "header" && netwin.apiKey) {
       headers["X-Api-Key"] = netwin.apiKey;
+    }
+    if (searchParams.get("tryHeader") === "1") {
+      headers["X-IsLive"] = isLiveVal;
     }
 
     const res = await fetch(url, { headers });
@@ -216,7 +219,7 @@ export async function GET(req: Request) {
       return NextResponse.json({
         ok: false,
         error: "Netwin: parametro isLive non valido",
-        hint: "Prova ?tryIslive=1 per usare 'islive' invece di 'isLive', oppure contatta Netwin con requestUrl.",
+        hint: "Prova ?tryIslive=2 (is_live) o ?tryHeader=1 (header X-IsLive). Contatta Netwin con requestUrl.",
         rawPreview: text.slice(0, 500),
         requestUrl: url.replace(/system_code=[^&]+/, "system_code=***").replace(/apiKey=[^&]+/, "apiKey=***"),
       });
