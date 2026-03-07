@@ -1103,6 +1103,73 @@ export async function fetchDirectBookmakerQuotes(
     }
   }
 
+  /** Netwin: fetch quote live (isLive=1) e merge per partite in corso */
+  if (isNetwin && !netwinDisabled && (result.h2h?.length ?? 0) >= 0) {
+    try {
+      const liveQueryParams = { ...queryParams, isLive: "1" };
+      const liveUrl = buildUrl(
+        endpoint,
+        apiKey,
+        bm.apiSecret ?? undefined,
+        authType,
+        liveQueryParams,
+        ["isLive", "system_code", "type", "codiceSito", "v_sport", "v_scommesse"]
+      );
+      const liveHeaders = { ...headers, "X-IsLive": "1" };
+      const liveRes = await fetch(liveUrl, { method, headers: liveHeaders, body, cache: "no-store" });
+      if (liveRes.ok) {
+        const liveText = await liveRes.text();
+        if (!liveText.includes("hash_lock") && !liveText.includes("isLive") && !/can be 0 or 1/i.test(liveText)) {
+          const liveData = parseApiResponse(liveText);
+          const liveEvents = useExalogic
+            ? flattenExalogicEvents(liveData)
+            : getEventsArray(liveData, eventsPath);
+          const liveKeys = new Set<string>();
+          for (const ev of liveEvents) {
+            if (ev == null || typeof ev !== "object") continue;
+            const home = getString(ev, homeTeamPath);
+            const away = getString(ev, awayTeamPath);
+            if (!home || !away) continue;
+            const key = `${home}|${away}`;
+            liveKeys.add(key);
+            const manifestazione = useExalogic ? getString(ev, "manifestazione") : undefined;
+            const baseQuote = {
+              homeTeam: home,
+              awayTeam: away,
+              bookmakerKey: bm.id,
+              bookmaker: getBookmakerDisplayName(bm),
+              ...(manifestazione && { manifestazione }),
+            };
+            if (stakesConfig) {
+              const stakesVal = getByPath(ev, stakesConfig.stakesPath ?? "stakes");
+              const stakesArr = Array.isArray(stakesVal) ? stakesVal : [];
+              const ext = extract1X2FromStakes(stakesArr, home, away, stakesConfig);
+              if (ext.odds1 > 0 || ext.oddsX > 0 || ext.odds2 > 0) {
+                const liveQuote = { ...baseQuote, outcomes: { home: ext.odds1, draw: ext.oddsX, away: ext.odds2 } };
+                result.h2h = result.h2h!.filter((q) => `${q.homeTeam}|${q.awayTeam}` !== key);
+                result.h2h!.push(liveQuote);
+              }
+            } else {
+              const o1 = getNumber(ev, odds1Path);
+              const oX = getNumber(ev, oddsXPath);
+              const o2 = getNumber(ev, odds2Path);
+              if (o1 > 0 || oX > 0 || o2 > 0) {
+                const liveQuote = { ...baseQuote, outcomes: { home: o1, draw: oX, away: o2 } };
+                result.h2h = result.h2h!.filter((q) => `${q.homeTeam}|${q.awayTeam}` !== key);
+                result.h2h!.push(liveQuote);
+              }
+            }
+          }
+          if (liveKeys.size > 0) {
+            logApiCall("Netwin", "LIVE", true, { count: liveKeys.size });
+          }
+        }
+      }
+    } catch {
+      /* ignora errori fetch live */
+    }
+  }
+
   if (isNetwin) {
     if (netwinUseFull) {
       const h2hCount = result.h2h?.length ?? 0;
