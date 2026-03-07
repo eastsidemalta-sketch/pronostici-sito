@@ -30,3 +30,7 @@
    `GET /api/debug-quotes-match?homeTeam=Inter&awayTeam=Juventus&forceFull=1`
 2. **hash_lock** – Test e prod usano lo stesso system_code: una FULL blocca l’altra. **Soluzione attuale:** produzione ha `NETWIN_DISABLE_FULL=1` (nessuna chiamata Netwin, solo cache; solo test fa FULL/DELTA). Alternativa: chiedi a Netwin un system_code separato per test.
 3. **Bookmakers corrotti** – Controlla `data/bookmakers.json` e `.next/standalone/data/bookmakers.json` dopo il deploy.
+
+## Link utili
+
+- **Report chiamate API (test):** https://test.playsignal.io/api/debug-api-calls?format=html&hours=168

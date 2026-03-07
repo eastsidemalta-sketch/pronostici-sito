@@ -23,9 +23,18 @@ type ReportRow = {
 
 function buildReport(base: string): ReportRow[] {
   const netwin = getCacheDebugInfo();
-  const netwinStato = netwin.hasCache
-    ? `${netwin.h2hCount} partite, prossima FULL: ${netwin.nextFullAllowedIso?.slice(0, 16) ?? "?"}`
-    : "Cache vuota (prossima richiesta = FULL)";
+  const netwinDisabled = process.env.NETWIN_DISABLE_FULL === "1" || process.env.NETWIN_DISABLE_FULL === "true";
+  let netwinStato: string;
+  if (netwinDisabled) {
+    netwinStato = netwin.hasCache
+      ? `Sospesa (solo cache: ${netwin.h2hCount} partite)`
+      : "Sospesa (cache vuota, nessuna chiamata)";
+  } else if (netwin.hasCache) {
+    const nextAt = netwin.nextFullAllowedIso?.slice(0, 16) ?? "?";
+    netwinStato = `${netwin.h2hCount} partite, prossima FULL: ${nextAt}`;
+  } else {
+    netwinStato = "Cache vuota (prossima richiesta = FULL, immediata)";
+  }
 
   return [
     {
