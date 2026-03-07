@@ -1,8 +1,158 @@
 {
   "BR": {
     "allSportsConfig": {
-      "leagueIds": [71, 72, 135, 39, 78],
-      "sportKeys": ["calcio"]
+      "leagueIds": [
+        71,
+        72,
+        135,
+        39,
+        78
+      ],
+      "sportKeys": [
+        "calcio"
+      ]
+    }
+  },
+  "IT": {
+    "menuItems": [
+      {
+        "key": "calcio",
+        "label": "Calcio",
+        "href": "/pronostici-quote/calcio",
+        "subItems": [
+          {
+            "id": 2,
+            "name": "Champions League",
+            "type": "cup"
+          },
+          {
+            "id": 3,
+            "name": "Europa League",
+            "type": "cup"
+          },
+          {
+            "id": 4,
+            "name": "Conference League",
+            "type": "cup"
+          },
+          {
+            "id": 39,
+            "name": "Premier League",
+            "type": "league"
+          },
+          {
+            "id": 135,
+            "name": "Serie A",
+            "type": "league"
+          },
+          {
+            "id": 136,
+            "name": "Serie B",
+            "type": "league"
+          },
+          {
+            "id": 140,
+            "name": "La Liga",
+            "type": "league"
+          },
+          {
+            "id": 78,
+            "name": "Bundesliga",
+            "type": "league"
+          },
+          {
+            "id": 61,
+            "name": "Ligue 1",
+            "type": "league"
+          },
+          {
+            "id": 203,
+            "name": "Super Lig",
+            "type": "league"
+          },
+          {
+            "id": 94,
+            "name": "Liga Portugal",
+            "type": "league"
+          },
+          {
+            "id": 138,
+            "name": "Serie C - Girone A",
+            "type": "league"
+          },
+          {
+            "id": 942,
+            "name": "Serie C - Girone B",
+            "type": "league"
+          },
+          {
+            "id": 943,
+            "name": "Serie C - Girone C",
+            "type": "league"
+          },
+          {
+            "id": 137,
+            "name": "Coppa Italia",
+            "type": "cup"
+          },
+          {
+            "id": 142,
+            "name": "FA Cup",
+            "type": "cup"
+          },
+          {
+            "id": 143,
+            "name": "Copa del Rey",
+            "type": "cup"
+          },
+          {
+            "id": 148,
+            "name": "DFB-Pokal",
+            "type": "cup"
+          },
+          {
+            "id": 66,
+            "name": "Coupe de France",
+            "type": "cup"
+          },
+          {
+            "id": 71,
+            "name": "Brasileirão Serie A",
+            "type": "league"
+          },
+          {
+            "id": 72,
+            "name": "Brasileirão Serie B",
+            "type": "league"
+          }
+        ]
+      }
+    ],
+    "allSportsConfig": {
+      "sportKeys": [
+        "calcio",
+        "tennis",
+        "basket",
+        "rugby"
+      ],
+      "leagueIds": [
+        2,
+        3,
+        4,
+        39,
+        61,
+        66,
+        71,
+        72,
+        78,
+        94,
+        135,
+        136,
+        137,
+        140,
+        142,
+        143
+      ]
     }
   }
 }

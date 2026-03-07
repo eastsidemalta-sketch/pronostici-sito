@@ -1,291 +1,2559 @@
 {
-  "lastRun": "2026-03-06T21:42:12.100Z",
+  "lastRun": "2026-03-07T13:26:14.829Z",
   "summary": {
-    "totalFixtures": 84,
-    "totalMatches": 3,
-    "totalUnmatched": 9,
+    "totalFixtures": 144,
+    "totalMatches": 86,
+    "totalUnmatched": 58,
     "byBookmaker": {
       "betboom": {
-        "matched": 3,
-        "unmatched": 9
-      },
-      "netwinit": {
         "matched": 0,
         "unmatched": 0
+      },
+      "netwinit": {
+        "matched": 86,
+        "unmatched": 58
       }
     }
   },
   "matches": [
     {
-      "fixtureId": 1388530,
-      "leagueId": 78,
-      "leagueName": "Bundesliga",
-      "apiHome": "FC St. Pauli",
-      "apiAway": "Eintracht Frankfurt",
-      "bookmakerKey": "betboom",
-      "bookmakerName": "Betboom",
-      "bmHome": "St. Pauli",
-      "bmAway": "Eintracht Frankfurt",
+      "fixtureId": 1378136,
+      "leagueId": 135,
+      "leagueName": "Serie A",
+      "apiHome": "Cagliari",
+      "apiAway": "Como",
+      "bookmakerKey": "netwinit",
+      "bookmakerName": "Netwin",
+      "bmHome": "Cagliari",
+      "bmAway": "Como",
       "odds": {
-        "home": 2.75,
-        "draw": 3.3,
+        "home": 6.5,
+        "draw": 2.3,
+        "away": 2.04
+      },
+      "matched": true
+    },
+    {
+      "fixtureId": 1378136,
+      "leagueId": 135,
+      "leagueName": "Serie A",
+      "apiHome": "Cagliari",
+      "apiAway": "Como",
+      "bookmakerKey": "netwinit",
+      "bookmakerName": "Netwin",
+      "bmHome": "Cagliari",
+      "bmAway": "Como",
+      "odds": {
+        "home": 6.5,
+        "draw": 2.3,
+        "away": 2.04
+      },
+      "matched": true
+    },
+    {
+      "fixtureId": 1378134,
+      "leagueId": 135,
+      "leagueName": "Serie A",
+      "apiHome": "Atalanta",
+      "apiAway": "Udinese",
+      "bookmakerKey": "netwinit",
+      "bookmakerName": "Netwin",
+      "bmHome": "Atalanta",
+      "bmAway": "Udinese",
+      "odds": {
+        "home": 2.25,
+        "draw": 2.24,
+        "away": 5.3
+      },
+      "matched": true
+    },
+    {
+      "fixtureId": 1378134,
+      "leagueId": 135,
+      "leagueName": "Serie A",
+      "apiHome": "Atalanta",
+      "apiAway": "Udinese",
+      "bookmakerKey": "netwinit",
+      "bookmakerName": "Netwin",
+      "bmHome": "Atalanta",
+      "bmAway": "Udinese",
+      "odds": {
+        "home": 2.25,
+        "draw": 2.24,
+        "away": 5.3
+      },
+      "matched": true
+    },
+    {
+      "fixtureId": 1378139,
+      "leagueId": 135,
+      "leagueName": "Serie A",
+      "apiHome": "Juventus",
+      "apiAway": "Pisa",
+      "bookmakerKey": "netwinit",
+      "bookmakerName": "Netwin",
+      "bmHome": "Juventus",
+      "bmAway": "Pisa",
+      "odds": {
+        "home": 1.57,
+        "draw": 2.85,
+        "away": 11
+      },
+      "matched": true
+    },
+    {
+      "fixtureId": 1378139,
+      "leagueId": 135,
+      "leagueName": "Serie A",
+      "apiHome": "Juventus",
+      "apiAway": "Pisa",
+      "bookmakerKey": "netwinit",
+      "bookmakerName": "Netwin",
+      "bmHome": "Juventus",
+      "bmAway": "Pisa",
+      "odds": {
+        "home": 1.57,
+        "draw": 2.85,
+        "away": 11
+      },
+      "matched": true
+    },
+    {
+      "fixtureId": 1378141,
+      "leagueId": 135,
+      "leagueName": "Serie A",
+      "apiHome": "Lecce",
+      "apiAway": "Cremonese",
+      "bookmakerKey": "netwinit",
+      "bookmakerName": "Netwin",
+      "bmHome": "Lecce",
+      "bmAway": "Cremonese",
+      "odds": {
+        "home": 2.87,
+        "draw": 1.92,
+        "away": 4.75
+      },
+      "matched": true
+    },
+    {
+      "fixtureId": 1378141,
+      "leagueId": 135,
+      "leagueName": "Serie A",
+      "apiHome": "Lecce",
+      "apiAway": "Cremonese",
+      "bookmakerKey": "netwinit",
+      "bookmakerName": "Netwin",
+      "bmHome": "Lecce",
+      "bmAway": "Cremonese",
+      "odds": {
+        "home": 2.87,
+        "draw": 1.92,
+        "away": 4.75
+      },
+      "matched": true
+    },
+    {
+      "fixtureId": 1378135,
+      "leagueId": 135,
+      "leagueName": "Serie A",
+      "apiHome": "Bologna",
+      "apiAway": "Hellas Verona",
+      "bookmakerKey": "netwinit",
+      "bookmakerName": "Netwin",
+      "bmHome": "Bologna",
+      "bmAway": "Verona",
+      "odds": {
+        "home": 2.08,
+        "draw": 2.26,
+        "away": 6.25
+      },
+      "matched": true
+    },
+    {
+      "fixtureId": 1378135,
+      "leagueId": 135,
+      "leagueName": "Serie A",
+      "apiHome": "Bologna",
+      "apiAway": "Hellas Verona",
+      "bookmakerKey": "netwinit",
+      "bookmakerName": "Netwin",
+      "bmHome": "Bologna",
+      "bmAway": "Verona",
+      "odds": {
+        "home": 2.08,
+        "draw": 2.26,
+        "away": 6.25
+      },
+      "matched": true
+    },
+    {
+      "fixtureId": 1378137,
+      "leagueId": 135,
+      "leagueName": "Serie A",
+      "apiHome": "Fiorentina",
+      "apiAway": "Parma",
+      "bookmakerKey": "netwinit",
+      "bookmakerName": "Netwin",
+      "bmHome": "Fiorentina",
+      "bmAway": "Parma",
+      "odds": {
+        "home": 2.2,
+        "draw": 2.28,
+        "away": 5.25
+      },
+      "matched": true
+    },
+    {
+      "fixtureId": 1378137,
+      "leagueId": 135,
+      "leagueName": "Serie A",
+      "apiHome": "Fiorentina",
+      "apiAway": "Parma",
+      "bookmakerKey": "netwinit",
+      "bookmakerName": "Netwin",
+      "bmHome": "Fiorentina",
+      "bmAway": "Parma",
+      "odds": {
+        "home": 2.2,
+        "draw": 2.28,
+        "away": 5.25
+      },
+      "matched": true
+    },
+    {
+      "fixtureId": 1378138,
+      "leagueId": 135,
+      "leagueName": "Serie A",
+      "apiHome": "Genoa",
+      "apiAway": "AS Roma",
+      "bookmakerKey": "netwinit",
+      "bookmakerName": "Netwin",
+      "bmHome": "Genoa",
+      "bmAway": "Roma",
+      "odds": {
+        "home": 4.9,
+        "draw": 2.07,
         "away": 2.55
       },
       "matched": true
     },
     {
-      "fixtureId": 1388531,
-      "leagueId": 78,
-      "leagueName": "Bundesliga",
-      "apiHome": "Union Berlin",
-      "apiAway": "Werder Bremen",
-      "bookmakerKey": "betboom",
-      "bookmakerName": "Betboom",
-      "bmHome": "Union Berlin",
-      "bmAway": "Werder Bremen",
+      "fixtureId": 1378138,
+      "leagueId": 135,
+      "leagueName": "Serie A",
+      "apiHome": "Genoa",
+      "apiAway": "AS Roma",
+      "bookmakerKey": "netwinit",
+      "bookmakerName": "Netwin",
+      "bmHome": "Genoa",
+      "bmAway": "Roma",
       "odds": {
-        "home": 2.27,
-        "draw": 3.3,
-        "away": 3.15
+        "home": 4.9,
+        "draw": 2.07,
+        "away": 2.55
       },
       "matched": true
     },
     {
-      "fixtureId": 1388534,
-      "leagueId": 78,
-      "leagueName": "Bundesliga",
-      "apiHome": "Borussia Mönchengladbach",
-      "apiAway": "FC St. Pauli",
-      "bookmakerKey": "betboom",
-      "bookmakerName": "Betboom",
-      "bmHome": "Borussia Monchengladbach",
-      "bmAway": "St. Pauli",
+      "fixtureId": 1378142,
+      "leagueId": 135,
+      "leagueName": "Serie A",
+      "apiHome": "AC Milan",
+      "apiAway": "Inter",
+      "bookmakerKey": "netwinit",
+      "bookmakerName": "Netwin",
+      "bmHome": "Milan",
+      "bmAway": "Inter",
       "odds": {
-        "home": 1.94,
-        "draw": 3.35,
-        "away": 3.9
+        "home": 3.9,
+        "draw": 2.17,
+        "away": 2.75
+      },
+      "matched": true
+    },
+    {
+      "fixtureId": 1378142,
+      "leagueId": 135,
+      "leagueName": "Serie A",
+      "apiHome": "AC Milan",
+      "apiAway": "Inter",
+      "bookmakerKey": "netwinit",
+      "bookmakerName": "Netwin",
+      "bmHome": "Milan",
+      "bmAway": "Inter",
+      "odds": {
+        "home": 3.9,
+        "draw": 2.17,
+        "away": 2.75
+      },
+      "matched": true
+    },
+    {
+      "fixtureId": 1378140,
+      "leagueId": 135,
+      "leagueName": "Serie A",
+      "apiHome": "Lazio",
+      "apiAway": "Sassuolo",
+      "bookmakerKey": "netwinit",
+      "bookmakerName": "Netwin",
+      "bmHome": "Lazio",
+      "bmAway": "Sassuolo",
+      "odds": {
+        "home": 2.85,
+        "draw": 2.06,
+        "away": 4.15
+      },
+      "matched": true
+    },
+    {
+      "fixtureId": 1378140,
+      "leagueId": 135,
+      "leagueName": "Serie A",
+      "apiHome": "Lazio",
+      "apiAway": "Sassuolo",
+      "bookmakerKey": "netwinit",
+      "bookmakerName": "Netwin",
+      "bmHome": "Lazio",
+      "bmAway": "Sassuolo",
+      "odds": {
+        "home": 2.85,
+        "draw": 2.06,
+        "away": 4.15
+      },
+      "matched": true
+    },
+    {
+      "fixtureId": 1419873,
+      "leagueId": 136,
+      "leagueName": "Serie B",
+      "apiHome": "Spezia",
+      "apiAway": "Monza",
+      "bookmakerKey": "netwinit",
+      "bookmakerName": "Netwin",
+      "bmHome": "Spezia",
+      "bmAway": "Monza",
+      "odds": {
+        "home": 4.25,
+        "draw": 2.12,
+        "away": 2.67
+      },
+      "matched": true
+    },
+    {
+      "fixtureId": 1419873,
+      "leagueId": 136,
+      "leagueName": "Serie B",
+      "apiHome": "Spezia",
+      "apiAway": "Monza",
+      "bookmakerKey": "netwinit",
+      "bookmakerName": "Netwin",
+      "bmHome": "Spezia",
+      "bmAway": "Monza",
+      "odds": {
+        "home": 4.25,
+        "draw": 2.12,
+        "away": 2.67
+      },
+      "matched": true
+    },
+    {
+      "fixtureId": 1419875,
+      "leagueId": 136,
+      "leagueName": "Serie B",
+      "apiHome": "Avellino",
+      "apiAway": "Padova",
+      "bookmakerKey": "netwinit",
+      "bookmakerName": "Netwin",
+      "bmHome": "Avellino",
+      "bmAway": "Padova",
+      "odds": {
+        "home": 2.85,
+        "draw": 2.05,
+        "away": 4.15
+      },
+      "matched": true
+    },
+    {
+      "fixtureId": 1419875,
+      "leagueId": 136,
+      "leagueName": "Serie B",
+      "apiHome": "Avellino",
+      "apiAway": "Padova",
+      "bookmakerKey": "netwinit",
+      "bookmakerName": "Netwin",
+      "bmHome": "Avellino",
+      "bmAway": "Padova",
+      "odds": {
+        "home": 2.85,
+        "draw": 2.05,
+        "away": 4.15
+      },
+      "matched": true
+    },
+    {
+      "fixtureId": 1419878,
+      "leagueId": 136,
+      "leagueName": "Serie B",
+      "apiHome": "Sudtirol",
+      "apiAway": "Virtus Entella",
+      "bookmakerKey": "netwinit",
+      "bookmakerName": "Netwin",
+      "bmHome": "Sudtirol",
+      "bmAway": "Entella",
+      "odds": {
+        "home": 2.35,
+        "draw": 2.1,
+        "away": 5.6
+      },
+      "matched": true
+    },
+    {
+      "fixtureId": 1419878,
+      "leagueId": 136,
+      "leagueName": "Serie B",
+      "apiHome": "Sudtirol",
+      "apiAway": "Virtus Entella",
+      "bookmakerKey": "netwinit",
+      "bookmakerName": "Netwin",
+      "bmHome": "Sudtirol",
+      "bmAway": "Entella",
+      "odds": {
+        "home": 2.35,
+        "draw": 2.1,
+        "away": 5.6
+      },
+      "matched": true
+    },
+    {
+      "fixtureId": 1419877,
+      "leagueId": 136,
+      "leagueName": "Serie B",
+      "apiHome": "Venezia",
+      "apiAway": "Reggiana",
+      "bookmakerKey": "netwinit",
+      "bookmakerName": "Netwin",
+      "bmHome": "Venezia",
+      "bmAway": "Reggiana",
+      "odds": {
+        "home": 1.68,
+        "draw": 2.75,
+        "away": 8.25
+      },
+      "matched": true
+    },
+    {
+      "fixtureId": 1419877,
+      "leagueId": 136,
+      "leagueName": "Serie B",
+      "apiHome": "Venezia",
+      "apiAway": "Reggiana",
+      "bookmakerKey": "netwinit",
+      "bookmakerName": "Netwin",
+      "bmHome": "Venezia",
+      "bmAway": "Reggiana",
+      "odds": {
+        "home": 1.68,
+        "draw": 2.75,
+        "away": 8.25
+      },
+      "matched": true
+    },
+    {
+      "fixtureId": 1419872,
+      "leagueId": 136,
+      "leagueName": "Serie B",
+      "apiHome": "Modena",
+      "apiAway": "Cesena",
+      "bookmakerKey": "netwinit",
+      "bookmakerName": "Netwin",
+      "bmHome": "Modena",
+      "bmAway": "Cesena",
+      "odds": {
+        "home": 2.43,
+        "draw": 2.22,
+        "away": 4.6
+      },
+      "matched": true
+    },
+    {
+      "fixtureId": 1419872,
+      "leagueId": 136,
+      "leagueName": "Serie B",
+      "apiHome": "Modena",
+      "apiAway": "Cesena",
+      "bookmakerKey": "netwinit",
+      "bookmakerName": "Netwin",
+      "bmHome": "Modena",
+      "bmAway": "Cesena",
+      "odds": {
+        "home": 2.43,
+        "draw": 2.22,
+        "away": 4.6
+      },
+      "matched": true
+    },
+    {
+      "fixtureId": 1419871,
+      "leagueId": 136,
+      "leagueName": "Serie B",
+      "apiHome": "Frosinone",
+      "apiAway": "Sampdoria",
+      "bookmakerKey": "netwinit",
+      "bookmakerName": "Netwin",
+      "bmHome": "Frosinone",
+      "bmAway": "Sampdoria",
+      "odds": {
+        "home": 2.45,
+        "draw": 2.23,
+        "away": 4.5
+      },
+      "matched": true
+    },
+    {
+      "fixtureId": 1419871,
+      "leagueId": 136,
+      "leagueName": "Serie B",
+      "apiHome": "Frosinone",
+      "apiAway": "Sampdoria",
+      "bookmakerKey": "netwinit",
+      "bookmakerName": "Netwin",
+      "bmHome": "Frosinone",
+      "bmAway": "Sampdoria",
+      "odds": {
+        "home": 2.45,
+        "draw": 2.23,
+        "away": 4.5
+      },
+      "matched": true
+    },
+    {
+      "fixtureId": 1419876,
+      "leagueId": 136,
+      "leagueName": "Serie B",
+      "apiHome": "Catanzaro",
+      "apiAway": "Empoli",
+      "bookmakerKey": "netwinit",
+      "bookmakerName": "Netwin",
+      "bmHome": "Catanzaro",
+      "bmAway": "Empoli",
+      "odds": {
+        "home": 2.82,
+        "draw": 2.16,
+        "away": 3.8
+      },
+      "matched": true
+    },
+    {
+      "fixtureId": 1419876,
+      "leagueId": 136,
+      "leagueName": "Serie B",
+      "apiHome": "Catanzaro",
+      "apiAway": "Empoli",
+      "bookmakerKey": "netwinit",
+      "bookmakerName": "Netwin",
+      "bmHome": "Catanzaro",
+      "bmAway": "Empoli",
+      "odds": {
+        "home": 2.82,
+        "draw": 2.16,
+        "away": 3.8
+      },
+      "matched": true
+    },
+    {
+      "fixtureId": 1419880,
+      "leagueId": 136,
+      "leagueName": "Serie B",
+      "apiHome": "Mantova",
+      "apiAway": "Juve Stabia",
+      "bookmakerKey": "netwinit",
+      "bookmakerName": "Netwin",
+      "bmHome": "Mantova",
+      "bmAway": "Juve Stabia",
+      "odds": {
+        "home": 3.2,
+        "draw": 2.06,
+        "away": 3.55
+      },
+      "matched": true
+    },
+    {
+      "fixtureId": 1419880,
+      "leagueId": 136,
+      "leagueName": "Serie B",
+      "apiHome": "Mantova",
+      "apiAway": "Juve Stabia",
+      "bookmakerKey": "netwinit",
+      "bookmakerName": "Netwin",
+      "bmHome": "Mantova",
+      "bmAway": "Juve Stabia",
+      "odds": {
+        "home": 3.2,
+        "draw": 2.06,
+        "away": 3.55
+      },
+      "matched": true
+    },
+    {
+      "fixtureId": 1419874,
+      "leagueId": 136,
+      "leagueName": "Serie B",
+      "apiHome": "Carrarese",
+      "apiAway": "Palermo",
+      "bookmakerKey": "netwinit",
+      "bookmakerName": "Netwin",
+      "bmHome": "Carrarese",
+      "bmAway": "Palermo",
+      "odds": {
+        "home": 3.8,
+        "draw": 2.14,
+        "away": 2.85
+      },
+      "matched": true
+    },
+    {
+      "fixtureId": 1419874,
+      "leagueId": 136,
+      "leagueName": "Serie B",
+      "apiHome": "Carrarese",
+      "apiAway": "Palermo",
+      "bookmakerKey": "netwinit",
+      "bookmakerName": "Netwin",
+      "bmHome": "Carrarese",
+      "bmAway": "Palermo",
+      "odds": {
+        "home": 3.8,
+        "draw": 2.14,
+        "away": 2.85
+      },
+      "matched": true
+    },
+    {
+      "fixtureId": 1419879,
+      "leagueId": 136,
+      "leagueName": "Serie B",
+      "apiHome": "Pescara",
+      "apiAway": "Bari",
+      "bookmakerKey": "netwinit",
+      "bookmakerName": "Netwin",
+      "bmHome": "Pescara",
+      "bmAway": "Bari",
+      "odds": {
+        "home": 2.57,
+        "draw": 2.23,
+        "away": 4.1
+      },
+      "matched": true
+    },
+    {
+      "fixtureId": 1419879,
+      "leagueId": 136,
+      "leagueName": "Serie B",
+      "apiHome": "Pescara",
+      "apiAway": "Bari",
+      "bookmakerKey": "netwinit",
+      "bookmakerName": "Netwin",
+      "bmHome": "Pescara",
+      "bmAway": "Bari",
+      "odds": {
+        "home": 2.57,
+        "draw": 2.23,
+        "away": 4.1
+      },
+      "matched": true
+    },
+    {
+      "fixtureId": 1387919,
+      "leagueId": 61,
+      "leagueName": "Ligue 1",
+      "apiHome": "Nantes",
+      "apiAway": "Angers",
+      "bookmakerKey": "netwinit",
+      "bookmakerName": "Netwin",
+      "bmHome": "Nantes",
+      "bmAway": "Angers",
+      "odds": {
+        "home": 3,
+        "draw": 1.93,
+        "away": 4.4
+      },
+      "matched": true
+    },
+    {
+      "fixtureId": 1387919,
+      "leagueId": 61,
+      "leagueName": "Ligue 1",
+      "apiHome": "Nantes",
+      "apiAway": "Angers",
+      "bookmakerKey": "netwinit",
+      "bookmakerName": "Netwin",
+      "bmHome": "Nantes",
+      "bmAway": "Angers",
+      "odds": {
+        "home": 3,
+        "draw": 1.93,
+        "away": 4.4
+      },
+      "matched": true
+    },
+    {
+      "fixtureId": 1387916,
+      "leagueId": 61,
+      "leagueName": "Ligue 1",
+      "apiHome": "Lens",
+      "apiAway": "Metz",
+      "bookmakerKey": "netwinit",
+      "bookmakerName": "Netwin",
+      "bmHome": "Lens",
+      "bmAway": "Metz",
+      "odds": {
+        "home": 1.65,
+        "draw": 2.87,
+        "away": 8
+      },
+      "matched": true
+    },
+    {
+      "fixtureId": 1387916,
+      "leagueId": 61,
+      "leagueName": "Ligue 1",
+      "apiHome": "Lens",
+      "apiAway": "Metz",
+      "bookmakerKey": "netwinit",
+      "bookmakerName": "Netwin",
+      "bmHome": "Lens",
+      "bmAway": "Metz",
+      "odds": {
+        "home": 1.65,
+        "draw": 2.87,
+        "away": 8
+      },
+      "matched": true
+    },
+    {
+      "fixtureId": 1387915,
+      "leagueId": 61,
+      "leagueName": "Ligue 1",
+      "apiHome": "Stade Brestois 29",
+      "apiAway": "Le Havre",
+      "bookmakerKey": "netwinit",
+      "bookmakerName": "Netwin",
+      "bmHome": "Brest",
+      "bmAway": "Le Havre",
+      "odds": {
+        "home": 2.5,
+        "draw": 2.16,
+        "away": 4.6
+      },
+      "matched": true
+    },
+    {
+      "fixtureId": 1387915,
+      "leagueId": 61,
+      "leagueName": "Ligue 1",
+      "apiHome": "Stade Brestois 29",
+      "apiAway": "Le Havre",
+      "bookmakerKey": "netwinit",
+      "bookmakerName": "Netwin",
+      "bmHome": "Brest",
+      "bmAway": "Le Havre",
+      "odds": {
+        "home": 2.5,
+        "draw": 2.16,
+        "away": 4.6
+      },
+      "matched": true
+    },
+    {
+      "fixtureId": 1528321,
+      "leagueId": 2,
+      "leagueName": "UEFA Champions League",
+      "apiHome": "Galatasaray",
+      "apiAway": "Liverpool",
+      "bookmakerKey": "netwinit",
+      "bookmakerName": "Netwin",
+      "bmHome": "Galatasaray",
+      "bmAway": "Liverpool",
+      "odds": {
+        "home": 4.25,
+        "draw": 2.48,
+        "away": 2.26
+      },
+      "matched": true
+    },
+    {
+      "fixtureId": 1528321,
+      "leagueId": 2,
+      "leagueName": "UEFA Champions League",
+      "apiHome": "Galatasaray",
+      "apiAway": "Liverpool",
+      "bookmakerKey": "netwinit",
+      "bookmakerName": "Netwin",
+      "bmHome": "Galatasaray",
+      "bmAway": "Liverpool",
+      "odds": {
+        "home": 4.25,
+        "draw": 2.48,
+        "away": 2.26
+      },
+      "matched": true
+    },
+    {
+      "fixtureId": 1528324,
+      "leagueId": 2,
+      "leagueName": "UEFA Champions League",
+      "apiHome": "Atalanta",
+      "apiAway": "Bayern München",
+      "bookmakerKey": "netwinit",
+      "bookmakerName": "Netwin",
+      "bmHome": "Atalanta",
+      "bmAway": "Bayern Monaco",
+      "odds": {
+        "home": 4.6,
+        "draw": 2.62,
+        "away": 2.08
+      },
+      "matched": true
+    },
+    {
+      "fixtureId": 1528324,
+      "leagueId": 2,
+      "leagueName": "UEFA Champions League",
+      "apiHome": "Atalanta",
+      "apiAway": "Bayern München",
+      "bookmakerKey": "netwinit",
+      "bookmakerName": "Netwin",
+      "bmHome": "Atalanta",
+      "bmAway": "Bayern Monaco",
+      "odds": {
+        "home": 4.6,
+        "draw": 2.62,
+        "away": 2.08
+      },
+      "matched": true
+    },
+    {
+      "fixtureId": 1528323,
+      "leagueId": 2,
+      "leagueName": "UEFA Champions League",
+      "apiHome": "Atletico Madrid",
+      "apiAway": "Tottenham",
+      "bookmakerKey": "netwinit",
+      "bookmakerName": "Netwin",
+      "bmHome": "Atletico Madrid",
+      "bmAway": "Tottenham",
+      "odds": {
+        "home": 2.03,
+        "draw": 2.45,
+        "away": 5.6
+      },
+      "matched": true
+    },
+    {
+      "fixtureId": 1528323,
+      "leagueId": 2,
+      "leagueName": "UEFA Champions League",
+      "apiHome": "Atletico Madrid",
+      "apiAway": "Tottenham",
+      "bookmakerKey": "netwinit",
+      "bookmakerName": "Netwin",
+      "bmHome": "Atletico Madrid",
+      "bmAway": "Tottenham",
+      "odds": {
+        "home": 2.03,
+        "draw": 2.45,
+        "away": 5.6
+      },
+      "matched": true
+    },
+    {
+      "fixtureId": 1528322,
+      "leagueId": 2,
+      "leagueName": "UEFA Champions League",
+      "apiHome": "Bayer Leverkusen",
+      "apiAway": "Arsenal",
+      "bookmakerKey": "netwinit",
+      "bookmakerName": "Netwin",
+      "bmHome": "Bayer Leverkusen",
+      "bmAway": "Arsenal",
+      "odds": {
+        "home": 5.8,
+        "draw": 2.38,
+        "away": 2.05
+      },
+      "matched": true
+    },
+    {
+      "fixtureId": 1528322,
+      "leagueId": 2,
+      "leagueName": "UEFA Champions League",
+      "apiHome": "Bayer Leverkusen",
+      "apiAway": "Arsenal",
+      "bookmakerKey": "netwinit",
+      "bookmakerName": "Netwin",
+      "bmHome": "Bayer Leverkusen",
+      "bmAway": "Arsenal",
+      "odds": {
+        "home": 5.8,
+        "draw": 2.38,
+        "away": 2.05
+      },
+      "matched": true
+    },
+    {
+      "fixtureId": 1528320,
+      "leagueId": 2,
+      "leagueName": "UEFA Champions League",
+      "apiHome": "Paris Saint Germain",
+      "apiAway": "Chelsea",
+      "bookmakerKey": "netwinit",
+      "bookmakerName": "Netwin",
+      "bmHome": "PSG",
+      "bmAway": "Chelsea",
+      "odds": {
+        "home": 2.32,
+        "draw": 2.45,
+        "away": 4.15
+      },
+      "matched": true
+    },
+    {
+      "fixtureId": 1528320,
+      "leagueId": 2,
+      "leagueName": "UEFA Champions League",
+      "apiHome": "Paris Saint Germain",
+      "apiAway": "Chelsea",
+      "bookmakerKey": "netwinit",
+      "bookmakerName": "Netwin",
+      "bmHome": "PSG",
+      "bmAway": "Chelsea",
+      "odds": {
+        "home": 2.32,
+        "draw": 2.45,
+        "away": 4.15
+      },
+      "matched": true
+    },
+    {
+      "fixtureId": 1528318,
+      "leagueId": 2,
+      "leagueName": "UEFA Champions League",
+      "apiHome": "Real Madrid",
+      "apiAway": "Manchester City",
+      "bookmakerKey": "netwinit",
+      "bookmakerName": "Netwin",
+      "bmHome": "Real Madrid",
+      "bmAway": "Manchester City",
+      "odds": {
+        "home": 3.75,
+        "draw": 2.42,
+        "away": 2.52
+      },
+      "matched": true
+    },
+    {
+      "fixtureId": 1528318,
+      "leagueId": 2,
+      "leagueName": "UEFA Champions League",
+      "apiHome": "Real Madrid",
+      "apiAway": "Manchester City",
+      "bookmakerKey": "netwinit",
+      "bookmakerName": "Netwin",
+      "bmHome": "Real Madrid",
+      "bmAway": "Manchester City",
+      "odds": {
+        "home": 3.75,
+        "draw": 2.42,
+        "away": 2.52
+      },
+      "matched": true
+    },
+    {
+      "fixtureId": 1492156,
+      "leagueId": 71,
+      "leagueName": "Serie A",
+      "apiHome": "Mirassol",
+      "apiAway": "Santos",
+      "bookmakerKey": "netwinit",
+      "bookmakerName": "Netwin",
+      "bmHome": "Mirassol FC SP",
+      "bmAway": "Santos SP",
+      "odds": {
+        "home": 2.5,
+        "draw": 2.2,
+        "away": 4.1
+      },
+      "matched": true
+    },
+    {
+      "fixtureId": 1492156,
+      "leagueId": 71,
+      "leagueName": "Serie A",
+      "apiHome": "Mirassol",
+      "apiAway": "Santos",
+      "bookmakerKey": "netwinit",
+      "bookmakerName": "Netwin",
+      "bmHome": "Mirassol FC SP",
+      "bmAway": "Santos SP",
+      "odds": {
+        "home": 2.5,
+        "draw": 2.2,
+        "away": 4.1
+      },
+      "matched": true
+    },
+    {
+      "fixtureId": 1492151,
+      "leagueId": 71,
+      "leagueName": "Serie A",
+      "apiHome": "Atletico-MG",
+      "apiAway": "Internacional",
+      "bookmakerKey": "netwinit",
+      "bookmakerName": "Netwin",
+      "bmHome": "Atletico Mineiro MG",
+      "bmAway": "Internacional",
+      "odds": {
+        "home": 2.5,
+        "draw": 2.16,
+        "away": 4.2
+      },
+      "matched": true
+    },
+    {
+      "fixtureId": 1492151,
+      "leagueId": 71,
+      "leagueName": "Serie A",
+      "apiHome": "Atletico-MG",
+      "apiAway": "Internacional",
+      "bookmakerKey": "netwinit",
+      "bookmakerName": "Netwin",
+      "bmHome": "Atletico Mineiro MG",
+      "bmAway": "Internacional",
+      "odds": {
+        "home": 2.5,
+        "draw": 2.16,
+        "away": 4.2
+      },
+      "matched": true
+    },
+    {
+      "fixtureId": 1492152,
+      "leagueId": 71,
+      "leagueName": "Serie A",
+      "apiHome": "Bahia",
+      "apiAway": "Vitoria",
+      "bookmakerKey": "netwinit",
+      "bookmakerName": "Netwin",
+      "bmHome": "Bahia BA",
+      "bmAway": "EC Vitoria BA",
+      "odds": {
+        "home": 2.18,
+        "draw": 2.27,
+        "away": 4.95
+      },
+      "matched": true
+    },
+    {
+      "fixtureId": 1492152,
+      "leagueId": 71,
+      "leagueName": "Serie A",
+      "apiHome": "Bahia",
+      "apiAway": "Vitoria",
+      "bookmakerKey": "netwinit",
+      "bookmakerName": "Netwin",
+      "bmHome": "Bahia BA",
+      "bmAway": "EC Vitoria BA",
+      "odds": {
+        "home": 2.18,
+        "draw": 2.27,
+        "away": 4.95
+      },
+      "matched": true
+    },
+    {
+      "fixtureId": 1492153,
+      "leagueId": 71,
+      "leagueName": "Serie A",
+      "apiHome": "Corinthians",
+      "apiAway": "Coritiba",
+      "bookmakerKey": "netwinit",
+      "bookmakerName": "Netwin",
+      "bmHome": "Corinthians",
+      "bmAway": "Coritiba",
+      "odds": {
+        "home": 2.08,
+        "draw": 2.18,
+        "away": 6.25
+      },
+      "matched": true
+    },
+    {
+      "fixtureId": 1492153,
+      "leagueId": 71,
+      "leagueName": "Serie A",
+      "apiHome": "Corinthians",
+      "apiAway": "Coritiba",
+      "bookmakerKey": "netwinit",
+      "bookmakerName": "Netwin",
+      "bmHome": "Corinthians",
+      "bmAway": "Coritiba",
+      "odds": {
+        "home": 2.08,
+        "draw": 2.18,
+        "away": 6.25
+      },
+      "matched": true
+    },
+    {
+      "fixtureId": 1492154,
+      "leagueId": 71,
+      "leagueName": "Serie A",
+      "apiHome": "Flamengo",
+      "apiAway": "Cruzeiro",
+      "bookmakerKey": "netwinit",
+      "bookmakerName": "Netwin",
+      "bmHome": "Flamengo",
+      "bmAway": "Cruzeiro",
+      "odds": {
+        "home": 1.98,
+        "draw": 2.32,
+        "away": 6.15
+      },
+      "matched": true
+    },
+    {
+      "fixtureId": 1492154,
+      "leagueId": 71,
+      "leagueName": "Serie A",
+      "apiHome": "Flamengo",
+      "apiAway": "Cruzeiro",
+      "bookmakerKey": "netwinit",
+      "bookmakerName": "Netwin",
+      "bmHome": "Flamengo",
+      "bmAway": "Cruzeiro",
+      "odds": {
+        "home": 1.98,
+        "draw": 2.32,
+        "away": 6.15
+      },
+      "matched": true
+    },
+    {
+      "fixtureId": 1492157,
+      "leagueId": 71,
+      "leagueName": "Serie A",
+      "apiHome": "remo",
+      "apiAway": "Fluminense",
+      "bookmakerKey": "netwinit",
+      "bookmakerName": "Netwin",
+      "bmHome": "Clube do Remo",
+      "bmAway": "Fluminense",
+      "odds": {
+        "home": 3.9,
+        "draw": 2.12,
+        "away": 2.7
+      },
+      "matched": true
+    },
+    {
+      "fixtureId": 1492157,
+      "leagueId": 71,
+      "leagueName": "Serie A",
+      "apiHome": "remo",
+      "apiAway": "Fluminense",
+      "bookmakerKey": "netwinit",
+      "bookmakerName": "Netwin",
+      "bmHome": "Clube do Remo",
+      "bmAway": "Fluminense",
+      "odds": {
+        "home": 3.9,
+        "draw": 2.12,
+        "away": 2.7
+      },
+      "matched": true
+    },
+    {
+      "fixtureId": 1492159,
+      "leagueId": 71,
+      "leagueName": "Serie A",
+      "apiHome": "Vasco DA Gama",
+      "apiAway": "Palmeiras",
+      "bookmakerKey": "netwinit",
+      "bookmakerName": "Netwin",
+      "bmHome": "CR Vasco da Gama RJ",
+      "bmAway": "Palmeiras",
+      "odds": {
+        "home": 3.6,
+        "draw": 2.17,
+        "away": 2.77
+      },
+      "matched": true
+    },
+    {
+      "fixtureId": 1492159,
+      "leagueId": 71,
+      "leagueName": "Serie A",
+      "apiHome": "Vasco DA Gama",
+      "apiAway": "Palmeiras",
+      "bookmakerKey": "netwinit",
+      "bookmakerName": "Netwin",
+      "bmHome": "CR Vasco da Gama RJ",
+      "bmAway": "Palmeiras",
+      "odds": {
+        "home": 3.6,
+        "draw": 2.17,
+        "away": 2.77
+      },
+      "matched": true
+    },
+    {
+      "fixtureId": 1528335,
+      "leagueId": 3,
+      "leagueName": "UEFA Europa League",
+      "apiHome": "Bologna",
+      "apiAway": "AS Roma",
+      "bookmakerKey": "netwinit",
+      "bookmakerName": "Netwin",
+      "bmHome": "Bologna",
+      "bmAway": "Roma",
+      "odds": {
+        "home": 3.8,
+        "draw": 1.98,
+        "away": 3.2
+      },
+      "matched": true
+    },
+    {
+      "fixtureId": 1528335,
+      "leagueId": 3,
+      "leagueName": "UEFA Europa League",
+      "apiHome": "Bologna",
+      "apiAway": "AS Roma",
+      "bookmakerKey": "netwinit",
+      "bookmakerName": "Netwin",
+      "bmHome": "Bologna",
+      "bmAway": "Roma",
+      "odds": {
+        "home": 3.8,
+        "draw": 1.98,
+        "away": 3.2
+      },
+      "matched": true
+    },
+    {
+      "fixtureId": 1528337,
+      "leagueId": 3,
+      "leagueName": "UEFA Europa League",
+      "apiHome": "Panathinaikos",
+      "apiAway": "Real Betis",
+      "bookmakerKey": "netwinit",
+      "bookmakerName": "Netwin",
+      "bmHome": "Panathinaikos",
+      "bmAway": "Real Betis",
+      "odds": {
+        "home": 4.35,
+        "draw": 2.03,
+        "away": 2.8
+      },
+      "matched": true
+    },
+    {
+      "fixtureId": 1528337,
+      "leagueId": 3,
+      "leagueName": "UEFA Europa League",
+      "apiHome": "Panathinaikos",
+      "apiAway": "Real Betis",
+      "bookmakerKey": "netwinit",
+      "bookmakerName": "Netwin",
+      "bmHome": "Panathinaikos",
+      "bmAway": "Real Betis",
+      "odds": {
+        "home": 4.35,
+        "draw": 2.03,
+        "away": 2.8
+      },
+      "matched": true
+    },
+    {
+      "fixtureId": 1528339,
+      "leagueId": 3,
+      "leagueName": "UEFA Europa League",
+      "apiHome": "Nottingham Forest",
+      "apiAway": "FC Midtjylland",
+      "bookmakerKey": "netwinit",
+      "bookmakerName": "Netwin",
+      "bmHome": "Nottingham Forest",
+      "bmAway": "Midtjylland",
+      "odds": {
+        "home": 2.04,
+        "draw": 2.43,
+        "away": 5.6
+      },
+      "matched": true
+    },
+    {
+      "fixtureId": 1528339,
+      "leagueId": 3,
+      "leagueName": "UEFA Europa League",
+      "apiHome": "Nottingham Forest",
+      "apiAway": "FC Midtjylland",
+      "bookmakerKey": "netwinit",
+      "bookmakerName": "Netwin",
+      "bmHome": "Nottingham Forest",
+      "bmAway": "Midtjylland",
+      "odds": {
+        "home": 2.04,
+        "draw": 2.43,
+        "away": 5.6
+      },
+      "matched": true
+    },
+    {
+      "fixtureId": 1379261,
+      "leagueId": 39,
+      "leagueName": "Premier League",
+      "apiHome": "Burnley",
+      "apiAway": "Bournemouth",
+      "bookmakerKey": "netwinit",
+      "bookmakerName": "Netwin",
+      "bmHome": "Burnley",
+      "bmAway": "Bournemouth",
+      "odds": {
+        "home": 4.25,
+        "draw": 2.33,
+        "away": 2.4
+      },
+      "matched": true
+    },
+    {
+      "fixtureId": 1379261,
+      "leagueId": 39,
+      "leagueName": "Premier League",
+      "apiHome": "Burnley",
+      "apiAway": "Bournemouth",
+      "bookmakerKey": "netwinit",
+      "bookmakerName": "Netwin",
+      "bmHome": "Burnley",
+      "bmAway": "Bournemouth",
+      "odds": {
+        "home": 4.25,
+        "draw": 2.33,
+        "away": 2.4
+      },
+      "matched": true
+    },
+    {
+      "fixtureId": 1379267,
+      "leagueId": 39,
+      "leagueName": "Premier League",
+      "apiHome": "Sunderland",
+      "apiAway": "Brighton",
+      "bookmakerKey": "netwinit",
+      "bookmakerName": "Netwin",
+      "bmHome": "Sunderland",
+      "bmAway": "Brighton",
+      "odds": {
+        "home": 3.85,
+        "draw": 2.14,
+        "away": 2.82
+      },
+      "matched": true
+    },
+    {
+      "fixtureId": 1379267,
+      "leagueId": 39,
+      "leagueName": "Premier League",
+      "apiHome": "Sunderland",
+      "apiAway": "Brighton",
+      "bookmakerKey": "netwinit",
+      "bookmakerName": "Netwin",
+      "bmHome": "Sunderland",
+      "bmAway": "Brighton",
+      "odds": {
+        "home": 3.85,
+        "draw": 2.14,
+        "away": 2.82
+      },
+      "matched": true
+    },
+    {
+      "fixtureId": 1379259,
+      "leagueId": 39,
+      "leagueName": "Premier League",
+      "apiHome": "Arsenal",
+      "apiAway": "Everton",
+      "bookmakerKey": "netwinit",
+      "bookmakerName": "Netwin",
+      "bmHome": "Arsenal",
+      "bmAway": "Everton",
+      "odds": {
+        "home": 1.74,
+        "draw": 2.55,
+        "away": 8.75
+      },
+      "matched": true
+    },
+    {
+      "fixtureId": 1379259,
+      "leagueId": 39,
+      "leagueName": "Premier League",
+      "apiHome": "Arsenal",
+      "apiAway": "Everton",
+      "bookmakerKey": "netwinit",
+      "bookmakerName": "Netwin",
+      "bmHome": "Arsenal",
+      "bmAway": "Everton",
+      "odds": {
+        "home": 1.74,
+        "draw": 2.55,
+        "away": 8.75
+      },
+      "matched": true
+    },
+    {
+      "fixtureId": 1379262,
+      "leagueId": 39,
+      "leagueName": "Premier League",
+      "apiHome": "Chelsea",
+      "apiAway": "Newcastle",
+      "bookmakerKey": "netwinit",
+      "bookmakerName": "Netwin",
+      "bmHome": "Chelsea",
+      "bmAway": "Newcastle",
+      "odds": {
+        "home": 2.25,
+        "draw": 2.52,
+        "away": 4.15
+      },
+      "matched": true
+    },
+    {
+      "fixtureId": 1379262,
+      "leagueId": 39,
+      "leagueName": "Premier League",
+      "apiHome": "Chelsea",
+      "apiAway": "Newcastle",
+      "bookmakerKey": "netwinit",
+      "bookmakerName": "Netwin",
+      "bmHome": "Chelsea",
+      "bmAway": "Newcastle",
+      "odds": {
+        "home": 2.25,
+        "draw": 2.52,
+        "away": 4.15
+      },
+      "matched": true
+    },
+    {
+      "fixtureId": 1379268,
+      "leagueId": 39,
+      "leagueName": "Premier League",
+      "apiHome": "West Ham",
+      "apiAway": "Manchester City",
+      "bookmakerKey": "netwinit",
+      "bookmakerName": "Netwin",
+      "bmHome": "West Ham",
+      "bmAway": "Manchester City",
+      "odds": {
+        "home": 4.75,
+        "draw": 2.57,
+        "away": 2.08
+      },
+      "matched": true
+    },
+    {
+      "fixtureId": 1379268,
+      "leagueId": 39,
+      "leagueName": "Premier League",
+      "apiHome": "West Ham",
+      "apiAway": "Manchester City",
+      "bookmakerKey": "netwinit",
+      "bookmakerName": "Netwin",
+      "bmHome": "West Ham",
+      "bmAway": "Manchester City",
+      "odds": {
+        "home": 4.75,
+        "draw": 2.57,
+        "away": 2.08
       },
       "matched": true
     }
   ],
   "unmatched": [
     {
-      "fixtureId": 1388525,
-      "leagueId": 78,
-      "leagueName": "Bundesliga",
-      "apiHome": "1. FC Köln",
-      "apiAway": "Borussia Dortmund",
-      "bookmakerKey": "betboom",
-      "bookmakerName": "Betboom",
-      "bmHome": "Koln",
-      "bmAway": "Borussia Dortmund",
+      "fixtureId": 1378138,
+      "leagueId": 135,
+      "leagueName": "Serie A",
+      "apiHome": "Genoa",
+      "apiAway": "AS Roma",
+      "bookmakerKey": "netwinit",
+      "bookmakerName": "Netwin",
+      "bmHome": "FK Kosice",
+      "bmAway": "AS Trencin",
       "odds": {
-        "home": 4.1,
-        "draw": 4,
-        "away": 1.79
+        "home": 2.1,
+        "draw": 2.37,
+        "away": 4.7
       },
       "matched": false
     },
     {
-      "fixtureId": 1388530,
-      "leagueId": 78,
-      "leagueName": "Bundesliga",
-      "apiHome": "FC St. Pauli",
-      "apiAway": "Eintracht Frankfurt",
-      "bookmakerKey": "betboom",
-      "bookmakerName": "Betboom",
-      "bmHome": "FC Ingolstadt 04",
-      "bmAway": "SC Verl",
+      "fixtureId": 1378138,
+      "leagueId": 135,
+      "leagueName": "Serie A",
+      "apiHome": "Genoa",
+      "apiAway": "AS Roma",
+      "bookmakerKey": "netwinit",
+      "bookmakerName": "Netwin",
+      "bmHome": "FK Kosice",
+      "bmAway": "AS Trencin",
       "odds": {
-        "home": 2.91,
-        "draw": 3.67,
-        "away": 2.17
+        "home": 2.1,
+        "draw": 2.37,
+        "away": 4.7
       },
       "matched": false
     },
     {
-      "fixtureId": 1388530,
-      "leagueId": 78,
-      "leagueName": "Bundesliga",
-      "apiHome": "FC St. Pauli",
-      "apiAway": "Eintracht Frankfurt",
-      "bookmakerKey": "betboom",
-      "bookmakerName": "Betboom",
-      "bmHome": "Paderborn 07",
-      "bmAway": "Eintracht Braunschweig",
+      "fixtureId": 1378142,
+      "leagueId": 135,
+      "leagueName": "Serie A",
+      "apiHome": "AC Milan",
+      "apiAway": "Inter",
+      "bookmakerKey": "netwinit",
+      "bookmakerName": "Netwin",
+      "bmHome": "Sion",
+      "bmAway": "Winterthur",
       "odds": {
-        "home": 1.48,
-        "draw": 4.5,
-        "away": 6.2
+        "home": 1.68,
+        "draw": 2.75,
+        "away": 7.25
       },
       "matched": false
     },
     {
-      "fixtureId": 1388530,
-      "leagueId": 78,
-      "leagueName": "Bundesliga",
-      "apiHome": "FC St. Pauli",
-      "apiAway": "Eintracht Frankfurt",
-      "bookmakerKey": "betboom",
-      "bookmakerName": "Betboom",
-      "bmHome": "Bayern Alzenau",
-      "bmAway": "Eintracht Trier",
+      "fixtureId": 1378142,
+      "leagueId": 135,
+      "leagueName": "Serie A",
+      "apiHome": "AC Milan",
+      "apiAway": "Inter",
+      "bookmakerKey": "netwinit",
+      "bookmakerName": "Netwin",
+      "bmHome": "Atletico Mineiro MG",
+      "bmAway": "Internacional",
       "odds": {
-        "home": 2.92,
-        "draw": 4.12,
-        "away": 1.96
+        "home": 2.5,
+        "draw": 2.16,
+        "away": 4.2
       },
       "matched": false
     },
     {
-      "fixtureId": 1388530,
-      "leagueId": 78,
-      "leagueName": "Bundesliga",
-      "apiHome": "FC St. Pauli",
-      "apiAway": "Eintracht Frankfurt",
-      "bookmakerKey": "betboom",
-      "bookmakerName": "Betboom",
-      "bmHome": "FC 08 Homburg",
-      "bmAway": "Kickers Offenbach",
+      "fixtureId": 1378142,
+      "leagueId": 135,
+      "leagueName": "Serie A",
+      "apiHome": "AC Milan",
+      "apiAway": "Inter",
+      "bookmakerKey": "netwinit",
+      "bookmakerName": "Netwin",
+      "bmHome": "DC United",
+      "bmAway": "Inter Miami",
       "odds": {
-        "home": 1.58,
-        "draw": 3.76,
-        "away": 5.05
+        "home": 4.7,
+        "draw": 2.52,
+        "away": 2.04
       },
       "matched": false
     },
     {
-      "fixtureId": 1388530,
-      "leagueId": 78,
-      "leagueName": "Bundesliga",
-      "apiHome": "FC St. Pauli",
-      "apiAway": "Eintracht Frankfurt",
-      "bookmakerKey": "betboom",
-      "bookmakerName": "Betboom",
-      "bmHome": "FC Bocholt",
-      "bmAway": "Fortuna Koln",
+      "fixtureId": 1378142,
+      "leagueId": 135,
+      "leagueName": "Serie A",
+      "apiHome": "AC Milan",
+      "apiAway": "Inter",
+      "bookmakerKey": "netwinit",
+      "bookmakerName": "Netwin",
+      "bmHome": "Sion",
+      "bmAway": "Winterthur",
       "odds": {
-        "home": 4.54,
-        "draw": 3.79,
-        "away": 1.63
+        "home": 1.68,
+        "draw": 2.75,
+        "away": 7.25
       },
       "matched": false
     },
     {
-      "fixtureId": 1388531,
-      "leagueId": 78,
-      "leagueName": "Bundesliga",
-      "apiHome": "Union Berlin",
-      "apiAway": "Werder Bremen",
-      "bookmakerKey": "betboom",
-      "bookmakerName": "Betboom",
-      "bmHome": "Blau-Weiss Lohne",
-      "bmAway": "Werder Bremen II",
+      "fixtureId": 1378142,
+      "leagueId": 135,
+      "leagueName": "Serie A",
+      "apiHome": "AC Milan",
+      "apiAway": "Inter",
+      "bookmakerKey": "netwinit",
+      "bookmakerName": "Netwin",
+      "bmHome": "Atletico Mineiro MG",
+      "bmAway": "Internacional",
       "odds": {
-        "home": 2.44,
-        "draw": 3.98,
-        "away": 2.31
+        "home": 2.5,
+        "draw": 2.16,
+        "away": 4.2
       },
       "matched": false
     },
     {
-      "fixtureId": 1388534,
-      "leagueId": 78,
-      "leagueName": "Bundesliga",
-      "apiHome": "Borussia Mönchengladbach",
-      "apiAway": "FC St. Pauli",
-      "bookmakerKey": "betboom",
-      "bookmakerName": "Betboom",
-      "bmHome": "Borussia Dortmund",
-      "bmAway": "Augsburg",
+      "fixtureId": 1378142,
+      "leagueId": 135,
+      "leagueName": "Serie A",
+      "apiHome": "AC Milan",
+      "apiAway": "Inter",
+      "bookmakerKey": "netwinit",
+      "bookmakerName": "Netwin",
+      "bmHome": "DC United",
+      "bmAway": "Inter Miami",
       "odds": {
-        "home": 1.38,
-        "draw": 5,
-        "away": 7
+        "home": 4.7,
+        "draw": 2.52,
+        "away": 2.04
       },
       "matched": false
     },
     {
-      "fixtureId": 1388534,
-      "leagueId": 78,
-      "leagueName": "Bundesliga",
-      "apiHome": "Borussia Mönchengladbach",
-      "apiAway": "FC St. Pauli",
-      "bookmakerKey": "betboom",
-      "bookmakerName": "Betboom",
-      "bmHome": "Borussia Monchengladbach II",
-      "bmAway": "Koln II",
+      "fixtureId": 1378151,
+      "leagueId": 135,
+      "leagueName": "Serie A",
+      "apiHome": "Torino",
+      "apiAway": "Parma",
+      "bookmakerKey": "netwinit",
+      "bookmakerName": "Netwin",
+      "bmHome": "Fiorentina",
+      "bmAway": "Parma",
       "odds": {
-        "home": 2.07,
-        "draw": 3.6,
+        "home": 2.2,
+        "draw": 2.28,
+        "away": 5.25
+      },
+      "matched": false
+    },
+    {
+      "fixtureId": 1378151,
+      "leagueId": 135,
+      "leagueName": "Serie A",
+      "apiHome": "Torino",
+      "apiAway": "Parma",
+      "bookmakerKey": "netwinit",
+      "bookmakerName": "Netwin",
+      "bmHome": "Fiorentina",
+      "bmAway": "Parma",
+      "odds": {
+        "home": 2.2,
+        "draw": 2.28,
+        "away": 5.25
+      },
+      "matched": false
+    },
+    {
+      "fixtureId": 1378148,
+      "leagueId": 135,
+      "leagueName": "Serie A",
+      "apiHome": "Napoli",
+      "apiAway": "Lecce",
+      "bookmakerKey": "netwinit",
+      "bookmakerName": "Netwin",
+      "bmHome": "Napoli",
+      "bmAway": "Virtus Bologna",
+      "odds": {
+        "home": 2.52,
+        "draw": 15,
+        "away": 1.52
+      },
+      "matched": false
+    },
+    {
+      "fixtureId": 1378148,
+      "leagueId": 135,
+      "leagueName": "Serie A",
+      "apiHome": "Napoli",
+      "apiAway": "Lecce",
+      "bookmakerKey": "netwinit",
+      "bookmakerName": "Netwin",
+      "bmHome": "Napoli",
+      "bmAway": "Virtus Bologna",
+      "odds": {
+        "home": 2.52,
+        "draw": 15,
+        "away": 1.52
+      },
+      "matched": false
+    },
+    {
+      "fixtureId": 1378152,
+      "leagueId": 135,
+      "leagueName": "Serie A",
+      "apiHome": "Udinese",
+      "apiAway": "Juventus",
+      "bookmakerKey": "netwinit",
+      "bookmakerName": "Netwin",
+      "bmHome": "Udine",
+      "bmAway": "Varese",
+      "odds": {
+        "home": 1.62,
+        "draw": 15,
+        "away": 2.27
+      },
+      "matched": false
+    },
+    {
+      "fixtureId": 1378152,
+      "leagueId": 135,
+      "leagueName": "Serie A",
+      "apiHome": "Udinese",
+      "apiAway": "Juventus",
+      "bookmakerKey": "netwinit",
+      "bookmakerName": "Netwin",
+      "bmHome": "Udine",
+      "bmAway": "Varese",
+      "odds": {
+        "home": 1.62,
+        "draw": 15,
+        "away": 2.27
+      },
+      "matched": false
+    },
+    {
+      "fixtureId": 1419878,
+      "leagueId": 136,
+      "leagueName": "Serie B",
+      "apiHome": "Sudtirol",
+      "apiAway": "Virtus Entella",
+      "bookmakerKey": "netwinit",
+      "bookmakerName": "Netwin",
+      "bmHome": "Napoli",
+      "bmAway": "Virtus Bologna",
+      "odds": {
+        "home": 2.52,
+        "draw": 15,
+        "away": 1.52
+      },
+      "matched": false
+    },
+    {
+      "fixtureId": 1419878,
+      "leagueId": 136,
+      "leagueName": "Serie B",
+      "apiHome": "Sudtirol",
+      "apiAway": "Virtus Entella",
+      "bookmakerKey": "netwinit",
+      "bookmakerName": "Netwin",
+      "bmHome": "Napoli",
+      "bmAway": "Virtus Bologna",
+      "odds": {
+        "home": 2.52,
+        "draw": 15,
+        "away": 1.52
+      },
+      "matched": false
+    },
+    {
+      "fixtureId": 1419884,
+      "leagueId": 136,
+      "leagueName": "Serie B",
+      "apiHome": "Modena",
+      "apiAway": "Spezia",
+      "bookmakerKey": "netwinit",
+      "bookmakerName": "Netwin",
+      "bmHome": "Modena",
+      "bmAway": "Cesena",
+      "odds": {
+        "home": 2.43,
+        "draw": 2.22,
+        "away": 4.6
+      },
+      "matched": false
+    },
+    {
+      "fixtureId": 1419884,
+      "leagueId": 136,
+      "leagueName": "Serie B",
+      "apiHome": "Modena",
+      "apiAway": "Spezia",
+      "bookmakerKey": "netwinit",
+      "bookmakerName": "Netwin",
+      "bmHome": "Modena",
+      "bmAway": "Cesena",
+      "odds": {
+        "home": 2.43,
+        "draw": 2.22,
+        "away": 4.6
+      },
+      "matched": false
+    },
+    {
+      "fixtureId": 1419882,
+      "leagueId": 136,
+      "leagueName": "Serie B",
+      "apiHome": "Bari",
+      "apiAway": "Reggiana",
+      "bookmakerKey": "netwinit",
+      "bookmakerName": "Netwin",
+      "bmHome": "Venezia",
+      "bmAway": "Reggiana",
+      "odds": {
+        "home": 1.68,
+        "draw": 2.75,
+        "away": 8.25
+      },
+      "matched": false
+    },
+    {
+      "fixtureId": 1419882,
+      "leagueId": 136,
+      "leagueName": "Serie B",
+      "apiHome": "Bari",
+      "apiAway": "Reggiana",
+      "bookmakerKey": "netwinit",
+      "bookmakerName": "Netwin",
+      "bmHome": "Venezia",
+      "bmAway": "Reggiana",
+      "odds": {
+        "home": 1.68,
+        "draw": 2.75,
+        "away": 8.25
+      },
+      "matched": false
+    },
+    {
+      "fixtureId": 1419887,
+      "leagueId": 136,
+      "leagueName": "Serie B",
+      "apiHome": "Monza",
+      "apiAway": "Palermo",
+      "bookmakerKey": "netwinit",
+      "bookmakerName": "Netwin",
+      "bmHome": "Carrarese",
+      "bmAway": "Palermo",
+      "odds": {
+        "home": 3.8,
+        "draw": 2.14,
+        "away": 2.85
+      },
+      "matched": false
+    },
+    {
+      "fixtureId": 1419887,
+      "leagueId": 136,
+      "leagueName": "Serie B",
+      "apiHome": "Monza",
+      "apiAway": "Palermo",
+      "bookmakerKey": "netwinit",
+      "bookmakerName": "Netwin",
+      "bmHome": "Carrarese",
+      "bmAway": "Palermo",
+      "odds": {
+        "home": 3.8,
+        "draw": 2.14,
+        "away": 2.85
+      },
+      "matched": false
+    },
+    {
+      "fixtureId": 1419881,
+      "leagueId": 136,
+      "leagueName": "Serie B",
+      "apiHome": "Sampdoria",
+      "apiAway": "Venezia",
+      "bookmakerKey": "netwinit",
+      "bookmakerName": "Netwin",
+      "bmHome": "Treviso",
+      "bmAway": "Venezia",
+      "odds": {
+        "home": 2.42,
+        "draw": 15,
+        "away": 1.55
+      },
+      "matched": false
+    },
+    {
+      "fixtureId": 1419881,
+      "leagueId": 136,
+      "leagueName": "Serie B",
+      "apiHome": "Sampdoria",
+      "apiAway": "Venezia",
+      "bookmakerKey": "netwinit",
+      "bookmakerName": "Netwin",
+      "bmHome": "Treviso",
+      "bmAway": "Venezia",
+      "odds": {
+        "home": 2.42,
+        "draw": 15,
+        "away": 1.55
+      },
+      "matched": false
+    },
+    {
+      "fixtureId": 1387914,
+      "leagueId": 61,
+      "leagueName": "Ligue 1",
+      "apiHome": "Auxerre",
+      "apiAway": "Strasbourg",
+      "bookmakerKey": "netwinit",
+      "bookmakerName": "Netwin",
+      "bmHome": "Auxerre",
+      "bmAway": "Strasburgo",
+      "odds": {
+        "home": 4.65,
+        "draw": 2.18,
+        "away": 2.45
+      },
+      "matched": false
+    },
+    {
+      "fixtureId": 1387914,
+      "leagueId": 61,
+      "leagueName": "Ligue 1",
+      "apiHome": "Auxerre",
+      "apiAway": "Strasbourg",
+      "bookmakerKey": "netwinit",
+      "bookmakerName": "Netwin",
+      "bmHome": "Auxerre",
+      "bmAway": "Strasburgo",
+      "odds": {
+        "home": 4.65,
+        "draw": 2.18,
+        "away": 2.45
+      },
+      "matched": false
+    },
+    {
+      "fixtureId": 1387917,
+      "leagueId": 61,
+      "leagueName": "Ligue 1",
+      "apiHome": "Lille",
+      "apiAway": "Lorient",
+      "bookmakerKey": "netwinit",
+      "bookmakerName": "Netwin",
+      "bmHome": "Lilla",
+      "bmAway": "Lorient",
+      "odds": {
+        "home": 2.06,
+        "draw": 2.35,
+        "away": 5.9
+      },
+      "matched": false
+    },
+    {
+      "fixtureId": 1387917,
+      "leagueId": 61,
+      "leagueName": "Ligue 1",
+      "apiHome": "Lille",
+      "apiAway": "Lorient",
+      "bookmakerKey": "netwinit",
+      "bookmakerName": "Netwin",
+      "bmHome": "Lilla",
+      "bmAway": "Lorient",
+      "odds": {
+        "home": 2.06,
+        "draw": 2.35,
+        "away": 5.9
+      },
+      "matched": false
+    },
+    {
+      "fixtureId": 1387920,
+      "leagueId": 61,
+      "leagueName": "Ligue 1",
+      "apiHome": "Nice",
+      "apiAway": "Rennes",
+      "bookmakerKey": "netwinit",
+      "bookmakerName": "Netwin",
+      "bmHome": "Nizza",
+      "bmAway": "Rennes",
+      "odds": {
+        "home": 3.3,
+        "draw": 2.35,
+        "away": 2.85
+      },
+      "matched": false
+    },
+    {
+      "fixtureId": 1387920,
+      "leagueId": 61,
+      "leagueName": "Ligue 1",
+      "apiHome": "Nice",
+      "apiAway": "Rennes",
+      "bookmakerKey": "netwinit",
+      "bookmakerName": "Netwin",
+      "bmHome": "Nizza",
+      "bmAway": "Rennes",
+      "odds": {
+        "home": 3.3,
+        "draw": 2.35,
+        "away": 2.85
+      },
+      "matched": false
+    },
+    {
+      "fixtureId": 1387918,
+      "leagueId": 61,
+      "leagueName": "Ligue 1",
+      "apiHome": "Lyon",
+      "apiAway": "Paris FC",
+      "bookmakerKey": "netwinit",
+      "bookmakerName": "Netwin",
+      "bmHome": "Lione",
+      "bmAway": "Paris FC",
+      "odds": {
+        "home": 2.22,
+        "draw": 2.3,
+        "away": 5.1
+      },
+      "matched": false
+    },
+    {
+      "fixtureId": 1387918,
+      "leagueId": 61,
+      "leagueName": "Ligue 1",
+      "apiHome": "Lyon",
+      "apiAway": "Paris FC",
+      "bookmakerKey": "netwinit",
+      "bookmakerName": "Netwin",
+      "bmHome": "Lione",
+      "bmAway": "Paris FC",
+      "odds": {
+        "home": 2.22,
+        "draw": 2.3,
+        "away": 5.1
+      },
+      "matched": false
+    },
+    {
+      "fixtureId": 1528319,
+      "leagueId": 2,
+      "leagueName": "UEFA Champions League",
+      "apiHome": "Newcastle",
+      "apiAway": "Barcelona",
+      "bookmakerKey": "netwinit",
+      "bookmakerName": "Netwin",
+      "bmHome": "Newcastle",
+      "bmAway": "Barcellona",
+      "odds": {
+        "home": 3.2,
+        "draw": 2.45,
+        "away": 2.75
+      },
+      "matched": false
+    },
+    {
+      "fixtureId": 1528319,
+      "leagueId": 2,
+      "leagueName": "UEFA Champions League",
+      "apiHome": "Newcastle",
+      "apiAway": "Barcelona",
+      "bookmakerKey": "netwinit",
+      "bookmakerName": "Netwin",
+      "bmHome": "Newcastle",
+      "bmAway": "Barcellona",
+      "odds": {
+        "home": 3.2,
+        "draw": 2.45,
+        "away": 2.75
+      },
+      "matched": false
+    },
+    {
+      "fixtureId": 1528325,
+      "leagueId": 2,
+      "leagueName": "UEFA Champions League",
+      "apiHome": "Bodo/Glimt",
+      "apiAway": "Sporting CP",
+      "bookmakerKey": "netwinit",
+      "bookmakerName": "Netwin",
+      "bmHome": "Bodo Glimt",
+      "bmAway": "Sporting",
+      "odds": {
+        "home": 3.05,
+        "draw": 2.38,
         "away": 3
+      },
+      "matched": false
+    },
+    {
+      "fixtureId": 1528325,
+      "leagueId": 2,
+      "leagueName": "UEFA Champions League",
+      "apiHome": "Bodo/Glimt",
+      "apiAway": "Sporting CP",
+      "bookmakerKey": "netwinit",
+      "bookmakerName": "Netwin",
+      "bmHome": "Bodo Glimt",
+      "bmAway": "Sporting",
+      "odds": {
+        "home": 3.05,
+        "draw": 2.38,
+        "away": 3
+      },
+      "matched": false
+    },
+    {
+      "fixtureId": 1492158,
+      "leagueId": 71,
+      "leagueName": "Serie A",
+      "apiHome": "Sao Paulo",
+      "apiAway": "Chapecoense-sc",
+      "bookmakerKey": "netwinit",
+      "bookmakerName": "Netwin",
+      "bmHome": "Sao Paulo FC SP",
+      "bmAway": "Chapecoense SC",
+      "odds": {
+        "home": 1.87,
+        "draw": 2.4,
+        "away": 6.75
+      },
+      "matched": false
+    },
+    {
+      "fixtureId": 1492158,
+      "leagueId": 71,
+      "leagueName": "Serie A",
+      "apiHome": "Sao Paulo",
+      "apiAway": "Chapecoense-sc",
+      "bookmakerKey": "netwinit",
+      "bookmakerName": "Netwin",
+      "bmHome": "Sao Paulo FC SP",
+      "bmAway": "Chapecoense SC",
+      "odds": {
+        "home": 1.87,
+        "draw": 2.4,
+        "away": 6.75
+      },
+      "matched": false
+    },
+    {
+      "fixtureId": 1492155,
+      "leagueId": 71,
+      "leagueName": "Serie A",
+      "apiHome": "Gremio",
+      "apiAway": "RB Bragantino",
+      "bookmakerKey": "netwinit",
+      "bookmakerName": "Netwin",
+      "bmHome": "Gremio",
+      "bmAway": "Bragantino SP",
+      "odds": {
+        "home": 2.6,
+        "draw": 2.13,
+        "away": 4.05
+      },
+      "matched": false
+    },
+    {
+      "fixtureId": 1492155,
+      "leagueId": 71,
+      "leagueName": "Serie A",
+      "apiHome": "Gremio",
+      "apiAway": "RB Bragantino",
+      "bookmakerKey": "netwinit",
+      "bookmakerName": "Netwin",
+      "bmHome": "Gremio",
+      "bmAway": "Bragantino SP",
+      "odds": {
+        "home": 2.6,
+        "draw": 2.13,
+        "away": 4.05
+      },
+      "matched": false
+    },
+    {
+      "fixtureId": 1528334,
+      "leagueId": 3,
+      "leagueName": "UEFA Europa League",
+      "apiHome": "Lille",
+      "apiAway": "Aston Villa",
+      "bookmakerKey": "netwinit",
+      "bookmakerName": "Netwin",
+      "bmHome": "Lilla",
+      "bmAway": "Aston Villa",
+      "odds": {
+        "home": 3.45,
+        "draw": 2.18,
+        "away": 3.05
+      },
+      "matched": false
+    },
+    {
+      "fixtureId": 1528334,
+      "leagueId": 3,
+      "leagueName": "UEFA Europa League",
+      "apiHome": "Lille",
+      "apiAway": "Aston Villa",
+      "bookmakerKey": "netwinit",
+      "bookmakerName": "Netwin",
+      "bmHome": "Lilla",
+      "bmAway": "Aston Villa",
+      "odds": {
+        "home": 3.45,
+        "draw": 2.18,
+        "away": 3.05
+      },
+      "matched": false
+    },
+    {
+      "fixtureId": 1528336,
+      "leagueId": 3,
+      "leagueName": "UEFA Europa League",
+      "apiHome": "VfB Stuttgart",
+      "apiAway": "FC Porto",
+      "bookmakerKey": "netwinit",
+      "bookmakerName": "Netwin",
+      "bmHome": "Stoccarda",
+      "bmAway": "Porto",
+      "odds": {
+        "home": 2.67,
+        "draw": 2.27,
+        "away": 3.8
+      },
+      "matched": false
+    },
+    {
+      "fixtureId": 1528336,
+      "leagueId": 3,
+      "leagueName": "UEFA Europa League",
+      "apiHome": "VfB Stuttgart",
+      "apiAway": "FC Porto",
+      "bookmakerKey": "netwinit",
+      "bookmakerName": "Netwin",
+      "bmHome": "Stoccarda",
+      "bmAway": "Porto",
+      "odds": {
+        "home": 2.67,
+        "draw": 2.27,
+        "away": 3.8
+      },
+      "matched": false
+    },
+    {
+      "fixtureId": 1528338,
+      "leagueId": 3,
+      "leagueName": "UEFA Europa League",
+      "apiHome": "Celta Vigo",
+      "apiAway": "Lyon",
+      "bookmakerKey": "netwinit",
+      "bookmakerName": "Netwin",
+      "bmHome": "Celta Vigo",
+      "bmAway": "Lione",
+      "odds": {
+        "home": 2.65,
+        "draw": 2.22,
+        "away": 4
+      },
+      "matched": false
+    },
+    {
+      "fixtureId": 1528338,
+      "leagueId": 3,
+      "leagueName": "UEFA Europa League",
+      "apiHome": "Celta Vigo",
+      "apiAway": "Lyon",
+      "bookmakerKey": "netwinit",
+      "bookmakerName": "Netwin",
+      "bmHome": "Celta Vigo",
+      "bmAway": "Lione",
+      "odds": {
+        "home": 2.65,
+        "draw": 2.22,
+        "away": 4
+      },
+      "matched": false
+    },
+    {
+      "fixtureId": 1528340,
+      "leagueId": 3,
+      "leagueName": "UEFA Europa League",
+      "apiHome": "Ferencvarosi TC",
+      "apiAway": "SC Braga",
+      "bookmakerKey": "netwinit",
+      "bookmakerName": "Netwin",
+      "bmHome": "Ferencvaros",
+      "bmAway": "Sporting Braga",
+      "odds": {
+        "home": 3.7,
+        "draw": 2.1,
+        "away": 3.05
+      },
+      "matched": false
+    },
+    {
+      "fixtureId": 1528340,
+      "leagueId": 3,
+      "leagueName": "UEFA Europa League",
+      "apiHome": "Ferencvarosi TC",
+      "apiAway": "SC Braga",
+      "bookmakerKey": "netwinit",
+      "bookmakerName": "Netwin",
+      "bmHome": "Ferencvaros",
+      "bmAway": "Sporting Braga",
+      "odds": {
+        "home": 3.7,
+        "draw": 2.1,
+        "away": 3.05
+      },
+      "matched": false
+    },
+    {
+      "fixtureId": 1528341,
+      "leagueId": 3,
+      "leagueName": "UEFA Europa League",
+      "apiHome": "Genk",
+      "apiAway": "SC Freiburg",
+      "bookmakerKey": "netwinit",
+      "bookmakerName": "Netwin",
+      "bmHome": "KRC Genk",
+      "bmAway": "Friburgo",
+      "odds": {
+        "home": 3.2,
+        "draw": 2.23,
+        "away": 3.1
+      },
+      "matched": false
+    },
+    {
+      "fixtureId": 1528341,
+      "leagueId": 3,
+      "leagueName": "UEFA Europa League",
+      "apiHome": "Genk",
+      "apiAway": "SC Freiburg",
+      "bookmakerKey": "netwinit",
+      "bookmakerName": "Netwin",
+      "bmHome": "KRC Genk",
+      "bmAway": "Friburgo",
+      "odds": {
+        "home": 3.2,
+        "draw": 2.23,
+        "away": 3.1
+      },
+      "matched": false
+    },
+    {
+      "fixtureId": 1379259,
+      "leagueId": 39,
+      "leagueName": "Premier League",
+      "apiHome": "Arsenal",
+      "apiAway": "Everton",
+      "bookmakerKey": "netwinit",
+      "bookmakerName": "Netwin",
+      "bmHome": "Arsenal",
+      "bmAway": "Manchester City",
+      "odds": {
+        "home": 2.9,
+        "draw": 2.2,
+        "away": 3.55
+      },
+      "matched": false
+    },
+    {
+      "fixtureId": 1379259,
+      "leagueId": 39,
+      "leagueName": "Premier League",
+      "apiHome": "Arsenal",
+      "apiAway": "Everton",
+      "bookmakerKey": "netwinit",
+      "bookmakerName": "Netwin",
+      "bmHome": "Arsenal",
+      "bmAway": "Manchester City",
+      "odds": {
+        "home": 2.9,
+        "draw": 2.2,
+        "away": 3.55
+      },
+      "matched": false
+    },
+    {
+      "fixtureId": 1379268,
+      "leagueId": 39,
+      "leagueName": "Premier League",
+      "apiHome": "West Ham",
+      "apiAway": "Manchester City",
+      "bookmakerKey": "netwinit",
+      "bookmakerName": "Netwin",
+      "bmHome": "Arsenal",
+      "bmAway": "Manchester City",
+      "odds": {
+        "home": 2.9,
+        "draw": 2.2,
+        "away": 3.55
+      },
+      "matched": false
+    },
+    {
+      "fixtureId": 1379268,
+      "leagueId": 39,
+      "leagueName": "Premier League",
+      "apiHome": "West Ham",
+      "apiAway": "Manchester City",
+      "bookmakerKey": "netwinit",
+      "bookmakerName": "Netwin",
+      "bmHome": "Newcastle",
+      "bmAway": "Manchester City",
+      "odds": {
+        "home": 3.5,
+        "draw": 2.32,
+        "away": 2.75
+      },
+      "matched": false
+    },
+    {
+      "fixtureId": 1379268,
+      "leagueId": 39,
+      "leagueName": "Premier League",
+      "apiHome": "West Ham",
+      "apiAway": "Manchester City",
+      "bookmakerKey": "netwinit",
+      "bookmakerName": "Netwin",
+      "bmHome": "West Ham",
+      "bmAway": "Brentford",
+      "odds": {
+        "home": 3.45,
+        "draw": 2.3,
+        "away": 2.82
+      },
+      "matched": false
+    },
+    {
+      "fixtureId": 1379268,
+      "leagueId": 39,
+      "leagueName": "Premier League",
+      "apiHome": "West Ham",
+      "apiAway": "Manchester City",
+      "bookmakerKey": "netwinit",
+      "bookmakerName": "Netwin",
+      "bmHome": "Arsenal",
+      "bmAway": "Manchester City",
+      "odds": {
+        "home": 2.9,
+        "draw": 2.2,
+        "away": 3.55
+      },
+      "matched": false
+    },
+    {
+      "fixtureId": 1379268,
+      "leagueId": 39,
+      "leagueName": "Premier League",
+      "apiHome": "West Ham",
+      "apiAway": "Manchester City",
+      "bookmakerKey": "netwinit",
+      "bookmakerName": "Netwin",
+      "bmHome": "Newcastle",
+      "bmAway": "Manchester City",
+      "odds": {
+        "home": 3.5,
+        "draw": 2.32,
+        "away": 2.75
+      },
+      "matched": false
+    },
+    {
+      "fixtureId": 1379268,
+      "leagueId": 39,
+      "leagueName": "Premier League",
+      "apiHome": "West Ham",
+      "apiAway": "Manchester City",
+      "bookmakerKey": "netwinit",
+      "bookmakerName": "Netwin",
+      "bmHome": "West Ham",
+      "bmAway": "Brentford",
+      "odds": {
+        "home": 3.45,
+        "draw": 2.3,
+        "away": 2.82
       },
       "matched": false
     }
   ],
   "teamSuggestions": [
     {
-      "apiFootball": "FC St. Pauli",
-      "bookmakerVariant": "FC Ingolstadt 04",
-      "bookmakerId": "betboom",
-      "bookmakerName": "Betboom",
-      "fixtureId": 1388530,
-      "match": "home"
-    },
-    {
-      "apiFootball": "Eintracht Frankfurt",
-      "bookmakerVariant": "Eintracht Braunschweig",
-      "bookmakerId": "betboom",
-      "bookmakerName": "Betboom",
-      "fixtureId": 1388530,
+      "apiFootball": "AS Roma",
+      "bookmakerVariant": "AS Trencin",
+      "bookmakerId": "netwinit",
+      "bookmakerName": "Netwin",
+      "fixtureId": 1378138,
       "match": "away"
     },
     {
-      "apiFootball": "Eintracht Frankfurt",
-      "bookmakerVariant": "Eintracht Trier",
-      "bookmakerId": "betboom",
-      "bookmakerName": "Betboom",
-      "fixtureId": 1388530,
+      "apiFootball": "Inter",
+      "bookmakerVariant": "Winterthur",
+      "bookmakerId": "netwinit",
+      "bookmakerName": "Netwin",
+      "fixtureId": 1378142,
       "match": "away"
     },
     {
-      "apiFootball": "FC St. Pauli",
-      "bookmakerVariant": "FC 08 Homburg",
-      "bookmakerId": "betboom",
-      "bookmakerName": "Betboom",
-      "fixtureId": 1388530,
-      "match": "home"
-    },
-    {
-      "apiFootball": "FC St. Pauli",
-      "bookmakerVariant": "FC Bocholt",
-      "bookmakerId": "betboom",
-      "bookmakerName": "Betboom",
-      "fixtureId": 1388530,
-      "match": "home"
-    },
-    {
-      "apiFootball": "Werder Bremen",
-      "bookmakerVariant": "Werder Bremen II",
-      "bookmakerId": "betboom",
-      "bookmakerName": "Betboom",
-      "fixtureId": 1388531,
+      "apiFootball": "Inter",
+      "bookmakerVariant": "Internacional",
+      "bookmakerId": "netwinit",
+      "bookmakerName": "Netwin",
+      "fixtureId": 1378142,
       "match": "away"
     },
     {
-      "apiFootball": "Borussia Mönchengladbach",
-      "bookmakerVariant": "Borussia Dortmund",
-      "bookmakerId": "betboom",
-      "bookmakerName": "Betboom",
-      "fixtureId": 1388534,
+      "apiFootball": "Inter",
+      "bookmakerVariant": "Inter Miami",
+      "bookmakerId": "netwinit",
+      "bookmakerName": "Netwin",
+      "fixtureId": 1378142,
+      "match": "away"
+    },
+    {
+      "apiFootball": "Udinese",
+      "bookmakerVariant": "Udine",
+      "bookmakerId": "netwinit",
+      "bookmakerName": "Netwin",
+      "fixtureId": 1378152,
       "match": "home"
     },
     {
-      "apiFootball": "Borussia Mönchengladbach",
-      "bookmakerVariant": "Borussia Monchengladbach II",
-      "bookmakerId": "betboom",
-      "bookmakerName": "Betboom",
-      "fixtureId": 1388534,
+      "apiFootball": "Virtus Entella",
+      "bookmakerVariant": "Virtus Bologna",
+      "bookmakerId": "netwinit",
+      "bookmakerName": "Netwin",
+      "fixtureId": 1419878,
+      "match": "away"
+    },
+    {
+      "apiFootball": "Sporting CP",
+      "bookmakerVariant": "Sporting",
+      "bookmakerId": "netwinit",
+      "bookmakerName": "Netwin",
+      "fixtureId": 1528325,
+      "match": "away"
+    },
+    {
+      "apiFootball": "Sao Paulo",
+      "bookmakerVariant": "Sao Paulo FC SP",
+      "bookmakerId": "netwinit",
+      "bookmakerName": "Netwin",
+      "fixtureId": 1492158,
+      "match": "home"
+    },
+    {
+      "apiFootball": "FC Porto",
+      "bookmakerVariant": "Porto",
+      "bookmakerId": "netwinit",
+      "bookmakerName": "Netwin",
+      "fixtureId": 1528336,
+      "match": "away"
+    },
+    {
+      "apiFootball": "Ferencvarosi TC",
+      "bookmakerVariant": "Ferencvaros",
+      "bookmakerId": "netwinit",
+      "bookmakerName": "Netwin",
+      "fixtureId": 1528340,
+      "match": "home"
+    },
+    {
+      "apiFootball": "Genk",
+      "bookmakerVariant": "KRC Genk",
+      "bookmakerId": "netwinit",
+      "bookmakerName": "Netwin",
+      "fixtureId": 1528341,
       "match": "home"
     }
   ],
@@ -299,11 +2567,27 @@
       "reason": "no_mapping"
     },
     {
-      "leagueId": 78,
-      "leagueName": "Bundesliga",
+      "leagueId": 136,
+      "leagueName": "Serie B",
       "bookmakerId": "netwinit",
       "bookmakerName": "Netwin",
-      "suggestedValue": "bundesliga",
+      "suggestedValue": "serie_b",
+      "reason": "no_mapping"
+    },
+    {
+      "leagueId": 61,
+      "leagueName": "Ligue 1",
+      "bookmakerId": "betboom",
+      "bookmakerName": "Betboom",
+      "suggestedValue": "ligue_1",
+      "reason": "no_mapping"
+    },
+    {
+      "leagueId": 61,
+      "leagueName": "Ligue 1",
+      "bookmakerId": "netwinit",
+      "bookmakerName": "Netwin",
+      "suggestedValue": "ligue_1",
       "reason": "no_mapping"
     },
     {
@@ -339,6 +2623,14 @@
       "reason": "no_mapping"
     },
     {
+      "leagueId": 71,
+      "leagueName": "Serie A",
+      "bookmakerId": "netwinit",
+      "bookmakerName": "Netwin",
+      "suggestedValue": "serie_a",
+      "reason": "no_mapping"
+    },
+    {
       "leagueId": 3,
       "leagueName": "UEFA Europa League",
       "bookmakerId": "betboom",
@@ -352,6 +2644,14 @@
       "bookmakerId": "netwinit",
       "bookmakerName": "Netwin",
       "suggestedValue": "uefa_europa_league",
+      "reason": "no_mapping"
+    },
+    {
+      "leagueId": 39,
+      "leagueName": "Premier League",
+      "bookmakerId": "netwinit",
+      "bookmakerName": "Netwin",
+      "suggestedValue": "premier_league",
       "reason": "no_mapping"
     }
   ]
