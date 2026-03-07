@@ -37,6 +37,7 @@ yarn-error.log*
 
 # Netwin cache (generata a runtime, condivisa tra worker)
 data/.netwin-cache.json
+data/.netwin-cache-backup.json
 data/.netwin-full.log
 data/.netwin-lista-codes.json
 

@@ -19,7 +19,7 @@
 5. **rm .next** – Elimina build precedente
 6. **Build** – `npm ci` + `npm run build`
 7. **Copy** – public, static, chunks, data → standalone
-8. **remove/add Netwin** – Rimuove IT-002, aggiunge IT-0002 se manca
+8. **add Netwin** – Aggiunge IT-0002 se manca
 9. **Restore cache** – Se standalone non ha cache valida, ripristina dal backup
 10. **PM2 restart** – Riavvio app
 11. **Warm cache** – Chiamata debug-home per pre-popolare
@@ -33,4 +33,6 @@
 
 ## Link utili
 
-- **Report chiamate API (test):** https://test.playsignal.io/api/debug-api-calls?format=html&hours=168
+- **Report chiamate API:** consulta chiamate e prossime scadenze per Netwin, API Football, Betboom
+  - Test (FULL/DELTA attive): https://test.playsignal.io/api/debug-api-calls?format=html&hours=168
+  - Produzione (solo cache Netwin): https://playsignal.io/api/debug-api-calls?format=html&hours=168

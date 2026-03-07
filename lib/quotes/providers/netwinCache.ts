@@ -18,6 +18,7 @@ const FULL_FETCH_INTERVAL_MS = 3 * 60 * 60 * 1000; // 3 ore (limite Netwin)
 const DELTA_MIN_INTERVAL_MS = 10 * 1000; // 10 secondi tra una DELTA e l'altra (limite Netwin)
 
 const CACHE_FILE = path.join(process.cwd(), "data", ".netwin-cache.json");
+const CACHE_BACKUP_FILE = path.join(process.cwd(), "data", ".netwin-cache-backup.json");
 const FULL_LOG_FILE = path.join(process.cwd(), "data", ".netwin-full.log");
 const FULL_LOG_RETENTION_MS = 7 * 24 * 60 * 60 * 1000; // 7 giorni
 
@@ -62,8 +63,9 @@ function mergeMarketResults(
   return result;
 }
 
-export function isNetwinBookmaker(siteId?: string, id?: string): boolean {
-  return siteId === "IT-0002" || id === "netwinit";
+/** Solo IT-0002 usa le API Netwin (cache FULL/DELTA, ecc.). */
+export function isNetwinBookmaker(siteId?: string, _id?: string): boolean {
+  return (siteId || "").toUpperCase() === "IT-0002";
 }
 
 export function shouldUseFull(): boolean {
@@ -101,6 +103,20 @@ function saveToFileCache(data: DirectMultiMarketResult, timestamp: number): void
     writeFileSync(CACHE_FILE, JSON.stringify({ data, timestamp }), "utf-8");
   } catch (e) {
     console.warn("[Netwin] Impossibile salvare cache su file:", e instanceof Error ? e.message : String(e));
+  }
+}
+
+/** Backup FULL con partite (per prove). NON salva se h2h vuoto. */
+function saveBackupIfHasMatches(data: DirectMultiMarketResult, timestamp: number): void {
+  const h2hCount = data.h2h?.length ?? 0;
+  if (h2hCount === 0) return;
+  try {
+    const dir = path.dirname(CACHE_BACKUP_FILE);
+    if (!existsSync(dir)) mkdirSync(dir, { recursive: true });
+    writeFileSync(CACHE_BACKUP_FILE, JSON.stringify({ data, timestamp }), "utf-8");
+    console.log(`[Netwin] Backup FULL salvato (${h2hCount} partite) → .netwin-cache-backup.json`);
+  } catch (e) {
+    console.warn("[Netwin] Impossibile salvare backup:", e instanceof Error ? e.message : String(e));
   }
 }
 
@@ -167,6 +183,7 @@ export function setCache(data: DirectMultiMarketResult): void {
   cache = { data, timestamp };
   lastDeltaCallAt = null;
   saveToFileCache(data, timestamp);
+  saveBackupIfHasMatches(data, timestamp);
 }
 
 export function mergeDeltaWithCache(delta: DirectMultiMarketResult): DirectMultiMarketResult {

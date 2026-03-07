@@ -59,7 +59,6 @@ fi
 # 3. Copia data da test a prod (test è la source of truth per la promozione)
 if [ -d "$TEST_DIR/data" ]; then
   echo "3a. Normalizzo Netwin su test..."
-  (cd "$TEST_DIR" && node scripts/remove-netwin-from-bookmakers.mjs) || true
   (cd "$TEST_DIR" && node scripts/add-netwin-it0002.mjs) || true
   echo ""
   echo "3b. Copio data/ da test a prod..."
@@ -68,7 +67,6 @@ if [ -d "$TEST_DIR/data" ]; then
     [ -e "$f" ] && cp -f "$f" "$PROD_DIR/data/" 2>/dev/null || true
   done
   echo "3c. Normalizzo Netwin su prod (dopo copia)..."
-  (cd "$PROD_DIR" && node scripts/remove-netwin-from-bookmakers.mjs) || true
   (cd "$PROD_DIR" && node scripts/add-netwin-it0002.mjs) || true
   pm2 restart pronostici-test 2>/dev/null || true
   echo "   OK"

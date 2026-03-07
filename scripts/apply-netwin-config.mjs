@@ -18,9 +18,9 @@ function main() {
     process.exit(1);
   }
 
-  const profile = JSON.parse(readFileSync(PROFILES_PATH, "utf-8"))["IT-002"];
+  const profile = JSON.parse(readFileSync(PROFILES_PATH, "utf-8"))["IT-0002"];
   if (!profile) {
-    console.error("Scheda cliente IT-002 non trovata in clientProfiles.json");
+    console.error("Scheda cliente IT-0002 non trovata in clientProfiles.json");
     process.exit(1);
   }
 
@@ -34,12 +34,12 @@ function main() {
 
   const idx = bookmakers.findIndex(
     (b) =>
-      b.siteId === "IT-002" ||
+      b.siteId === "IT-0002" ||
       (b.id && b.id.toLowerCase().includes("netwin"))
   );
 
   if (idx < 0) {
-    console.error("Netwin_IT (IT-002) non trovato in bookmakers.json");
+    console.error("Netwin_IT (IT-0002) non trovato in bookmakers.json");
     process.exit(1);
   }
 
@@ -92,7 +92,7 @@ function main() {
 
   bookmakers[idx] = bm;
   writeFileSync(BOOKMAKERS_PATH, JSON.stringify(bookmakers, null, 2));
-  console.log(`Netwin_IT (${id}) configurato dalla scheda cliente IT-002`);
+  console.log(`Netwin_IT (${id}) configurato dalla scheda cliente IT-0002`);
 }
 
 main();

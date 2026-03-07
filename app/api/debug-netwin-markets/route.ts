@@ -149,7 +149,7 @@ export async function GET(req: Request) {
 
   const bookmakers = getBookmakers();
   const netwin = bookmakers.find(
-    (b) => b.siteId === "IT-002" || b.siteId === "IT-0002" || b.id?.toLowerCase().includes("netwin")
+    (b) => b.siteId === "IT-0002" || b.id?.toLowerCase().includes("netwin")
   );
 
   if (!netwin?.apiEndpoint || !netwin.apiRequestConfig?.queryParams) {

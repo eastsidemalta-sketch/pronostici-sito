@@ -64,7 +64,6 @@ npm run build
 cp -r public .next/standalone/ 2>/dev/null || true
 cp -r .next/static .next/standalone/.next/ 2>/dev/null || true
 cp -r .next/server/chunks .next/standalone/.next/server/ 2>/dev/null || true
-node scripts/remove-netwin-from-bookmakers.mjs 2>/dev/null || true
 node scripts/add-netwin-it0002.mjs 2>/dev/null || true
 cp -r data .next/standalone/ 2>/dev/null || true
 

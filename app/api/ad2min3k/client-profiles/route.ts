@@ -1,5 +1,5 @@
 /**
- * GET /api/ad2min3k/client-profiles?siteId=IT-002
+ * GET /api/ad2min3k/client-profiles?siteId=IT-0002
  * Restituisce la scheda cliente per l'admin (nome, API, logo, ecc.)
  */
 import { NextResponse } from "next/server";

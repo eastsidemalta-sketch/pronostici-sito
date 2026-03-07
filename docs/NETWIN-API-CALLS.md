@@ -115,5 +115,6 @@ Mostra i nomi squadre usati da Netwin per il matching (utile per `teamAliases.js
 | `lib/quotes/providers/netwinCache.ts` | Cache FULL, log FULL, merge DELTA |
 | `lib/quotes/providers/directBookmakerFetcher.ts` | Chiamate HTTP a Netwin |
 | `data/.netwin-cache.json` | Cache su file (generata a runtime) |
+| `data/.netwin-cache-backup.json` | Backup FULL con partite (solo quando h2h>0, per prove) |
 | `data/.netwin-full.log` | Log tentativi FULL (successi/errori) |
 | `scripts/check-netwin-full-log.mjs` | Lettura e analisi del log FULL |

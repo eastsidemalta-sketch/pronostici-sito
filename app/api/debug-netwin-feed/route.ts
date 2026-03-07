@@ -3,7 +3,7 @@
  * Fetch raw Netwin API e restituisce la struttura per verificare il mapping.
  * ?explore=1 = esplora tutto il feed e lista manifestazioni + tutte le partite estratte.
  * Per i test di configurazione usa SOLO richieste DELTA (quota FULL limitata, max 1 ogni 2-3h).
- * Usa la config da bookmakers.json (Netwin IT-002).
+ * Usa la config da bookmakers.json (Netwin IT-0002).
  */
 import { NextResponse } from "next/server";
 import { getBookmakers } from "@/lib/quotes/bookmakers";
@@ -164,7 +164,7 @@ export async function GET(req: Request) {
   const requestType = typeParam === "delta" ? "delta" : "FULL";
   const bookmakers = getBookmakers();
   const netwin = bookmakers.find(
-    (b) => b.siteId === "IT-002" || b.siteId === "IT-0002" || b.id?.toLowerCase().includes("netwin")
+    (b) => b.siteId === "IT-0002" || b.id?.toLowerCase().includes("netwin")
   );
 
   if (!netwin?.apiEndpoint || !netwin.apiRequestConfig?.queryParams) {

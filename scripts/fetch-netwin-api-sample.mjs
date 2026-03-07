@@ -13,7 +13,7 @@ const PROFILES_PATH = path.join(process.cwd(), "data", "clientProfiles.json");
 
 function getUrl() {
   if (existsSync(PROFILES_PATH)) {
-    const profile = JSON.parse(readFileSync(PROFILES_PATH, "utf-8"))["IT-002"];
+    const profile = JSON.parse(readFileSync(PROFILES_PATH, "utf-8"))["IT-0002"];
     if (profile?.api?.documentationUrl) return profile.api.documentationUrl;
     if (profile?.api?.endpoint && profile?.api?.params) {
       const params = new URLSearchParams(profile.api.params);

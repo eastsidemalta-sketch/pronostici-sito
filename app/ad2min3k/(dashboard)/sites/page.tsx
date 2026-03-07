@@ -70,7 +70,7 @@ export default function AdminSitesPage() {
     apiKey: "",
     apiAuthType: "query" as "query" | "header" | "bearer",
     pauseOddsApi: false,
-    /** Se impostato, carica API e dati dalla scheda cliente (es. IT-002 per Netwin) */
+    /** Se impostato, carica API e dati dalla scheda cliente (es. IT-0002 per Netwin) */
     profileSiteId: "" as string,
   });
 
@@ -235,7 +235,7 @@ export default function AdminSitesPage() {
       country: "IT",
       countries: ["IT"],
       apiProvider: "direct",
-      profileSiteId: "IT-002",
+      profileSiteId: "IT-0002",
     }));
   }
 

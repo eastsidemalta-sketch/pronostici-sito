@@ -1,4 +1,4 @@
-# Configurazione Netwin_IT (IT-002)
+# Configurazione Netwin_IT (IT-0002)
 
 **Scheda cliente:** `data/clientProfiles.json`
 
@@ -14,7 +14,7 @@ node scripts/apply-netwin-config.mjs
 pm2 restart pronostici
 ```
 
-Lo script legge da `data/clientProfiles.json` e applica a `data/bookmakers.json`.
+Lo script legge da `data/clientProfiles.json` (chiave IT-0002) e applica a `data/bookmakers.json`.
 
 ## Test integrazione API
 
@@ -31,7 +31,7 @@ Risposta: `ok: true` se tutto ok. `report.direct` mostra per ogni API diretta: `
 
 ## Modifica configurazione
 
-Modificare `data/clientProfiles.json` → chiave `IT-002`. Poi rieseguire lo script.
+Modificare `data/clientProfiles.json` → chiave `IT-0002`. Poi rieseguire lo script.
 
 ## Configurazione manuale (Admin)
 

@@ -143,7 +143,7 @@ type ClientProfile = {
   };
 };
 
-/** Inietta bookmaker da clientProfiles se non già presenti (es. Netwin IT-002) */
+/** Inietta bookmaker da clientProfiles se non già presenti (es. Netwin IT-0002) */
 function injectFromClientProfiles(bookmakers: Bookmaker[]): Bookmaker[] {
   try {
     if (!existsSync(PROFILES_PATH)) return bookmakers;
