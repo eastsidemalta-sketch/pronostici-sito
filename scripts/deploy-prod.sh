@@ -58,6 +58,8 @@ if [ -f ".next/standalone/data/.netwin-cache.json" ] && [ -s ".next/standalone/d
   echo "Backup cache Netwin"
 fi
 
+# Ferma l'app prima di rm .next (evita "Directory not empty" se file aperti)
+pm2 stop pronostici 2>/dev/null || true
 rm -rf .next
 npm ci
 npm run build
