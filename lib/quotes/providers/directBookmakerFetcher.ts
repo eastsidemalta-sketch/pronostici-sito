@@ -987,14 +987,26 @@ export async function fetchDirectBookmakerQuotes(
       const stakesVal = getByPath(ev, stakesPath);
       const stakesArr = Array.isArray(stakesVal) ? stakesVal : [];
 
+      let odds1 = 0;
+      let oddsX = 0;
+      let odds2 = 0;
       const extracted1X2 = extract1X2FromStakes(stakesArr, homeTeam, awayTeam, stakesConfig);
       if (extracted1X2.odds1 > 0 || extracted1X2.oddsX > 0 || extracted1X2.odds2 > 0) {
+        odds1 = extracted1X2.odds1;
+        oddsX = extracted1X2.oddsX;
+        odds2 = extracted1X2.odds2;
+      } else if (useExalogic) {
+        odds1 = getNumber(ev, "odds1");
+        oddsX = getNumber(ev, "oddsX");
+        odds2 = getNumber(ev, "odds2");
+      }
+      if (odds1 > 0 || oddsX > 0 || odds2 > 0) {
         result.h2h!.push({
           ...baseQuote,
           outcomes: {
-            home: extracted1X2.odds1,
-            draw: extracted1X2.oddsX,
-            away: extracted1X2.odds2,
+            home: odds1,
+            draw: oddsX,
+            away: odds2,
           },
         });
       }
