@@ -1,42 +1,4 @@
 {
-  "IT-0002": {
-    "siteId": "IT-0002",
-    "name": "Netwin",
-    "internalName": "Netwin_IT",
-    "bookmakerId": "netwinit",
-    "affiliateUrl": "https://m.netwin.it/redirect.aspx?mid=26&sid=6165&cid=&pid=&affid=3281",
-    "bonusDescription": "300€ di Bonus totale : 250€ subito + 50€ di real bonus sul primo deposito",
-    "logoPath": "/logos/netwin-it-2.png",
-    "faviconPath": "/favicons/netwin-it.png",
-    "api": {
-      "enabled": true,
-      "endpoint": "https://b2b.egamingsolutionsrl.it/WSSportFeed/get_eventi_psqf",
-      "method": "GET",
-      "params": {
-        "system_code": "PLAYSIGNAL",
-        "type": "FULL",
-        "isLive": "0",
-        "codiceSito": "WINBET"
-      },
-      "documentationUrl": "https://b2b.egamingsolutionsrl.it/WSSportFeed/get_eventi_psqf?type=FULL&system_code=PLAYSIGNAL&isLive=0&codiceSito=WINBET",
-      "mapping": {
-        "eventsPath": "$",
-        "exalogic": true,
-        "homeTeam": "homeTeam",
-        "awayTeam": "awayTeam",
-        "odds1": "odds1",
-        "oddsX": "oddsX",
-        "odds2": "odds2",
-        "odds1Personalized": "quote_personalizzate.1",
-        "oddsXPersonalized": "quote_personalizzate.X",
-        "odds2Personalized": "quote_personalizzate.2",
-        "stakes1X2": {
-          "stakesPath": "stakes",
-          "marketName": "Winner"
-        }
-      }
-    }
-  },
   "BR-0001": {
     "siteId": "BR-0001",
     "name": "Betboom",
