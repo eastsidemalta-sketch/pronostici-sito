@@ -970,7 +970,15 @@ export async function fetchDirectBookmakerQuotes(
     if (netwinUseFull) {
       const h2hCount = result.h2h?.length ?? 0;
       console.log(`[Netwin] FULL OK: ${h2hCount} partite in cache`);
-      setCache(result);
+      // Salva solo se abbiamo partite: evita di sovrascrivere con vuoto (ultimo import corretto preservato)
+      if (h2hCount > 0) {
+        setCache(result);
+      } else {
+        const fallback = getCached();
+        if (fallback && (fallback.h2h?.length ?? 0) > 0) {
+          console.warn(`[Netwin] FULL restituita 0 partite, mantengo ultimo import (${fallback.h2h?.length ?? 0} partite)`);
+        }
+      }
       logFullAttempt(true, {
         url: maskUrlForLog(url),
         h2hCount,
