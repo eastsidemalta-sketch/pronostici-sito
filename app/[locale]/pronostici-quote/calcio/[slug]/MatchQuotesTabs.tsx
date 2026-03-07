@@ -206,7 +206,7 @@ export default function MatchQuotesTabs({ sportKey, homeTeam, awayTeam, country,
                         <table className="w-full text-sm md:text-base">
                           <thead>
                             <tr className="border-b border-[var(--card-border)] bg-slate-50">
-                              <th className="px-3 py-2 text-left text-xs font-semibold text-[var(--foreground)] md:px-4 md:py-2.5 md:text-sm">{t("bookmaker")}</th>
+                              <th className="min-w-[80px] max-w-[100px] px-3 py-2 text-left text-xs font-semibold text-[var(--foreground)] md:min-w-0 md:max-w-none md:px-4 md:py-2.5 md:text-sm">{t("bookmaker")}</th>
                               <th className="px-3 py-2 text-center text-xs font-semibold text-[var(--foreground)] md:px-4 md:py-2.5 md:text-sm">
                                 {hTeam} {formatHandicap(homePoint)}
                               </th>
@@ -278,14 +278,14 @@ export default function MatchQuotesTabs({ sportKey, homeTeam, awayTeam, country,
               </h3>
               <div className="overflow-x-auto rounded-lg border border-[var(--card-border)]">
                 <table className="w-full text-sm md:text-base">
-                  <thead>
-                    <tr className="border-b border-[var(--card-border)] bg-slate-50">
-                      <th className="px-3 py-2 text-left text-xs font-semibold text-[var(--foreground)] md:px-4 md:py-2.5 md:text-sm">{t("bookmaker")}</th>
-                      {market.columns.map((col) => (
-                        <th
-                          key={col.key}
-                          className="px-3 py-2 text-center text-xs font-semibold text-[var(--foreground)] md:px-4 md:py-2.5 md:text-sm"
-                        >
+                    <thead>
+                      <tr className="border-b border-[var(--card-border)] bg-slate-50">
+                        <th className="min-w-[80px] max-w-[100px] px-3 py-2 text-left text-xs font-semibold text-[var(--foreground)] md:min-w-0 md:max-w-none md:px-4 md:py-2.5 md:text-sm">{t("bookmaker")}</th>
+                        {market.columns.map((col) => (
+                          <th
+                            key={col.key}
+                            className="min-w-[3rem] px-3 py-2 text-center text-xs font-semibold text-[var(--foreground)] md:min-w-0 md:px-4 md:py-2.5 md:text-sm"
+                          >
                           {col.labelKey ? tMatch(col.labelKey) : (col.key === "yes" || col.key === "no") ? tMatch(col.key) : col.label}
                         </th>
                       ))}

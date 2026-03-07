@@ -111,7 +111,7 @@ export default async function LocaleLayout({ children, params }: Props) {
         </div>
       </header>
 
-      <div className="pb-[calc(4rem+max(env(safe-area-inset-bottom),10px))] md:pb-0">
+      <div key={locale} className="pb-[calc(4rem+max(env(safe-area-inset-bottom),10px))] md:pb-0">
         {children}
       </div>
 

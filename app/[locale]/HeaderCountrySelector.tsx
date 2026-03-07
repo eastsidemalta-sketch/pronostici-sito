@@ -5,6 +5,8 @@ import { Link, usePathname } from "@/i18n/navigation";
 import { useLocale, useTranslations } from "next-intl";
 import { routing, localeToCountry } from "@/i18n/routing";
 
+const BASE_URL = typeof window !== "undefined" ? window.location.origin : "";
+
 /** Restituisce il path senza prefisso locale (evita /pt-BR/pt-BR) */
 function pathWithoutLocale(pathname: string): string {
   const path = (pathname || "/").replace(/\/$/, "") || "/";
@@ -14,6 +16,12 @@ function pathWithoutLocale(pathname: string): string {
     if (path.startsWith(`/${loc}/`)) return path.slice(`/${loc}`.length) || "/";
   }
   return path || "/";
+}
+
+/** Full page navigation per cambio paese: evita cache client e garantisce dati corretti */
+function getLocaleHref(locale: string, pathWithoutLoc: string): string {
+  const path = pathWithoutLoc === "/" ? "" : pathWithoutLoc;
+  return `${BASE_URL}/${locale}${path}`;
 }
 
 /** Mappa locale -> codice ISO paese per circle-flags (bandiere circolari SVG) */
@@ -104,13 +112,13 @@ export default function HeaderCountrySelector() {
             const isActive = currentLocale === locale;
             const name = localeToCountry[locale] ?? locale;
             const iso = LOCALE_TO_ISO[locale] ?? "xx";
+            const href = getLocaleHref(locale, pathForLink);
             return (
               <li key={locale} role="option" aria-selected={isActive}>
-                <Link
-                  href={pathForLink}
-                  locale={locale}
+                <a
+                  href={href}
                   onClick={() => setOpen(false)}
-                  className={`flex items-center gap-2 px-3 py-2 text-sm transition ${
+                  className={`flex items-center gap-2 px-3 py-2 text-sm transition block w-full ${
                     isActive
                       ? "bg-[var(--accent-light)] font-semibold text-[var(--accent)]"
                       : "text-[var(--foreground)] hover:bg-[var(--background)]"
@@ -124,7 +132,7 @@ export default function HeaderCountrySelector() {
                     height={20}
                   />
                   {name}
-                </Link>
+                </a>
               </li>
             );
           })}
