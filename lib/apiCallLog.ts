@@ -99,7 +99,7 @@ export function readApiCallLog(hours = 24): ApiCallEntry[] {
 }
 
 /** Legge anche il log Netwin FULL (stesso formato concettuale) e lo unisce */
-export function readNetwinFullLog(hours = 24): Array<{ timestamp: number; iso: string; provider: string; type: string; success: boolean; h2hCount?: number; error?: string }> {
+export function readNetwinFullLog(hours = 24): Array<{ timestamp: number; iso: string; provider: string; type: string; success: boolean; h2hCount?: number; eventsExtracted?: number; error?: string }> {
   const candidates = [
     path.join(process.cwd(), "data", ".netwin-full.log"),
     path.join(process.cwd(), ".next", "standalone", "data", ".netwin-full.log"),
@@ -111,10 +111,10 @@ export function readNetwinFullLog(hours = 24): Array<{ timestamp: number; iso: s
     const raw = readFileSync(logPath, "utf-8");
     const lines = raw.trim().split("\n").filter(Boolean);
     const cutoff = Date.now() - hours * 60 * 60 * 1000;
-    const entries: Array<{ timestamp: number; iso: string; provider: string; type: string; success: boolean; h2hCount?: number; error?: string }> = [];
+    const entries: Array<{ timestamp: number; iso: string; provider: string; type: string; success: boolean; h2hCount?: number; eventsExtracted?: number; error?: string }> = [];
     for (const line of lines) {
       try {
-        const e = JSON.parse(line) as { timestamp?: number; iso?: string; success?: boolean; h2hCount?: number; error?: string };
+        const e = JSON.parse(line) as { timestamp?: number; iso?: string; success?: boolean; h2hCount?: number; eventsExtracted?: number; error?: string };
         if (e.timestamp && e.timestamp >= cutoff) {
           entries.push({
             timestamp: e.timestamp,
@@ -123,6 +123,7 @@ export function readNetwinFullLog(hours = 24): Array<{ timestamp: number; iso: s
             type: "FULL",
             success: e.success ?? false,
             h2hCount: e.h2hCount,
+            eventsExtracted: e.eventsExtracted,
             error: e.error,
           });
         }

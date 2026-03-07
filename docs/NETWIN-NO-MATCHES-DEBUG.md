@@ -24,6 +24,12 @@ GET /api/debug-netwin-cache?showMatches=1
 - `h2hCount: 0` → nessuna partita in cache
 - `matchSample` → campione di partite con i nomi usati da Netwin
 
+**FULL OK ma count 0:**
+- HTTP 200 e parse OK, ma 0 partite estratte. Possibili cause:
+  1. **0 eventi** – struttura risposta diversa (root/Manifestazione non trovati). Controlla `data/.netwin-full-debug.json` (creato automaticamente) e i log PM2: `[Netwin] FULL 0 eventi. root=...`
+  2. **Eventi presenti ma 0 partite** – nessun mercato 1X2 (Lista 3) trovato, o squadre/quote mancanti. Verifica `data/.netwin-lista-codes.json` per i codici Lista nel feed.
+- Il report `/api/debug-api-calls` mostra ora `0 (X eventi)` quando disponibile: X=0 → problema parsing; X>0 → problema estrazione quote/squadre.
+
 **Possibili errori FULL:**
 - `hash_lock` / "FULL già in corso" → un’altra richiesta FULL è attiva
 - `isLive can be 0 or 1` → parametro `isLive` non valido

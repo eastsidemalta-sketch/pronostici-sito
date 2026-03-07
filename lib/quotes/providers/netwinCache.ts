@@ -123,7 +123,7 @@ function saveBackupIfHasMatches(data: DirectMultiMarketResult, timestamp: number
 /** Registra tentativo FULL (successo o errore). Retention 7 giorni. */
 export function logFullAttempt(
   success: boolean,
-  details: { url?: string; h2hCount?: number; error?: string; errorRaw?: string }
+  details: { url?: string; h2hCount?: number; eventsExtracted?: number; error?: string; errorRaw?: string }
 ): void {
   try {
     const dir = path.dirname(FULL_LOG_FILE);
@@ -135,6 +135,7 @@ export function logFullAttempt(
       success,
       ...(details.url && { url: details.url }),
       ...(success && details.h2hCount != null && { h2hCount: details.h2hCount }),
+      ...(success && details.h2hCount === 0 && details.eventsExtracted != null && { eventsExtracted: details.eventsExtracted }),
       ...(!success && details.error && { error: details.error }),
       ...(!success && details.errorRaw && { errorRaw: details.errorRaw }),
     };

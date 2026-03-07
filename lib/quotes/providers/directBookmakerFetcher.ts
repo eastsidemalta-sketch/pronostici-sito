@@ -948,6 +948,13 @@ export async function fetchDirectBookmakerQuotes(
     : getEventsArray(data, eventsPath);
   if (isNetwin && netwinUseFull) {
     console.log(`[Netwin] FULL estratti ${events.length} eventi`);
+    if (events.length === 0 && useExalogic) {
+      const root = findEventsArray(data);
+      const rootInfo = root
+        ? `root[${root.length}] keys=${root[0] && typeof root[0] === "object" ? Object.keys(root[0] as object).join(",") : "?"}`
+        : "root=null";
+      console.warn(`[Netwin] FULL 0 eventi. ${rootInfo}. Top-level keys: ${data && typeof data === "object" ? Object.keys(data as object).join(",") : "?"}`);
+    }
   }
   const stakesConfig = mapping.stakes1X2;
   const result: DirectMultiMarketResult = {
@@ -1074,7 +1081,36 @@ export async function fetchDirectBookmakerQuotes(
       logFullAttempt(true, {
         url: maskUrlForLog(url),
         h2hCount,
+        ...(h2hCount === 0 && { eventsExtracted: events.length }),
       });
+      if (h2hCount === 0 && useExalogic) {
+        try {
+          const dir = path.join(process.cwd(), "data");
+          if (existsSync(dir)) {
+            const sample = JSON.stringify(
+              {
+                at: new Date().toISOString(),
+                eventsExtracted: events.length,
+                topLevelKeys: data && typeof data === "object" ? Object.keys(data as object) : [],
+                rootSample: (() => {
+                  const r = findEventsArray(data);
+                  if (!r || r.length === 0) return null;
+                  const first = r[0];
+                  return first && typeof first === "object"
+                    ? { keys: Object.keys(first as object), sample: JSON.stringify(first).slice(0, 2000) }
+                    : null;
+                })(),
+              },
+              null,
+              2
+            );
+            writeFileSync(path.join(dir, ".netwin-full-debug.json"), sample, "utf-8");
+            console.warn("[Netwin] FULL 0 partite: salvato .netwin-full-debug.json per analisi");
+          }
+        } catch {
+          /* ignora */
+        }
+      }
     } else {
       recordDeltaCall();
       logApiCall("Netwin", "DELTA", true, { count: result.h2h?.length });

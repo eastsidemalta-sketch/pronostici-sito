@@ -199,7 +199,12 @@ ${allLog.slice(0, 100).map((e) => `
 <td>${(e as { provider?: string }).provider ?? "-"}</td>
 <td>${(e as { type?: string }).type ?? "-"}</td>
 <td>${(e as { success?: boolean }).success ? "OK" : "ERR"}</td>
-<td>${(e as { count?: number; h2hCount?: number }).count ?? (e as { h2hCount?: number }).h2hCount ?? "-"}</td>
+<td>${(() => {
+  const c = (e as { count?: number; h2hCount?: number }).count ?? (e as { h2hCount?: number }).h2hCount ?? "-";
+  const ev = (e as { eventsExtracted?: number }).eventsExtracted;
+  if (c === 0 && ev != null) return `0 (${ev} eventi)`;
+  return String(c);
+})()}</td>
 <td>${(e as { error?: string }).error ? String((e as { error?: string }).error).slice(0, 80) + "..." : "-"}</td>
 </tr>`).join("")}
 </tbody>
