@@ -176,15 +176,25 @@ export function mergeDeltaWithCache(delta: DirectMultiMarketResult): DirectMulti
 }
 
 /** Debug: campione di partite in cache (per verificare nomi squadre usati da Netwin) */
-export function getCachedMatchSample(limit = 50): Array<{ homeTeam: string; awayTeam: string }> {
+export function getCachedMatchSample(
+  limit = 50
+): Array<{ homeTeam: string; awayTeam: string; manifestazione?: string }> {
   const c = getCached();
   const h2h = c?.h2h ?? [];
   const max = limit <= 0 ? h2h.length : Math.min(limit, h2h.length);
-  return h2h.slice(0, max).map((q) => ({ homeTeam: q.homeTeam, awayTeam: q.awayTeam }));
+  return h2h.slice(0, max).map((q) => ({
+    homeTeam: q.homeTeam ?? "",
+    awayTeam: q.awayTeam ?? "",
+    manifestazione: (q as { manifestazione?: string }).manifestazione,
+  }));
 }
 
 /** Debug: legge tutte le partite direttamente dal file cache (bypass in-memory, per showMatches=all) */
-export function getAllCachedMatchesFromFile(): Array<{ homeTeam: string; awayTeam: string }> {
+export function getAllCachedMatchesFromFile(): Array<{
+  homeTeam: string;
+  awayTeam: string;
+  manifestazione?: string;
+}> {
   const candidates = [
     path.join(process.cwd(), "data", ".netwin-cache.json"),
     path.join(process.cwd(), ".next", "standalone", "data", ".netwin-cache.json"),
@@ -193,9 +203,15 @@ export function getAllCachedMatchesFromFile(): Array<{ homeTeam: string; awayTea
     try {
       if (!existsSync(p)) continue;
       const raw = readFileSync(p, "utf-8");
-      const parsed = JSON.parse(raw) as { data?: { h2h?: Array<{ homeTeam?: string; awayTeam?: string }> } };
+      const parsed = JSON.parse(raw) as {
+        data?: { h2h?: Array<{ homeTeam?: string; awayTeam?: string; manifestazione?: string }> };
+      };
       const h2h = parsed?.data?.h2h ?? [];
-      return h2h.map((q) => ({ homeTeam: q.homeTeam ?? "", awayTeam: q.awayTeam ?? "" }));
+      return h2h.map((q) => ({
+        homeTeam: q.homeTeam ?? "",
+        awayTeam: q.awayTeam ?? "",
+        manifestazione: q.manifestazione,
+      }));
     } catch {
       continue;
     }

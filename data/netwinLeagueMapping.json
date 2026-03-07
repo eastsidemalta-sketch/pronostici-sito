@@ -1,0 +1,21 @@
+{
+  "_comment": "Mappa leagueId (API Football) -> pattern da cercare in manifestazione Netwin (descr). Match se manifestazione contiene almeno un pattern (case-insensitive).",
+  "135": ["ITALIA", "I DIVISIONE", "SERIE A"],
+  "136": ["ITALIA", "II DIVISIONE", "SERIE B"],
+  "137": ["ITALIA", "COPPA", "COPA ITALIA"],
+  "78": ["GERMANIA", "BUNDESLIGA"],
+  "148": ["GERMANIA", "DFB", "POKAL", "COPPA"],
+  "39": ["INGHILTERRA", "PREMIER", "ENGLAND"],
+  "142": ["INGHILTERRA", "FA CUP", "COPPA"],
+  "140": ["SPAGNA", "LIGA", "LA LIGA"],
+  "143": ["SPAGNA", "COPA", "REY"],
+  "61": ["FRANCIA", "LIGUE", "LIGUE 1"],
+  "66": ["FRANCIA", "COUPE", "COPPA"],
+  "2": ["CHAMPIONS", "UEFA", "CHAMPIONS LEAGUE"],
+  "3": ["EUROPA", "UEFA", "EUROPA LEAGUE"],
+  "4": ["CONFERENCE", "UEFA", "CONFERENCE LEAGUE"],
+  "203": ["TURCHIA", "SUPER LIG", "TURKEY"],
+  "94": ["PORTUGAL", "LIGA", "PRIMEIRA"],
+  "71": ["BRASILE", "BRASIL", "CAMPEONATO", "BRASILEIRAO"],
+  "72": ["BRASILE", "SERIE B", "BRASIL B"]
+}

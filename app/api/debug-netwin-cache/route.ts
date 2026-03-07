@@ -3,6 +3,7 @@
  * Mostra quando è stata fatta l'ultima FULL Netwin e quando è consentita la prossima.
  * ?showMatches=1 = include campione (max 100 partite)
  * ?showMatches=all = include TUTTE le partite (lettura diretta da file)
+ * ?format=table = tabella CSV con colonne: #,evento,manifestazione (per analisi mapping)
  */
 import { NextResponse } from "next/server";
 import { getCacheDebugInfo, getCachedMatchSample, getAllCachedMatchesFromFile } from "@/lib/quotes/providers/netwinCache";
@@ -10,6 +11,7 @@ import { getCacheDebugInfo, getCachedMatchSample, getAllCachedMatchesFromFile } 
 export async function GET(req: Request) {
   const { searchParams } = new URL(req.url);
   const showMatches = searchParams.get("showMatches");
+  const format = searchParams.get("format");
   const info = getCacheDebugInfo();
   const now = Date.now();
   const body: Record<string, unknown> = {
@@ -22,10 +24,26 @@ export async function GET(req: Request) {
   };
   if (showMatches && info.hasCache) {
     // showMatches=all: lettura diretta da file per avere tutte le partite (bypass cache in-memory)
-    const matches = showMatches === "all" ? getAllCachedMatchesFromFile() : getCachedMatchSample(100);
+    const matches =
+      showMatches === "all" ? getAllCachedMatchesFromFile() : getCachedMatchSample(100);
     body.matches = matches;
     body.matchesCount = matches.length;
-    body.hintMatchNames = "Nomi squadre usati da Netwin. Aggiungi alias in data/teamAliasesByProvider.json se diversi da API Football.";
+    body.hintMatchNames =
+      "Nomi squadre usati da Netwin. Aggiungi alias in data/teamAliasesByProvider.json se diversi da API Football.";
+
+    if (format === "table" && showMatches === "all") {
+      const rows = matches.map(
+        (m, i) =>
+          `${i + 1},"${(m.homeTeam ?? "")} - ${m.awayTeam ?? ""}","${(m.manifestazione ?? "").replace(/"/g, '""')}"`
+      );
+      const csv = "#,evento,manifestazione\n" + rows.join("\n");
+      return new NextResponse(csv, {
+        headers: {
+          "Content-Type": "text/csv; charset=utf-8",
+          "Content-Disposition": "attachment; filename=netwin-matches.csv",
+        },
+      });
+    }
   }
   return NextResponse.json(body);
 }

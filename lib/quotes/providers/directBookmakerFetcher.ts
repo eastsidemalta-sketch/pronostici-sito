@@ -3,7 +3,7 @@
  * Applica il mapping configurato e restituisce formato normalizzato.
  * Supporta risposta JSON e XML.
  */
-import { writeFileSync, mkdirSync, existsSync } from "fs";
+import { writeFileSync, mkdirSync, existsSync, readFileSync } from "fs";
 import path from "path";
 import type { Bookmaker } from "../bookmaker.types";
 import { logApiCall } from "@/lib/apiCallLog";
@@ -17,6 +17,69 @@ import {
   recordDeltaCall,
   logFullAttempt,
 } from "./netwinCache";
+
+/** Carica mapping leagueId -> pattern manifestazione Netwin */
+function loadNetwinLeagueMapping(): Record<string, string[]> {
+  try {
+    const p = path.join(process.cwd(), "data", "netwinLeagueMapping.json");
+    if (!existsSync(p)) return {};
+    const raw = readFileSync(p, "utf-8");
+    const parsed = JSON.parse(raw) as Record<string, unknown>;
+    const out: Record<string, string[]> = {};
+    for (const [k, v] of Object.entries(parsed)) {
+      if (k.startsWith("_")) continue;
+      if (Array.isArray(v)) out[k] = v.map((x) => String(x));
+      else if (typeof v === "string") out[k] = [v];
+    }
+    return out;
+  } catch {
+    return {};
+  }
+}
+
+/** Filtra quote Netwin per leagueId usando manifestazione e mapping */
+function filterNetwinQuotesByLeague<T extends { manifestazione?: string }>(
+  quotes: T[],
+  leagueId: number,
+  mapping: Record<string, string[]>
+): T[] {
+  const patterns = mapping[String(leagueId)];
+  if (!patterns?.length) return quotes;
+  const lowerPatterns = patterns.map((p) => p.toLowerCase());
+  return quotes.filter((q) => {
+    const m = q.manifestazione?.toLowerCase() ?? "";
+    if (!m) return true; // senza manifestazione: includi (backward compat)
+    return lowerPatterns.some((p) => m.includes(p));
+  });
+}
+
+/** Applica filtro leagueId a result Netwin (per tutti i mercati) */
+function applyNetwinLeagueFilter(
+  result: DirectMultiMarketResult,
+  leagueId: number | undefined
+): DirectMultiMarketResult {
+  if (leagueId == null) return result;
+  const mapping = loadNetwinLeagueMapping();
+  if (Object.keys(mapping).length === 0) return result;
+  const out: DirectMultiMarketResult = {};
+  const keys: (keyof DirectMultiMarketResult)[] = [
+    "h2h",
+    "spreads",
+    "totals_25",
+    "totals_15",
+    "btts",
+    "double_chance",
+    "draw_no_bet",
+    "h2h_3_way_h1",
+  ];
+  for (const k of keys) {
+    const arr = result[k];
+    if (Array.isArray(arr)) {
+      (out as Record<string, unknown>)[k] = filterNetwinQuotesByLeague(arr, leagueId, mapping);
+    }
+  }
+  return out;
+}
 
 /** Cache Betboom category IDs (TTL 1h) per fallback quando non in config */
 let betboomCategoriesCache: { ids: number[]; expires: number } | null = null;
@@ -68,6 +131,8 @@ export type DirectQuote = {
   outcomes: Record<string, number>;
   bookmakerKey: string;
   bookmaker: string;
+  /** Netwin: descr della Manifestazione (es. "ITALIA I DIVISIONE") per filtrare per leagueId */
+  manifestazione?: string;
 };
 
 /** Chiavi mercati supportate (allineate a MatchQuotesTabs / quotesEngine) */
@@ -428,6 +493,9 @@ function processExalogicNode(
   const { home, away } = extractTeamsFromAvvenimento(node, parentManifestazione);
   if (!home || !away) return;
   const stakes = scommesseToStakes(scommesse, NETWIN_QUOTA_DIVISOR);
+  const manifestazione = parentManifestazione
+    ? String(parentManifestazione.descr ?? parentManifestazione.cod ?? "").trim()
+    : "";
   const ev: Record<string, unknown> = {
     homeTeam: home,
     awayTeam: away,
@@ -436,6 +504,7 @@ function processExalogicNode(
     odds2,
   };
   if (stakes.length > 0) ev.stakes = stakes;
+  if (manifestazione) ev.manifestazione = manifestazione;
   out.push(ev);
 }
 
@@ -697,7 +766,7 @@ export async function fetchDirectBookmakerQuotes(
 
   if (isNetwin && !netwinUseFull && !options?.forceDelta && !canDoDelta()) {
     const cached = getCached();
-    return cached ?? {};
+    return applyNetwinLeagueFilter(cached ?? {}, leagueId) ?? {};
   }
 
   const url = buildUrl(
@@ -772,7 +841,7 @@ export async function fetchDirectBookmakerQuotes(
     }
     if (isNetwin && !netwinUseFull) {
       const cached = getCached();
-      if (cached) return cached;
+      if (cached) return applyNetwinLeagueFilter(cached, leagueId);
     }
     return {};
   }
@@ -795,7 +864,7 @@ export async function fetchDirectBookmakerQuotes(
           });
         }
         const cached = getCached();
-        return cached ?? {};
+        return applyNetwinLeagueFilter(cached ?? {}, leagueId);
       }
       if (text.includes("isLive") && /can be 0 or 1/i.test(text)) {
         if (netwinUseFull) {
@@ -810,7 +879,7 @@ export async function fetchDirectBookmakerQuotes(
           });
         }
         const cached = getCached();
-        return cached ?? {};
+        return applyNetwinLeagueFilter(cached ?? {}, leagueId);
       }
     }
     data = parseApiResponse(text);
@@ -826,7 +895,7 @@ export async function fetchDirectBookmakerQuotes(
     }
     if (isNetwin && !netwinUseFull) {
       const cached = getCached();
-      if (cached) return cached;
+      if (cached) return applyNetwinLeagueFilter(cached, leagueId);
     }
     return {};
   }
@@ -876,11 +945,13 @@ export async function fetchDirectBookmakerQuotes(
     const awayTeam = getString(ev, awayTeamPath);
     if (!homeTeam || !awayTeam) continue;
 
+    const manifestazione = useExalogic ? getString(ev, "manifestazione") : undefined;
     const baseQuote = {
       homeTeam,
       awayTeam,
       bookmakerKey: bm.id,
       bookmaker: getBookmakerDisplayName(bm),
+      ...(manifestazione && { manifestazione }),
     };
 
     if (stakesConfig) {
@@ -989,9 +1060,10 @@ export async function fetchDirectBookmakerQuotes(
       const merged = mergeDeltaWithCache(result);
       if ((merged.h2h?.length ?? 0) === 0) {
         const fallback = getCached();
-        if (fallback && (fallback.h2h?.length ?? 0) > 0) return fallback;
+        if (fallback && (fallback.h2h?.length ?? 0) > 0)
+          return applyNetwinLeagueFilter(fallback, leagueId);
       }
-      return merged;
+      return applyNetwinLeagueFilter(merged, leagueId);
     }
   }
 
@@ -1048,9 +1120,10 @@ export async function fetchDirectBookmakerQuotes(
 
   if (isNetwin && (result.h2h?.length ?? 0) === 0) {
     const cached = getCached();
-    if (cached && (cached.h2h?.length ?? 0) > 0) return cached;
+    if (cached && (cached.h2h?.length ?? 0) > 0)
+      return applyNetwinLeagueFilter(cached, leagueId);
   }
-  return result;
+  return applyNetwinLeagueFilter(result, leagueId);
 }
 
 /** Aggiunge o sostituisce una quote in result[market] per (homeTeam, awayTeam). Preferisce la nuova se già presente. */
