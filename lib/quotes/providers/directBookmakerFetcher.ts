@@ -1095,14 +1095,20 @@ export async function fetchDirectBookmakerQuotes(
         h2hCount,
         ...(h2hCount === 0 && { eventsExtracted: events.length }),
       });
-      if (h2hCount === 0 && useExalogic) {
+      if (useExalogic && events.length > 0) {
         try {
           const dir = path.join(process.cwd(), "data");
           if (existsSync(dir)) {
+            const eventsSample = events.slice(0, 3).map((e) =>
+              e && typeof e === "object"
+                ? { keys: Object.keys(e as object), ...(e as Record<string, unknown>) }
+                : e
+            );
             const sample = JSON.stringify(
               {
                 at: new Date().toISOString(),
                 eventsExtracted: events.length,
+                h2hCount,
                 topLevelKeys: data && typeof data === "object" ? Object.keys(data as object) : [],
                 rootSample: (() => {
                   const r = findEventsArray(data);
@@ -1112,12 +1118,15 @@ export async function fetchDirectBookmakerQuotes(
                     ? { keys: Object.keys(first as object), sample: JSON.stringify(first).slice(0, 2000) }
                     : null;
                 })(),
+                eventsSample,
               },
               null,
               2
             );
             writeFileSync(path.join(dir, ".netwin-full-debug.json"), sample, "utf-8");
-            console.warn("[Netwin] FULL 0 partite: salvato .netwin-full-debug.json per analisi");
+            if (h2hCount === 0) {
+              console.warn("[Netwin] FULL 0 partite: salvato .netwin-full-debug.json (eventi campione)");
+            }
           }
         } catch {
           /* ignora */

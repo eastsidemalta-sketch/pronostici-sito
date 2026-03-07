@@ -30,6 +30,12 @@ GET /api/debug-netwin-cache?showMatches=1
   2. **Eventi presenti ma 0 partite** – nessun mercato 1X2 (Lista 3) trovato, o squadre/quote mancanti. Verifica `data/.netwin-lista-codes.json` per i codici Lista nel feed.
 - Il report `/api/debug-api-calls` mostra ora `0 (X eventi)` quando disponibile: X=0 → problema parsing; X>0 → problema estrazione quote/squadre.
 
+**Visualizzare gli eventi estratti:**
+```
+GET /api/debug-netwin-events
+```
+Restituisce `debug` (da `.netwin-full-debug.json`) con `eventsSample`: i primi 3 eventi con la struttura completa (homeTeam, awayTeam, odds1, stakes, ecc.). Utile per capire perché non si estraggono partite.
+
 **Possibili errori FULL:**
 - `hash_lock` / "FULL già in corso" → un’altra richiesta FULL è attiva
 - `isLive can be 0 or 1` → parametro `isLive` non valido
