@@ -80,6 +80,9 @@ fi
 echo ""
 echo "4. Build e restart produzione..."
 mkdir -p public/uploads
+mkdir -p data
+# File runtime Netwin: Next.js trace li copia durante build; se mancano → ENOENT
+touch data/.netwin-full.log data/.netwin-cache.json 2>/dev/null || true
 rm -rf .next
 npm ci
 npm run build
