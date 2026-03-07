@@ -22,7 +22,7 @@
     },
     "countryConfig": {
       "BR": {
-        "bonusDescription": "Bônus de boas-vindas para novos apostadores.",
+        "bonusDescription": "Receba 10 BLR em Apostas Grátis para desportos, com rollover x1 e possibilidade de ganho máximo até 350 BLR, para utilizar nos seus eventos desportivos favoritos.",
         "links": [
           {
             "url": "https://click.betboom.com/0p7o0R0n",
@@ -36,24 +36,59 @@
             "url": "https://click.betboom.com/0p7o0R0n",
             "useCase": "bonus"
           }
-        ]
+        ],
+        "matchBoxBonusEnabled": true,
+        "matchBoxButtonText": "RECEBA 10 BLR"
       }
     },
-    "apiEndpoint": "https://com-br-partner-feed.sporthub.bet/api/partner_feed/v1",
-    "apiAuthType": "bearer",
+    "apiEndpoint": "https://com-br-partner-feed.sporthub.bet/api/partner_feed/v1/matches/get_by_category_ids",
+    "apiAuthType": "x-access-token",
     "apiRequestConfig": {
-      "method": "GET",
-      "queryParams": {
-        "partner_id": "7557"
+      "method": "POST",
+      "queryParams": {},
+      "bodyTemplate": {
+        "locale": "en",
+        "category_ids": [],
+        "market_ids": [
+          1,
+          2,
+          3,
+          14,
+          20
+        ],
+        "type": "prematch"
+      },
+      "headers": {
+        "x-partner": "id_7557"
       }
     },
     "apiMappingConfig": {
-      "eventsPath": "$.data",
-      "homeTeam": "homeTeam",
-      "awayTeam": "awayTeam",
-      "odds1": "odds1",
-      "oddsX": "oddsX",
-      "odds2": "odds2"
+      "eventsPath": "$.matches",
+      "homeTeam": "teams.home_team.name",
+      "awayTeam": "teams.away_team.name",
+      "stakes1X2": {
+        "stakesPath": "stakes",
+        "marketName": "Result",
+        "outcomeId1": 1,
+        "outcomeIdX": 2,
+        "outcomeId2": 3
+      }
+    },
+    "remuneration": {
+      "model": "revenue_share",
+      "value": 40
+    },
+    "apiLeagueMapping": {
+      "39": "128",
+      "71": "161",
+      "72": "161",
+      "78": "131",
+      "135": "141",
+      "136": "141",
+      "137": "141",
+      "138": "141",
+      "942": "141",
+      "943": "141"
     }
   },
   {
@@ -138,6 +173,13 @@
           }
         ]
       }
+    },
+    "apiLeagueMapping": {
+      "2": "uefa_champions_league",
+      "3": "uefa_europa_league",
+      "78": "bundesliga",
+      "135": "serie_a",
+      "148": "second_amateur_division_-_acff"
     }
   }
 ]
