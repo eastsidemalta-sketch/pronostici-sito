@@ -2,6 +2,9 @@
 # Deploy SOLO sito TEST. Produzione non viene toccata.
 # Eseguire sul droplet: bash scripts/deploy-test-prod.sh
 # Per produzione (quando tutto è verificato): bash scripts/deploy-prod.sh
+#
+# IMPORTANTE: preserva impostazioni deploy precedenti (data, cache Netwin, env).
+# Su TEST: Netwin FULL e DELTA sono attivi (nessun NETWIN_DISABLE_FULL).
 
 set -e
 
@@ -84,6 +87,13 @@ if [ ! -f .next/standalone/.env.local ] && [ ! -f .next/standalone/.env ]; then
   [ -f /var/www/pronostici-sito/.env.local ] && cp /var/www/pronostici-sito/.env.local .next/standalone/ || true
   [ -f /var/www/pronostici-sito/.env ] && cp /var/www/pronostici-sito/.env .next/standalone/ || true
 fi
+# TEST: rimuovi NETWIN_DISABLE_FULL se presente (su test FULL e DELTA devono funzionare)
+for ENV_F in .next/standalone/.env.local .next/standalone/.env; do
+  if [ -f "$ENV_F" ] && grep -q "NETWIN_DISABLE_FULL" "$ENV_F"; then
+    grep -v "NETWIN_DISABLE_FULL" "$ENV_F" > "${ENV_F}.tmp" && mv "${ENV_F}.tmp" "$ENV_F"
+    echo "Rimosso NETWIN_DISABLE_FULL (test: FULL e DELTA attivi)"
+  fi
+done
 pm2 delete pronostici-test 2>/dev/null; pm2 start ecosystem.config.cjs --only pronostici-test
 wait_for_app "pronostici-test" 3001 || true
 # Invalida cache e pre-popola con dati freschi (chiama API Football + quote, evita vuoto al primo utente)
