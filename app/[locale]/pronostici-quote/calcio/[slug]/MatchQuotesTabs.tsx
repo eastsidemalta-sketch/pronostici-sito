@@ -3,7 +3,6 @@
 import { useState, useEffect, useRef } from "react";
 import { useParams, useSearchParams } from "next/navigation";
 import { useTranslations } from "next-intl";
-import { localeToCountryCode } from "@/i18n/routing";
 import { trackEvent } from "@/lib/analytics/ga";
 import { BookmakerLink } from "@/lib/components/BookmakerLink";
 import { BookmakerLogo } from "@/lib/components/BookmakerLogo";
@@ -80,11 +79,6 @@ export default function MatchQuotesTabs({ sportKey, homeTeam, awayTeam, country,
   const t = useTranslations("quotes");
   const tMatch = useTranslations("match");
   const locale = (params?.locale as string) || "it";
-  const pathLocale =
-    typeof window !== "undefined" ? window.location.pathname.split("/").filter(Boolean)[0] : null;
-  const countryFromPath =
-    pathLocale && (localeToCountryCode as Record<string, string>)[pathLocale];
-  const effectiveCountry = countryFromPath ?? country;
   const matchSlug = params?.slug as string | undefined;
   const logoByKey = new Map<string, string>(Object.entries(bookmakerLogos));
   const faviconByKey = new Map<string, string>(Object.entries(bookmakerFavicons));
@@ -95,12 +89,12 @@ export default function MatchQuotesTabs({ sportKey, homeTeam, awayTeam, country,
 
   useEffect(() => {
     const ac = new AbortController();
-    const requestedCountry = effectiveCountry;
+    const requestedCountry = country;
     fetchCountryRef.current = requestedCountry;
     const q = new URLSearchParams({ sportKey });
     if (homeTeam) q.set("homeTeam", homeTeam);
     if (awayTeam) q.set("awayTeam", awayTeam);
-    if (requestedCountry) q.set("country", requestedCountry);
+    if (country) q.set("country", country);
     if (leagueId != null) q.set("leagueId", String(leagueId));
     if (searchParams?.get("debug") === "1") q.set("debug", "1");
     setLoading(true);
@@ -123,7 +117,7 @@ export default function MatchQuotesTabs({ sportKey, homeTeam, awayTeam, country,
       ac.abort();
       fetchCountryRef.current = undefined;
     };
-  }, [sportKey, homeTeam, awayTeam, effectiveCountry, leagueId, searchParams]);
+  }, [sportKey, homeTeam, awayTeam, country, leagueId, searchParams]);
 
   if (loading) {
     return (
