@@ -2,14 +2,10 @@ import type { Metadata } from "next";
 import { Suspense } from "react";
 import { getTranslations } from "next-intl/server";
 import { getMenuForCountry } from "@/lib/homeMenuData";
-import { getCachedHomeData } from "@/lib/homePageCache";
 import { isSportEnabledForCountry } from "@/lib/sportsPerCountryData";
-import { getTelegramBannerForCountryAsync } from "@/lib/telegramBannerConfig";
-import { getQuotesForFixtures } from "@/lib/quotes/fixturesQuotes";
-import { getFeaturedBookmaker } from "@/lib/quotes/bookmakers";
 import { localeToCountryCode } from "@/i18n/routing";
-import HomeContent from "./HomeContent";
-import HomeBonusSidebar from "./HomeBonusSidebar";
+import HomeDataLoader from "./HomeDataLoader";
+import HomeLoadingSkeleton from "./HomeLoadingSkeleton";
 import { getOgMetadata } from "@/lib/seo/ogMetadata";
 import {
   createIndexableMetadata,
@@ -67,55 +63,30 @@ export default async function HomePage({
   const menuItems = getMenuForCountry(country);
   const calcioEnabled = isSportEnabledForCountry(country, "calcio");
 
-  const { fixtures, quotesMap, predictionsMap } = await getCachedHomeData(
-    country,
-    bypassCache
-  );
-
-  const featuredBookmaker = getFeaturedBookmaker(country);
-  const telegramBanner = await getTelegramBannerForCountryAsync(country);
+  const labels = {
+    allSports: t("allSports"),
+    allCompetitions: t("allCompetitions"),
+    noMatches: t("noMatches"),
+    compareOdds: t("compareOdds"),
+    allQuotes: t("allQuotes"),
+    fullPredictions: t("fullPredictions"),
+    quotesTab: t("quotesTab"),
+    predictionsTab: t("predictionsTab"),
+    selectSportForMatches: t.raw("selectSportForMatches") as (opts: { sport: string }) => string,
+    pronosticiTitle: tPronostici("title"),
+  };
 
   return (
     <main className="min-h-screen bg-[var(--background)]">
-      <Suspense fallback={<div className="flex min-h-[200px] items-center justify-center text-[var(--foreground-muted)]">{t("loading")}</div>}>
-      <HomeContent
-        menuItems={menuItems}
-        fixtures={fixtures}
-        quotesMap={quotesMap}
-        predictionsMap={predictionsMap}
-        locale={locale}
-        country={country}
-        labels={{
-          allSports: t("allSports"),
-          allCompetitions: t("allCompetitions"),
-          noMatches: t("noMatches"),
-          compareOdds: t("compareOdds"),
-          allQuotes: t("allQuotes"),
-          fullPredictions: t("fullPredictions"),
-          quotesTab: t("quotesTab"),
-          predictionsTab: t("predictionsTab"),
-          selectSportForMatches: t.raw("selectSportForMatches") as (opts: { sport: string }) => string,
-          pronosticiTitle: tPronostici("title"),
-        }}
-        featuredBookmaker={
-          featuredBookmaker
-            ? {
-                bonusUrl: featuredBookmaker.bonusUrl!,
-                buttonText: featuredBookmaker.buttonText,
-                faviconUrl: featuredBookmaker.faviconUrl ?? undefined,
-                logoUrl: featuredBookmaker.logoUrl,
-                name: featuredBookmaker.name,
-                showInPronosticiBox: featuredBookmaker.showInPronosticiBox,
-                pronosticiButtonText: featuredBookmaker.pronosticiButtonText,
-                pronosticiButtonUrl: featuredBookmaker.pronosticiButtonUrl,
-                buttonColor: featuredBookmaker.buttonColor,
-              }
-            : null
-        }
-        telegramBanner={telegramBanner}
-        calcioEnabled={calcioEnabled}
-        bonusSidebar={<HomeBonusSidebar country={country} locale={locale} />}
-      />
+      <Suspense fallback={<HomeLoadingSkeleton />}>
+        <HomeDataLoader
+          country={country}
+          locale={locale}
+          bypassCache={bypassCache}
+          menuItems={menuItems}
+          calcioEnabled={calcioEnabled}
+          labels={labels}
+        />
       </Suspense>
     </main>
   );

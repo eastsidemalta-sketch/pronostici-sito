@@ -135,6 +135,7 @@ export default function PronosticiQuoteContent({
           <div className="flex flex-col gap-6 sm:gap-6 lg:flex-row lg:items-start lg:gap-6">
             <div className="min-w-0 flex-1">
               <HomeMatchesList
+                key={country}
                 fixtures={filteredFixtures}
                 locale={locale}
                 initialTab={initialTab}

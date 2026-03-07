@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { useParams, useSearchParams } from "next/navigation";
 import { useTranslations } from "next-intl";
 import { trackEvent } from "@/lib/analytics/ga";
@@ -85,9 +85,12 @@ export default function MatchQuotesTabs({ sportKey, homeTeam, awayTeam, country,
   const [multiMarket, setMultiMarket] = useState<Record<string, QuoteRow[]>>({});
   const [loading, setLoading] = useState(true);
   const [activeTab, setActiveTab] = useState<string>("principali");
+  const fetchCountryRef = useRef<string | undefined>(undefined);
 
   useEffect(() => {
     const ac = new AbortController();
+    const requestedCountry = country;
+    fetchCountryRef.current = requestedCountry;
     const q = new URLSearchParams({ sportKey });
     if (homeTeam) q.set("homeTeam", homeTeam);
     if (awayTeam) q.set("awayTeam", awayTeam);
@@ -99,13 +102,21 @@ export default function MatchQuotesTabs({ sportKey, homeTeam, awayTeam, country,
       .then((res) => res.json())
       .then((data) => {
         if (data._debug) console.log("[Quotes API debug]", data._debug);
-        setMultiMarket(data.multiMarket || {});
+        setMultiMarket((prev) => {
+          if (fetchCountryRef.current !== requestedCountry) return prev;
+          return data.multiMarket || {};
+        });
       })
       .catch((err) => {
         if (err?.name !== "AbortError") setMultiMarket({});
       })
-      .finally(() => setLoading(false));
-    return () => ac.abort();
+      .finally(() => {
+        if (fetchCountryRef.current === requestedCountry) setLoading(false);
+      });
+    return () => {
+      ac.abort();
+      fetchCountryRef.current = undefined;
+    };
   }, [sportKey, homeTeam, awayTeam, country, leagueId, searchParams]);
 
   if (loading) {

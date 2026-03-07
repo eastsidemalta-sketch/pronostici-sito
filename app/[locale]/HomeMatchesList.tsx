@@ -295,17 +295,17 @@ export default function HomeMatchesList({
                       <div className="flex shrink-0 flex-col items-stretch gap-2 border-t-2 border-[var(--card-border)] pt-3 sm:gap-1.5 sm:pt-2 lg:border-t-0 lg:border-l-2 lg:gap-1.5 lg:pl-4 lg:pt-0">
                         {(q && (q.best1 > 0 || q.bestX > 0 || q.best2 > 0)) ? (
                           <div className="flex w-full flex-col gap-3 sm:flex-row sm:items-stretch sm:gap-x-4 sm:justify-end">
-                            <div className={`flex flex-col items-center gap-2 ${mobileTab === "pronostici" ? "hidden sm:flex" : ""}`}>
-                              <div className="flex items-center justify-center gap-2 sm:gap-2">
+                            <div className={`flex flex-col items-center gap-2 sm:ml-0 ${mobileTab === "pronostici" ? "hidden sm:flex" : ""}`}>
+                              <div className="flex items-center justify-center gap-2 sm:gap-2 ml-3 sm:ml-0">
                                 <div className="flex flex-col items-center">
                                   <span className="mb-1 text-[10px] font-medium text-[var(--foreground-muted)] sm:text-[10px]">1</span>
                                   <div className="flex min-h-[40px] min-w-[4.5rem] overflow-hidden rounded-lg border border-[var(--card-border)] sm:min-h-0 sm:min-w-0 md:min-w-[5rem]">
-                                    <div className="flex shrink-0 items-center justify-center border-r border-gray-200 bg-white px-2 py-2 sm:px-1.5 sm:py-1.5">
+                                    <div className="flex shrink-0 items-center justify-center border-r border-gray-200 bg-white px-1.5 py-2 sm:px-1.5 sm:py-1.5 min-w-0">
                                       {(q.bookmaker1?.faviconUrl || q.bookmaker1?.logoUrl) ? (
                                         <BookmakerLogo src={q.bookmaker1.faviconUrl || q.bookmaker1.logoUrl!} size="sm" title={q.bookmaker1.name} />
                                       ) : null}
                                     </div>
-                                    <div className="flex flex-1 items-center justify-center bg-slate-100 px-1.5 py-1.5 sm:px-1 sm:py-1">
+                                    <div className="flex min-w-[2.25rem] flex-1 items-center justify-center bg-slate-100 px-1.5 py-1.5 sm:px-1 sm:py-1">
                                       <span className="text-[10px] font-bold text-[var(--best-odds)] md:text-xs">
                                         {q?.best1 ? q.best1.toFixed(2) : "-"}
                                       </span>
@@ -315,12 +315,12 @@ export default function HomeMatchesList({
                                 <div className="flex flex-col items-center">
                                   <span className="mb-1 text-[10px] font-medium text-[var(--foreground-muted)] sm:text-[10px]">X</span>
                                   <div className="flex min-h-[40px] min-w-[4.5rem] overflow-hidden rounded-lg border border-[var(--card-border)] sm:min-h-0 sm:min-w-0 md:min-w-[5rem]">
-                                    <div className="flex shrink-0 items-center justify-center border-r border-gray-200 bg-white px-2 py-2 sm:px-1.5 sm:py-1.5">
+                                    <div className="flex shrink-0 items-center justify-center border-r border-gray-200 bg-white px-1.5 py-2 sm:px-1.5 sm:py-1.5 min-w-0">
                                       {(q.bookmakerX?.faviconUrl || q.bookmakerX?.logoUrl) ? (
                                         <BookmakerLogo src={q.bookmakerX.faviconUrl || q.bookmakerX.logoUrl!} size="sm" title={q.bookmakerX.name} />
                                       ) : null}
                                     </div>
-                                    <div className="flex flex-1 items-center justify-center bg-slate-100 px-1.5 py-1.5 sm:px-1 sm:py-1">
+                                    <div className="flex min-w-[2.25rem] flex-1 items-center justify-center bg-slate-100 px-1.5 py-1.5 sm:px-1 sm:py-1">
                                       <span className="text-[10px] font-bold text-[var(--best-odds)] md:text-xs">
                                         {q?.bestX ? q.bestX.toFixed(2) : "-"}
                                       </span>
@@ -330,12 +330,12 @@ export default function HomeMatchesList({
                                 <div className="flex flex-col items-center">
                                   <span className="mb-1 text-[10px] font-medium text-[var(--foreground-muted)] sm:text-[10px]">2</span>
                                   <div className="flex min-h-[40px] min-w-[4.5rem] overflow-hidden rounded-lg border border-[var(--card-border)] sm:min-h-0 sm:min-w-0 md:min-w-[5rem]">
-                                    <div className="flex shrink-0 items-center justify-center border-r border-gray-200 bg-white px-2 py-2 sm:px-1.5 sm:py-1.5">
+                                    <div className="flex shrink-0 items-center justify-center border-r border-gray-200 bg-white px-1.5 py-2 sm:px-1.5 sm:py-1.5 min-w-0">
                                       {(q.bookmaker2?.faviconUrl || q.bookmaker2?.logoUrl) ? (
                                         <BookmakerLogo src={q.bookmaker2.faviconUrl || q.bookmaker2.logoUrl!} size="sm" title={q.bookmaker2.name} />
                                       ) : null}
                                     </div>
-                                    <div className="flex flex-1 items-center justify-center bg-slate-100 px-1.5 py-1.5 sm:px-1 sm:py-1">
+                                    <div className="flex min-w-[2.25rem] flex-1 items-center justify-center bg-slate-100 px-1.5 py-1.5 sm:px-1 sm:py-1">
                                       <span className="text-[10px] font-bold text-[var(--best-odds)] md:text-xs">
                                         {q?.best2 ? q.best2.toFixed(2) : "-"}
                                       </span>
