@@ -49,7 +49,7 @@
     "Getafe CF": "Getafe",
     "Levante UD": "Levante",
     "CA Osasuna": "Osasuna",
-    "RCD Mallorca": "Mallorca",
+    "RCD Mallorca": ["Mallorca", "Maillora", "Maiorca"],
     "Valencia CF": "Valencia",
     "Villarreal CF": "Villarreal",
     "Elche CF": "Elche",
