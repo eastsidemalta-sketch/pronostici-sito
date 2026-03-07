@@ -47,13 +47,18 @@ html {
   min-height: 100vh;
 }
 
-/* Mobile bottom nav: stile Oddschecker - -webkit-logical-height per iOS */
+/* Mobile bottom nav: stile Oddschecker - fissata al fondo viewport su iOS */
 @media (max-width: 767px) {
   [data-mobile-bottom-nav] {
+    position: fixed;
+    left: 0;
+    right: 0;
+    bottom: 0;
     min-height: 66px;
     max-height: 90px;
     -webkit-min-logical-height: 66px;
     -webkit-max-logical-height: 90px;
+    padding-bottom: max(env(safe-area-inset-bottom), 10px);
   }
 }
 

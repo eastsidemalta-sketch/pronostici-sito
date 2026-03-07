@@ -5,7 +5,6 @@ import { useSearchParams } from "next/navigation";
 import { useLocale } from "next-intl";
 import { useTranslations } from "next-intl";
 import { useEffect, useState } from "react";
-import { createPortal } from "react-dom";
 
 function HomeIcon({ active }: { active: boolean }) {
   return (
@@ -156,10 +155,10 @@ function MobileBottomNavContent() {
 
   const prefix = `/${locale}`;
 
-  const navContent = (
+  return (
     <nav
       data-mobile-bottom-nav
-      className="fixed left-0 right-0 bottom-0 z-50 flex min-h-[66px] max-h-[90px] items-center justify-around gap-0.5 border-t border-[var(--card-border)] bg-[var(--nav-bar-bg)] px-4 pb-[max(env(safe-area-inset-bottom),10px)] pt-2 md:hidden"
+      className="fixed inset-x-0 bottom-0 z-[9999] flex min-h-[66px] max-h-[90px] items-center justify-around gap-0.5 border-t border-[var(--card-border)] bg-[var(--nav-bar-bg)] px-4 pt-2 md:hidden"
     >
       <NavLink
         href={`${prefix}/`}
@@ -213,8 +212,6 @@ function MobileBottomNavContent() {
       </NavLink>
     </nav>
   );
-
-  return createPortal(navContent, document.body);
 }
 
 export default function MobileBottomNav() {
