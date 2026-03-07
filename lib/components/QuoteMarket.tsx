@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { useLocale } from "next-intl";
+import { localeToCountryCode } from "@/i18n/routing";
 import { trackEvent } from "@/lib/analytics/ga";
 import { BookmakerLink } from "@/lib/components/BookmakerLink";
 
@@ -35,6 +36,10 @@ export default function QuoteMarket({
   matchSlug,
 }: Props) {
   const locale = useLocale();
+  const pathLocale =
+    typeof window !== "undefined" ? window.location.pathname.split("/").filter(Boolean)[0] : null;
+  const effectiveCountry =
+    (pathLocale && (localeToCountryCode as Record<string, string>)[pathLocale]) ?? country;
   const [quotes, setQuotes] = useState<Quote[]>([]);
   const [loading, setLoading] = useState(true);
 
@@ -42,8 +47,8 @@ export default function QuoteMarket({
     const params = new URLSearchParams({ sportKey });
     if (homeTeam) params.set("homeTeam", homeTeam);
     if (awayTeam) params.set("awayTeam", awayTeam);
-    if (country) params.set("country", country);
-    fetch(`/api/quotes?${params.toString()}`)
+    if (effectiveCountry) params.set("country", effectiveCountry);
+    fetch(`/api/quotes?${params.toString()}`, { cache: "no-store" })
       .then((res) => res.json())
       .then((data) => {
         const multi = data.multiMarket?.[marketKey] || [];
@@ -51,7 +56,7 @@ export default function QuoteMarket({
       })
       .catch(() => setQuotes([]))
       .finally(() => setLoading(false));
-  }, [sportKey, homeTeam, awayTeam, country, marketKey]);
+  }, [sportKey, homeTeam, awayTeam, effectiveCountry, marketKey]);
 
   if (loading) return null;
 

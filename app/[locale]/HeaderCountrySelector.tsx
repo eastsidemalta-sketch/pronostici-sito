@@ -1,7 +1,6 @@
 "use client";
 
 import { useState, useRef, useEffect } from "react";
-import { Link, usePathname } from "@/i18n/navigation";
 import { useLocale, useTranslations } from "next-intl";
 import { routing, localeToCountry } from "@/i18n/routing";
 
@@ -16,6 +15,12 @@ function pathWithoutLocale(pathname: string): string {
     if (path.startsWith(`/${loc}/`)) return path.slice(`/${loc}`.length) || "/";
   }
   return path || "/";
+}
+
+/** Path attuale dal browser (più affidabile di usePathname per evitare stato stale) */
+function getCurrentPathForLocale(): string {
+  if (typeof window === "undefined") return "/";
+  return pathWithoutLocale(window.location.pathname);
 }
 
 /** Full page navigation per cambio paese: evita cache client e garantisce dati corretti */
@@ -67,7 +72,7 @@ export default function HeaderCountrySelector() {
   const ref = useRef<HTMLDivElement>(null);
 
   const activeLocales = routing.locales as readonly string[];
-  const pathForLink = pathWithoutLocale(pathname);
+  const pathForLink = getCurrentPathForLocale();
 
   useEffect(() => {
     function handleClickOutside(e: MouseEvent) {
@@ -117,7 +122,13 @@ export default function HeaderCountrySelector() {
               <li key={locale} role="option" aria-selected={isActive}>
                 <a
                   href={href}
-                  onClick={() => setOpen(false)}
+                  onClick={(e) => {
+                    setOpen(false);
+                    if (!isActive) {
+                      e.preventDefault();
+                      window.location.href = href;
+                    }
+                  }}
                   className={`flex items-center gap-2 px-3 py-2 text-sm transition block w-full ${
                     isActive
                       ? "bg-[var(--accent-light)] font-semibold text-[var(--accent)]"
