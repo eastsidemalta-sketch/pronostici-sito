@@ -79,6 +79,13 @@ if [ -f "$CACHE_BACKUP" ] && [ -s "$CACHE_BACKUP" ]; then
 fi
 
 if [ -f .env.local ]; then cp .env.local .next/standalone/; elif [ -f .env ]; then cp .env .next/standalone/; fi
+# Produzione: sospende FULL e DELTA Netwin (solo test fa richieste, evita hash_lock)
+ENV_FILE=".next/standalone/.env.local"
+[ ! -f "$ENV_FILE" ] && ENV_FILE=".next/standalone/.env"
+if [ -f "$ENV_FILE" ] && ! grep -q "NETWIN_DISABLE_FULL" "$ENV_FILE"; then
+  echo "NETWIN_DISABLE_FULL=1" >> "$ENV_FILE"
+  echo "Aggiunto NETWIN_DISABLE_FULL=1 (prod usa solo cache Netwin)"
+fi
 cp scripts/start-standalone.sh .next/standalone/ 2>/dev/null || true
 chmod +x .next/standalone/start-standalone.sh 2>/dev/null || true
 pm2 delete pronostici 2>/dev/null; pm2 start /var/www/pronostici-sito/ecosystem.config.cjs --only pronostici

@@ -751,7 +751,24 @@ export async function fetchDirectBookmakerQuotes(
     // Precarica cache da file PRIMA di decidere FULL/DELTA (utile se worker ha memoria vuota)
     getCached();
   }
-  const netwinUseFull = options?.forceFull ? true : options?.forceDelta ? false : (isNetwin ? shouldUseFull() : true);
+  // NETWIN_DISABLE_FULL=1: produzione non fa FULL né DELTA (solo test), evita hash_lock
+  const netwinDisabled =
+    process.env.NETWIN_DISABLE_FULL === "1" || process.env.NETWIN_DISABLE_FULL === "true";
+  const netwinUseFull =
+    netwinDisabled
+      ? false
+      : options?.forceFull
+        ? true
+        : options?.forceDelta
+          ? false
+          : isNetwin
+            ? shouldUseFull()
+            : true;
+  // Produzione sospesa: usa solo cache, nessuna chiamata API Netwin
+  if (isNetwin && netwinDisabled) {
+    const cached = getCached();
+    return applyNetwinLeagueFilter(cached ?? {}, leagueId, isNetwin) ?? {};
+  }
   if (isNetwin) {
     if (netwinUseFull) {
       console.log(`[Netwin] Richiesta FULL (cache vuota o scaduta)`);
