@@ -1,8 +1,8 @@
 "use client";
 
 import { usePathname } from "@/i18n/navigation";
-import { Link } from "@/i18n/navigation";
 import { useSearchParams } from "next/navigation";
+import { useLocale } from "next-intl";
 import { useTranslations } from "next-intl";
 import { useEffect, useState } from "react";
 import { createPortal } from "react-dom";
@@ -114,10 +114,34 @@ function SitesIcon({ active }: { active: boolean }) {
   );
 }
 
+/** Link con href assoluto per evitare problemi di context con createPortal */
+function NavLink({
+  href,
+  children,
+  className,
+  active,
+}: {
+  href: string;
+  children: React.ReactNode;
+  className?: string;
+  active: boolean;
+}) {
+  const base = typeof window !== "undefined" ? window.location.origin : "";
+  return (
+    <a
+      href={`${base}${href}`}
+      className={className}
+    >
+      {children}
+    </a>
+  );
+}
+
 /** Contenuto nav: usa useSearchParams solo dopo mount client (evita suspend/error SSR) */
 function MobileBottomNavContent() {
   const pathname = usePathname();
   const searchParams = useSearchParams();
+  const locale = useLocale();
   const t = useTranslations("common");
 
   const path = pathname.replace(/\/$/, "").split("/").filter(Boolean);
@@ -130,56 +154,63 @@ function MobileBottomNavContent() {
   const isBonus = pathname.includes("bonus");
   const isSiti = pathname.includes("siti-scommesse");
 
+  const prefix = `/${locale}`;
+
   const navContent = (
     <nav
       data-mobile-bottom-nav
       className="fixed left-0 right-0 bottom-0 z-50 flex min-h-[66px] max-h-[90px] items-center justify-around gap-0.5 border-t border-[var(--card-border)] bg-[var(--nav-bar-bg)] px-4 pb-[max(env(safe-area-inset-bottom),10px)] pt-2 md:hidden"
     >
-      <Link
-        href="/"
+      <NavLink
+        href={`${prefix}/`}
+        active={isHome}
         className="flex min-w-0 flex-1 flex-col items-center gap-0.5 px-0.5 py-2 active:opacity-70"
       >
         <HomeIcon active={isHome} />
         <span className={`text-[9px] font-medium ${isHome ? "text-[var(--nav-bar-active)]" : "text-[var(--nav-bar-inactive)]"}`}>
           Home
         </span>
-      </Link>
-      <Link
-        href="/"
+      </NavLink>
+      <NavLink
+        href={`${prefix}/`}
+        active={isQuote}
         className="flex min-w-0 flex-1 flex-col items-center gap-0.5 px-0.5 py-2 active:opacity-70"
       >
         <OddsIcon active={isQuote} />
         <span className={`text-[9px] font-medium ${isQuote ? "text-[var(--nav-bar-active)]" : "text-[var(--nav-bar-inactive)]"}`}>
           {t("quotes")}
         </span>
-      </Link>
-      <Link
-        href="/?tab=pronostici"
+      </NavLink>
+      <NavLink
+        href={`${prefix}/?tab=pronostici`}
+        active={isPronostici}
         className="flex min-w-0 flex-1 flex-col items-center gap-0.5 px-0.5 py-2 active:opacity-70"
       >
         <PredictionsIcon active={isPronostici} />
         <span className={`text-[9px] font-medium ${isPronostici ? "text-[var(--nav-bar-active)]" : "text-[var(--nav-bar-inactive)]"}`}>
           {t("predictions")}
         </span>
-      </Link>
-      <Link
-        href="/bonus"
+      </NavLink>
+      <NavLink
+        href={`${prefix}/bonus`}
+        active={isBonus}
         className="flex min-w-0 flex-1 flex-col items-center gap-0.5 px-0.5 py-2 active:opacity-70"
       >
         <BonusIcon active={isBonus} />
         <span className={`text-[9px] font-medium ${isBonus ? "text-[var(--nav-bar-active)]" : "text-[var(--nav-bar-inactive)]"}`}>
           {t("bonus")}
         </span>
-      </Link>
-      <Link
-        href="/siti-scommesse"
+      </NavLink>
+      <NavLink
+        href={`${prefix}/siti-scommesse`}
+        active={isSiti}
         className="flex min-w-0 flex-1 flex-col items-center gap-0.5 px-0.5 py-2 active:opacity-70"
       >
         <SitesIcon active={isSiti} />
         <span className={`whitespace-nowrap text-[9px] font-medium ${isSiti ? "text-[var(--nav-bar-active)]" : "text-[var(--nav-bar-inactive)]"}`}>
           {t("sitiScommesseShort") ?? t("sitiScommesse")}
         </span>
-      </Link>
+      </NavLink>
     </nav>
   );
 
