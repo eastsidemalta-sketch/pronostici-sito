@@ -41,6 +41,8 @@ export type CachedHomeData = {
   quotesMap: Record<number, import("./quotes/fixturesQuotes").FixtureQuoteSummary>;
   predictionsMap: Record<number, import("@/app/pronostici-quote/lib/apiFootball").FixturePredictions>;
   fetchedAt: number;
+  /** true quando API Football ha restituito vuoto e mostriamo l'ultimo import riuscito */
+  usingFallback?: boolean;
 };
 
 async function fetchFreshData(country: string): Promise<CachedHomeData> {
@@ -128,8 +130,9 @@ export async function getCachedHomeData(
           const fallback = JSON.parse(fallbackRaw) as CachedHomeData;
           if (fallback?.fixtures?.length > 0 && fallback?.quotesMap && fallback?.predictionsMap) {
             console.warn(`[homePageCache] API returned empty for ${country}, using last known good (${fallback.fixtures.length} fixtures)`);
-            await redis.set(key, JSON.stringify(fallback), "EX", CACHE_TTL_SEC);
-            return fallback;
+            const withFlag = { ...fallback, usingFallback: true };
+            await redis.set(key, JSON.stringify(withFlag), "EX", CACHE_TTL_SEC);
+            return withFlag;
           }
         }
         // Non memorizziamo vuoto in main: il prossimo request riproverà il fetch

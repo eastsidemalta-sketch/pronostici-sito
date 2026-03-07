@@ -665,15 +665,15 @@ export async function fetchDirectBookmakerQuotes(
   const method = reqConfig.method ?? "GET";
   let queryParams = { ...reqConfig.queryParams };
 
-  if (leagueId != null && bm.apiLeagueMapping?.[String(leagueId)]) {
+  const isNetwin = isNetwinBookmaker(bm.siteId, bm.id);
+  // Netwin: non aggiungere league/leagueId — l'API non li supporta (parametri non documentati), rischia di restituire vuoto
+  if (!isNetwin && leagueId != null && bm.apiLeagueMapping?.[String(leagueId)]) {
     queryParams = {
       ...queryParams,
       league: bm.apiLeagueMapping[String(leagueId)],
       leagueId: bm.apiLeagueMapping[String(leagueId)],
     };
   }
-
-  const isNetwin = isNetwinBookmaker(bm.siteId, bm.id);
   if (isNetwin) {
     // Precarica cache da file PRIMA di decidere FULL/DELTA (utile se worker ha memoria vuota)
     getCached();

@@ -395,6 +395,7 @@ export default async function MatchPage({
             homeTeam: homeName,
             awayTeam: awayName,
             leagueId: fixture.league?.id,
+            country: localeToCountryCode[locale],
           }).catch(() => ({}))
         : Promise.resolve({}),
     ]);
