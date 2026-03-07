@@ -49,9 +49,15 @@ fi
 git pull origin main
 mkdir -p public/uploads
 mkdir -p data
-# File runtime Netwin: Next.js trace li copia durante build; se mancano → ENOENT
-# Solo .netwin-full.log: Next.js trace lo copia durante build. .netwin-cache.json NO (creerebbe file vuoto che sovrascrive cache)
 touch data/.netwin-full.log 2>/dev/null || true
+
+# 2b. BACKUP cache Netwin prima di rm .next
+CACHE_BACKUP="/tmp/netwin-cache-$$.json"
+if [ -f ".next/standalone/data/.netwin-cache.json" ] && [ -s ".next/standalone/data/.netwin-cache.json" ]; then
+  cp -f ".next/standalone/data/.netwin-cache.json" "$CACHE_BACKUP"
+  echo "Backup cache Netwin"
+fi
+
 rm -rf .next
 npm ci
 npm run build
@@ -61,6 +67,17 @@ cp -r .next/server/chunks .next/standalone/.next/server/ 2>/dev/null || true
 node scripts/remove-netwin-from-bookmakers.mjs 2>/dev/null || true
 node scripts/add-netwin-it0002.mjs 2>/dev/null || true
 cp -r data .next/standalone/ 2>/dev/null || true
+
+# Ripristina cache Netwin dal backup
+if [ -f "$CACHE_BACKUP" ] && [ -s "$CACHE_BACKUP" ]; then
+  STANDALONE_CACHE=".next/standalone/data/.netwin-cache.json"
+  if [ ! -f "$STANDALONE_CACHE" ] || [ ! -s "$STANDALONE_CACHE" ]; then
+    cp -f "$CACHE_BACKUP" "$STANDALONE_CACHE"
+    echo "Ripristinata cache Netwin"
+  fi
+  rm -f "$CACHE_BACKUP"
+fi
+
 if [ -f .env.local ]; then cp .env.local .next/standalone/; elif [ -f .env ]; then cp .env .next/standalone/; fi
 cp scripts/start-standalone.sh .next/standalone/ 2>/dev/null || true
 chmod +x .next/standalone/start-standalone.sh 2>/dev/null || true

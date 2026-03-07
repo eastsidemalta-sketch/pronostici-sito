@@ -1125,7 +1125,7 @@ export async function fetchDirectBookmakerQuotes(
   if (isNetwin && (result.h2h?.length ?? 0) === 0) {
     const cached = getCached();
     if (cached && (cached.h2h?.length ?? 0) > 0)
-      return applyNetwinLeagueFilter(cached, leagueId);
+      return applyNetwinLeagueFilter(cached, leagueId, isNetwin);
   }
   return applyNetwinLeagueFilter(result, leagueId, isNetwin);
 }
