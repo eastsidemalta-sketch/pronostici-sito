@@ -53,12 +53,13 @@ function filterNetwinQuotesByLeague<T extends { manifestazione?: string }>(
   });
 }
 
-/** Applica filtro leagueId a result Netwin (per tutti i mercati) */
+/** Applica filtro leagueId a result Netwin (per tutti i mercati). Solo per bookmaker Netwin. */
 function applyNetwinLeagueFilter(
   result: DirectMultiMarketResult,
-  leagueId: number | undefined
+  leagueId: number | undefined,
+  isNetwin: boolean
 ): DirectMultiMarketResult {
-  if (leagueId == null) return result;
+  if (!isNetwin || leagueId == null) return result;
   const mapping = loadNetwinLeagueMapping();
   if (Object.keys(mapping).length === 0) return result;
   const out: DirectMultiMarketResult = {};
@@ -75,7 +76,10 @@ function applyNetwinLeagueFilter(
   for (const k of keys) {
     const arr = result[k];
     if (Array.isArray(arr)) {
-      (out as Record<string, unknown>)[k] = filterNetwinQuotesByLeague(arr, leagueId, mapping);
+      const filtered = filterNetwinQuotesByLeague(arr, leagueId, mapping);
+      // Fallback: se filtro svuota tutto ma c'erano quote (es. manifestazione formato diverso), mantieni originali
+      (out as Record<string, unknown>)[k] =
+        filtered.length === 0 && arr.length > 0 ? arr : filtered;
     }
   }
   return out;
@@ -766,7 +770,7 @@ export async function fetchDirectBookmakerQuotes(
 
   if (isNetwin && !netwinUseFull && !options?.forceDelta && !canDoDelta()) {
     const cached = getCached();
-    return applyNetwinLeagueFilter(cached ?? {}, leagueId) ?? {};
+    return applyNetwinLeagueFilter(cached ?? {}, leagueId, isNetwin) ?? {};
   }
 
   const url = buildUrl(
@@ -841,7 +845,7 @@ export async function fetchDirectBookmakerQuotes(
     }
     if (isNetwin && !netwinUseFull) {
       const cached = getCached();
-      if (cached) return applyNetwinLeagueFilter(cached, leagueId);
+      if (cached) return applyNetwinLeagueFilter(cached, leagueId, isNetwin);
     }
     return {};
   }
@@ -864,7 +868,7 @@ export async function fetchDirectBookmakerQuotes(
           });
         }
         const cached = getCached();
-        return applyNetwinLeagueFilter(cached ?? {}, leagueId);
+        return applyNetwinLeagueFilter(cached ?? {}, leagueId, isNetwin);
       }
       if (text.includes("isLive") && /can be 0 or 1/i.test(text)) {
         if (netwinUseFull) {
@@ -879,7 +883,7 @@ export async function fetchDirectBookmakerQuotes(
           });
         }
         const cached = getCached();
-        return applyNetwinLeagueFilter(cached ?? {}, leagueId);
+        return applyNetwinLeagueFilter(cached ?? {}, leagueId, isNetwin);
       }
     }
     data = parseApiResponse(text);
@@ -895,7 +899,7 @@ export async function fetchDirectBookmakerQuotes(
     }
     if (isNetwin && !netwinUseFull) {
       const cached = getCached();
-      if (cached) return applyNetwinLeagueFilter(cached, leagueId);
+      if (cached) return applyNetwinLeagueFilter(cached, leagueId, isNetwin);
     }
     return {};
   }
@@ -1061,9 +1065,9 @@ export async function fetchDirectBookmakerQuotes(
       if ((merged.h2h?.length ?? 0) === 0) {
         const fallback = getCached();
         if (fallback && (fallback.h2h?.length ?? 0) > 0)
-          return applyNetwinLeagueFilter(fallback, leagueId);
+          return applyNetwinLeagueFilter(fallback, leagueId, isNetwin);
       }
-      return applyNetwinLeagueFilter(merged, leagueId);
+      return applyNetwinLeagueFilter(merged, leagueId, isNetwin);
     }
   }
 
@@ -1123,7 +1127,7 @@ export async function fetchDirectBookmakerQuotes(
     if (cached && (cached.h2h?.length ?? 0) > 0)
       return applyNetwinLeagueFilter(cached, leagueId);
   }
-  return applyNetwinLeagueFilter(result, leagueId);
+  return applyNetwinLeagueFilter(result, leagueId, isNetwin);
 }
 
 /** Aggiunge o sostituisce una quote in result[market] per (homeTeam, awayTeam). Preferisce la nuova se già presente. */
