@@ -93,7 +93,9 @@
     "goalsScored": "Gols marcados",
     "goalsConceded": "Gols sofridos",
     "over25": "Acima de 2,5",
-    "under25": "Abaixo de 2,5"
+    "under25": "Abaixo de 2,5",
+    "over15": "Acima de 1,5",
+    "under15": "Abaixo de 1,5"
   },
   "bonus": {
     "title": "Bônus",

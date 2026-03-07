@@ -26,7 +26,7 @@ function formatHandicap(point: number): string {
 type MarketDef = {
   key: string;
   title: string;
-  columns: Array<{ key: string; label: string; pointKey?: string; isHandicap?: boolean }>;
+  columns: Array<{ key: string; label?: string; labelKey?: string; pointKey?: string; isHandicap?: boolean }>;
 };
 
 const MARKET_CATEGORIES: Record<
@@ -50,8 +50,8 @@ const MARKET_CATEGORIES: Record<
   risultato: {
     labelKey: "resultBets",
     markets: [
-      { key: "totals_25", titleKey: "overUnder25", title: "", columns: [{ key: "over", label: "Over 2.5" }, { key: "under", label: "Under 2.5" }] },
-      { key: "totals_15", titleKey: "overUnder15", title: "", columns: [{ key: "over", label: "Over 1.5" }, { key: "under", label: "Under 1.5" }] },
+      { key: "totals_25", titleKey: "overUnder25", title: "", columns: [{ key: "over", labelKey: "over25" }, { key: "under", labelKey: "under25" }] },
+      { key: "totals_15", titleKey: "overUnder15", title: "", columns: [{ key: "over", labelKey: "over15" }, { key: "under", labelKey: "under15" }] },
       { key: "btts", titleKey: "bothTeamsScore", title: "", columns: [{ key: "yes", label: "Sì" }, { key: "no", label: "No" }] },
     ],
   },
@@ -270,7 +270,7 @@ export default function MatchQuotesTabs({ sportKey, homeTeam, awayTeam, country,
                           key={col.key}
                           className="px-3 py-2 text-center text-xs font-semibold text-[var(--foreground)] md:px-4 md:py-2.5 md:text-sm"
                         >
-                          {(col.key === "yes" || col.key === "no") ? tMatch(col.key) : col.label}
+                          {col.labelKey ? tMatch(col.labelKey) : (col.key === "yes" || col.key === "no") ? tMatch(col.key) : col.label}
                         </th>
                       ))}
                       <th className="w-20 px-3 py-2 text-center text-xs font-semibold text-[var(--foreground)] md:w-24 md:px-4 md:py-2.5 md:text-sm">

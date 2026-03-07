@@ -89,7 +89,9 @@
     "goalsScored": "Goals scored",
     "goalsConceded": "Goals conceded",
     "over25": "Over 2.5",
-    "under25": "Under 2.5"
+    "under25": "Under 2.5",
+    "over15": "Over 1.5",
+    "under15": "Under 1.5"
   },
   "bonus": {
     "title": "Bonus",

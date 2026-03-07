@@ -49,7 +49,7 @@
         "awayTeam": "teams.away_team.name",
         "stakes1X2": {
           "stakesPath": "stakes",
-          "marketName": "Result",
+          "marketName": "Winner",
           "outcomeId1": 1,
           "outcomeIdX": 2,
           "outcomeId2": 3

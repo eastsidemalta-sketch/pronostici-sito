@@ -87,7 +87,9 @@
     "goalsScored": "Goles a favor",
     "goalsConceded": "Goles en contra",
     "over25": "Más de 2,5",
-    "under25": "Menos de 2,5"
+    "under25": "Menos de 2,5",
+    "over15": "Más de 1,5",
+    "under15": "Menos de 1,5"
   },
   "bonus": {
     "title": "Bonus",

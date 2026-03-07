@@ -106,8 +106,10 @@
     "bothTeamsScored": "Entrambe a segno",
     "goalsScored": "Gol segnati",
     "goalsConceded": "Gol subiti",
-    "over25": "Over 2,5",
-    "under25": "Under 2,5"
+    "over25": "Sopra 2,5",
+    "under25": "Sotto 2,5",
+    "over15": "Sopra 1,5",
+    "under15": "Sotto 1,5"
   },
   "bonus": {
     "title": "Bonus Siti Scommesse",

@@ -133,6 +133,14 @@ export async function GET(req: Request) {
       return acc;
     }, {});
 
+    // Sample stakes per market_id (per verificare parsing Over/Under, Handicap, BTTS, Double Chance)
+    const stakesByMarketId = stakesArr.reduce((acc: Record<number, unknown[]>, s: { market_id?: number; market_name?: string; name?: string; factor?: number }) => {
+      const mid = typeof s?.market_id === "number" ? s.market_id : 0;
+      if (!acc[mid]) acc[mid] = [];
+      if (acc[mid].length < 3) acc[mid].push({ market_id: s.market_id, market_name: s.market_name, name: s.name, factor: s.factor });
+      return acc;
+    }, {});
+
     const result: Record<string, unknown> = {
       ok: true,
       requestBody: body,
@@ -145,6 +153,7 @@ export async function GET(req: Request) {
       winnerStakesCount: winnerStakes.length,
       winnerOutcomeIds: outcomeIds,
       stakesByMarket,
+      stakesByMarketId,
       firstMatchSample: firstMatch ? JSON.stringify(firstMatch).slice(0, full ? 4000 : 1500) : null,
       firstStakeSample: firstStakeSample ? JSON.stringify(firstStakeSample) : null,
     };

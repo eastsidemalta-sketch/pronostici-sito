@@ -460,7 +460,9 @@ export function extractListaCodesFromExalogic(data: unknown): number[] {
  * Utile quando DC/O/U/Handicap/BTTS sono in nodi annidati diversi dall'1X2.
  */
 function collectAllScommesse(node: Record<string, unknown>): unknown[] {
-  const out = toArray((node.Scommessa ?? node.scommessa) as unknown);
+  const out = toArray(
+    (node.Scommessa ?? node.scommessa ?? node.Scommesse ?? node.scommesse) as unknown
+  );
   for (const key of ["Partita", "Incontro", "Evento", "Avvenimento", "Palinsesto", "Giornata"]) {
     const children = toArray(node[key] as unknown);
     for (const c of children) {
@@ -555,7 +557,7 @@ function getEventsArray(data: unknown, eventsPath: string): unknown[] {
 
 /**
  * Estrae quote 1X2 da array stakes (Betboom/Sporthub).
- * market_name "Winner". Mappa per outcome_id (1,2,3) o per name (home, Draw, away).
+ * market_name "Winner" o "Result" (Betboom può usare entrambi). Mappa per outcome_id (1,2,3) o per name (home, Draw, away).
  */
 function extract1X2FromStakes(
   stakes: unknown[],
@@ -563,7 +565,9 @@ function extract1X2FromStakes(
   awayTeam: string,
   config: { marketName?: string; outcomeId1?: number; outcomeIdX?: number; outcomeId2?: number }
 ): { odds1: number; oddsX: number; odds2: number } {
-  const marketName = (config.marketName ?? "Winner").toLowerCase();
+  const configured = (config.marketName ?? "Winner").toLowerCase();
+  const acceptedMarkets = new Set(["winner", "result"]);
+  if (configured) acceptedMarkets.add(configured);
   const id1 = config.outcomeId1 ?? 1;
   const idX = config.outcomeIdX ?? 2;
   const id2 = config.outcomeId2 ?? 3;
@@ -576,7 +580,7 @@ function extract1X2FromStakes(
     if (!s || typeof s !== "object") continue;
     const o = s as Record<string, unknown>;
     const mkt = String(o.market_name ?? "").toLowerCase();
-    if (mkt !== marketName) continue;
+    if (!acceptedMarkets.has(mkt)) continue;
     // Escludi stakes con period_id (1° tempo, 2° tempo). Betboom live: period_id "0" = partita intera, ma Netwin non usa period_id
     if (o.period_id != null && o.period_id !== "" && String(o.period_id).trim() !== "0") continue;
     const factor = typeof o.factor === "number" ? o.factor : parseFloat(String(o.factor ?? 0)) || 0;
