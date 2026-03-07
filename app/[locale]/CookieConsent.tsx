@@ -68,7 +68,7 @@ export default function CookieConsent() {
     <>
       {visible && (
         <div
-          className="fixed bottom-0 left-0 right-0 z-[100] border-t border-[var(--card-border)] bg-white p-4 shadow-[0_-4px_20px_rgba(0,0,0,0.08)] md:bottom-4 md:left-4 md:right-auto md:max-w-md md:rounded-xl md:border"
+          className="fixed bottom-[calc(4.5rem+env(safe-area-inset-bottom,10px))] left-0 right-0 z-[100] border-t border-[var(--card-border)] bg-white p-4 shadow-[0_-4px_20px_rgba(0,0,0,0.08)] md:bottom-4 md:left-4 md:right-auto md:max-w-md md:rounded-xl md:border"
           role="dialog"
           aria-labelledby="cookie-consent-title"
           aria-describedby="cookie-consent-desc"
