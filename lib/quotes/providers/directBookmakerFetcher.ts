@@ -344,7 +344,7 @@ function scommesseToStakes(scommesse: unknown[], divisor = 1): Array<{ market_id
     };
     const getDescr = (e: unknown) => {
       const r = e as Record<string, unknown>;
-      return String(r?.descr ?? r?.Descr ?? "").trim();
+      return String(r?.descr ?? r?.Descr ?? r?.label ?? r?.nome ?? r?.name ?? "").trim();
     };
 
     if (NETWIN_LISTA.H2H.includes(lista)) {
@@ -363,10 +363,10 @@ function scommesseToStakes(scommesse: unknown[], divisor = 1): Array<{ market_id
         }
       }
     } else if (NETWIN_LISTA.DOUBLE_CHANCE.includes(lista)) {
-      const dcMap: Record<string, string> = { "1X": "1X", "12": "12", "1 2": "12", "X2": "X2", "X 2": "X2" };
+      const dcMap: Record<string, string> = { "1X": "1X", "12": "12", "1 2": "12", "1-2": "12", "X2": "X2", "X 2": "X2", "X-2": "X2", "1-X": "1X" };
       for (const e of esiti) {
-        const d = getDescr(e).replace(/\s+/g, "");
-        const name = dcMap[d] ?? d;
+        const d = getDescr(e).replace(/\s+/g, "").replace(/-/g, "");
+        const name = dcMap[d] ?? (["1X", "12", "X2"].includes(d.toUpperCase()) ? d.toUpperCase() : d);
         if (name) stakes.push({ market_id: 20, market_name: "Double Chance", name, factor: getQuota(e) });
       }
     } else if (NETWIN_LISTA.HANDICAP.includes(lista)) {
@@ -380,13 +380,16 @@ function scommesseToStakes(scommesse: unknown[], divisor = 1): Array<{ market_id
         stakes.push({ market_id: 2, market_name: "Handicap", name, factor: getQuota(e) });
       }
     } else if (NETWIN_LISTA.TOTALS.includes(lista)) {
-      const overRe = /over|sopra|oltre|o\s*(\d+[,.]?\d*)|^\s*o\s*(\d+[,.]?\d*)/i;
-      const underRe = /under|sotto|meno|u\s*(\d+[,.]?\d*)|^\s*u\s*(\d+[,.]?\d*)/i;
+      const overRe = /over|sopra|oltre|^\s*o\s*(\d+[,.]?\d*)|o\s*(\d+[,.]?\d*)|acima|mais|above/i;
+      const underRe = /under|sotto|meno|^\s*u\s*(\d+[,.]?\d*)|u\s*(\d+[,.]?\d*)|abaixo|below/i;
       const numRe = /(\d+[,.]?\d*)/;
       for (const e of esiti) {
         const d = getDescr(e);
-        const isOver = overRe.test(d);
-        const isUnder = underRe.test(d);
+        const cod = typeof (e as Record<string, unknown>).cod === "number"
+          ? (e as Record<string, unknown>).cod
+          : parseInt(String((e as Record<string, unknown>).cod ?? 0), 10);
+        const isOver = overRe.test(d) || cod === 1;
+        const isUnder = underRe.test(d) || cod === 2;
         const numMatch = d.match(numRe);
         const line = numMatch ? parseFloat(numMatch[1].replace(",", ".")) : 2.5;
         const name = isOver ? `Over ${line}` : isUnder ? `Under ${line}` : null;
@@ -463,7 +466,7 @@ function collectAllScommesse(node: Record<string, unknown>): unknown[] {
   const out = toArray(
     (node.Scommessa ?? node.scommessa ?? node.Scommesse ?? node.scommesse) as unknown
   );
-  for (const key of ["Partita", "Incontro", "Evento", "Avvenimento", "Palinsesto", "Giornata"]) {
+  for (const key of ["Partita", "Incontro", "Evento", "Avvenimento", "Palinsesto", "Giornata", "Giornate", "Schedina", "Quote"]) {
     const children = toArray(node[key] as unknown);
     for (const c of children) {
       if (c && typeof c === "object") {
@@ -514,8 +517,27 @@ function processExalogicNode(
   out.push(ev);
 }
 
+/** Raccoglie Avvenimenti da Manifestazione (anche sotto Palinsesto, Giornata) */
+function collectAvvenimentiFromManifestazione(m: Record<string, unknown>): Array<Record<string, unknown>> {
+  const out: Array<Record<string, unknown>> = [];
+  const direct = toArray(m.Avvenimento as unknown);
+  for (const avv of direct) {
+    if (avv && typeof avv === "object") out.push(avv as Record<string, unknown>);
+  }
+  for (const key of ["Palinsesto", "Giornata", "Giornate"]) {
+    const children = toArray(m[key] as unknown);
+    for (const c of children) {
+      if (c && typeof c === "object") {
+        out.push(...collectAvvenimentiFromManifestazione(c as Record<string, unknown>));
+      }
+    }
+  }
+  return out;
+}
+
 /**
  * Appiattisce Exalogic: Manifestazione[].Avvenimento → array di eventi.
+ * Supporta Avvenimenti sotto Palinsesto/Giornata.
  */
 function flattenExalogicEvents(data: unknown): Array<Record<string, unknown>> {
   const out: Array<Record<string, unknown>> = [];
@@ -528,7 +550,7 @@ function flattenExalogicEvents(data: unknown): Array<Record<string, unknown>> {
     for (const man of manifestazioni) {
       if (!man || typeof man !== "object") continue;
       const m = man as Record<string, unknown>;
-      const avvenimenti = toArray(m.Avvenimento as unknown);
+      const avvenimenti = collectAvvenimentiFromManifestazione(m);
       for (const avv of avvenimenti) {
         if (!avv || typeof avv !== "object") continue;
         processExalogicNode(avv as Record<string, unknown>, m, out);
@@ -1088,6 +1110,31 @@ export async function fetchDirectBookmakerQuotes(
       // Salva solo se abbiamo partite: evita di sovrascrivere con vuoto (ultimo import corretto preservato)
       if (h2hCount > 0) {
         setCache(result);
+        const hasOther = (result.spreads?.length ?? 0) > 0 || (result.totals_25?.length ?? 0) > 0 || (result.btts?.length ?? 0) > 0 || (result.double_chance?.length ?? 0) > 0;
+        if (!hasOther && useExalogic && events.length > 0) {
+          try {
+            const firstEv = events[0] as Record<string, unknown>;
+            const stakes = firstEv?.stakes as unknown[] | undefined;
+            const dir = path.join(process.cwd(), "data");
+            if (existsSync(dir)) {
+              writeFileSync(
+                path.join(dir, ".netwin-quote-debug.json"),
+                JSON.stringify({
+                  hint: "h2h presente ma spreads/totals/btts/double_chance vuoti. Verifica stakes.",
+                  firstEventStakesCount: stakes?.length ?? 0,
+                  firstEventStakesSample: stakes?.slice(0, 15) ?? [],
+                  firstEventHome: firstEv?.homeTeam,
+                  firstEventAway: firstEv?.awayTeam,
+                  at: new Date().toISOString(),
+                }, null, 2),
+                "utf-8"
+              );
+              console.warn("[Netwin] Quote speciali vuote: salvato .netwin-quote-debug.json");
+            }
+          } catch {
+            /* ignora */
+          }
+        }
       } else {
         const fallback = getCached();
         if (fallback && (fallback.h2h?.length ?? 0) > 0) {

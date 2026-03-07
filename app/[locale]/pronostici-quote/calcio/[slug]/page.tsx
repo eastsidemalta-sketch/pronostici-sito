@@ -611,10 +611,11 @@ export default async function MatchPage({
             {sportKey && (
               <div id="quote" className="mt-4 scroll-mt-24 md:mt-6">
                 <MatchQuotesTabs
+                  key={`${localeToCountryCode[locale] ?? locale}-${fixture.fixture.id}`}
                   sportKey={sportKey}
                   homeTeam={home}
                   awayTeam={away}
-                  country={localeToCountryCode[locale]}
+                  country={localeToCountryCode[locale] ?? undefined}
                   leagueId={fixture.league?.id}
                   bookmakerLogos={Object.fromEntries(
                     getBookmakers()

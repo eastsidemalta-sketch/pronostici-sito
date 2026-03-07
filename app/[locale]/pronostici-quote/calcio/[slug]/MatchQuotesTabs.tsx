@@ -87,21 +87,26 @@ export default function MatchQuotesTabs({ sportKey, homeTeam, awayTeam, country,
   const [activeTab, setActiveTab] = useState<string>("principali");
 
   useEffect(() => {
+    const ac = new AbortController();
     const q = new URLSearchParams({ sportKey });
     if (homeTeam) q.set("homeTeam", homeTeam);
     if (awayTeam) q.set("awayTeam", awayTeam);
     if (country) q.set("country", country);
     if (leagueId != null) q.set("leagueId", String(leagueId));
     if (searchParams?.get("debug") === "1") q.set("debug", "1");
-    fetch(`/api/quotes?${q.toString()}`)
+    setLoading(true);
+    fetch(`/api/quotes?${q.toString()}`, { signal: ac.signal })
       .then((res) => res.json())
       .then((data) => {
         if (data._debug) console.log("[Quotes API debug]", data._debug);
         setMultiMarket(data.multiMarket || {});
       })
-      .catch(() => setMultiMarket({}))
+      .catch((err) => {
+        if (err?.name !== "AbortError") setMultiMarket({});
+      })
       .finally(() => setLoading(false));
-  }, [sportKey, homeTeam, awayTeam, country, leagueId]);
+    return () => ac.abort();
+  }, [sportKey, homeTeam, awayTeam, country, leagueId, searchParams]);
 
   if (loading) {
     return (
