@@ -179,7 +179,28 @@ export function mergeDeltaWithCache(delta: DirectMultiMarketResult): DirectMulti
 export function getCachedMatchSample(limit = 50): Array<{ homeTeam: string; awayTeam: string }> {
   const c = getCached();
   const h2h = c?.h2h ?? [];
-  return h2h.slice(0, limit).map((q) => ({ homeTeam: q.homeTeam, awayTeam: q.awayTeam }));
+  const max = limit <= 0 ? h2h.length : Math.min(limit, h2h.length);
+  return h2h.slice(0, max).map((q) => ({ homeTeam: q.homeTeam, awayTeam: q.awayTeam }));
+}
+
+/** Debug: legge tutte le partite direttamente dal file cache (bypass in-memory, per showMatches=all) */
+export function getAllCachedMatchesFromFile(): Array<{ homeTeam: string; awayTeam: string }> {
+  const candidates = [
+    path.join(process.cwd(), "data", ".netwin-cache.json"),
+    path.join(process.cwd(), ".next", "standalone", "data", ".netwin-cache.json"),
+  ];
+  for (const p of candidates) {
+    try {
+      if (!existsSync(p)) continue;
+      const raw = readFileSync(p, "utf-8");
+      const parsed = JSON.parse(raw) as { data?: { h2h?: Array<{ homeTeam?: string; awayTeam?: string }> } };
+      const h2h = parsed?.data?.h2h ?? [];
+      return h2h.map((q) => ({ homeTeam: q.homeTeam ?? "", awayTeam: q.awayTeam ?? "" }));
+    } catch {
+      continue;
+    }
+  }
+  return [];
 }
 
 /** Debug: info sulla cache Netwin (ultima FULL, prossima FULL consentita) */
