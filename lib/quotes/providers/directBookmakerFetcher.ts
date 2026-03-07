@@ -790,9 +790,10 @@ export async function fetchDirectBookmakerQuotes(
           : isNetwin
             ? shouldUseFull()
             : true;
-  // Produzione sospesa: usa solo cache, nessuna chiamata API Netwin
+  // Produzione sospesa: usa solo cache, nessuna chiamata API Netwin.
+  // ignoreExpiry=true: in prod non possiamo refreshare, usiamo la cache anche se >3h
   if (isNetwin && netwinDisabled) {
-    const cached = getCached();
+    const cached = getCached(true);
     return applyNetwinLeagueFilter(cached ?? {}, leagueId, isNetwin) ?? {};
   }
   if (isNetwin) {

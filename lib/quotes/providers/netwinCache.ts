@@ -83,13 +83,13 @@ export function recordDeltaCall(): void {
   lastDeltaCallAt = Date.now();
 }
 
-function loadFromFileCache(): { data: DirectMultiMarketResult; timestamp: number } | null {
+function loadFromFileCache(ignoreExpiry = false): { data: DirectMultiMarketResult; timestamp: number } | null {
   try {
     if (!existsSync(CACHE_FILE)) return null;
     const raw = readFileSync(CACHE_FILE, "utf-8");
     const parsed = JSON.parse(raw) as { data: DirectMultiMarketResult; timestamp: number };
     if (!parsed?.data || typeof parsed.timestamp !== "number") return null;
-    if (Date.now() - parsed.timestamp > FULL_FETCH_INTERVAL_MS) return null;
+    if (!ignoreExpiry && Date.now() - parsed.timestamp > FULL_FETCH_INTERVAL_MS) return null;
     return parsed;
   } catch {
     return null;
@@ -169,9 +169,9 @@ function trimLogToRetention(): void {
   }
 }
 
-export function getCached(): DirectMultiMarketResult | null {
-  if (cache && Date.now() - cache.timestamp <= FULL_FETCH_INTERVAL_MS) return cache.data;
-  const fromFile = loadFromFileCache();
+export function getCached(ignoreExpiry = false): DirectMultiMarketResult | null {
+  if (cache && (ignoreExpiry || Date.now() - cache.timestamp <= FULL_FETCH_INTERVAL_MS)) return cache.data;
+  const fromFile = loadFromFileCache(ignoreExpiry);
   if (fromFile) {
     cache = fromFile;
     return fromFile.data;
