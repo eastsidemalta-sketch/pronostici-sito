@@ -206,7 +206,7 @@ export default function MatchQuotesTabs({ sportKey, homeTeam, awayTeam, country,
                         <table className="w-full text-sm md:text-base">
                           <thead>
                             <tr className="border-b border-[var(--card-border)] bg-slate-50">
-                              <th className="min-w-[80px] max-w-[100px] px-3 py-2 text-left text-xs font-semibold text-[var(--foreground)] md:min-w-0 md:max-w-none md:px-4 md:py-2.5 md:text-sm">{t("bookmaker")}</th>
+                              <th className="w-[72px] min-w-[72px] max-w-[72px] px-2 py-2 text-left text-xs font-semibold text-[var(--foreground)] md:w-auto md:min-w-[80px] md:max-w-[100px] md:px-4 md:py-2.5 md:text-sm">{t("bookmaker")}</th>
                               <th className="px-3 py-2 text-center text-xs font-semibold text-[var(--foreground)] md:px-4 md:py-2.5 md:text-sm">
                                 {hTeam} {formatHandicap(homePoint)}
                               </th>
@@ -221,21 +221,23 @@ export default function MatchQuotesTabs({ sportKey, homeTeam, awayTeam, country,
                           <tbody>
                             {lineQuotes.map((q, i) => (
                               <tr key={i} className="border-b border-slate-100 last:border-0 hover:bg-slate-50/50">
-                                <td className="flex items-center gap-2 px-3 py-2 md:px-4 md:py-2.5">
-                                  {(faviconByKey.get((q.bookmakerKey || "").toLowerCase()) || logoByKey.get((q.bookmakerKey || "").toLowerCase())) ? (
-                                    <>
-                                      <div className="flex shrink-0 items-center justify-center rounded border border-gray-200 bg-white p-1.5">
-                                        <BookmakerLogo
-                                          src={faviconByKey.get((q.bookmakerKey || "").toLowerCase()) || logoByKey.get((q.bookmakerKey || "").toLowerCase())!}
-                                          size="xs"
-                                          title={q.bookmaker}
-                                        />
-                                      </div>
-                                      <span className="text-xs font-medium text-[var(--foreground)] md:text-sm">{q.bookmaker}</span>
-                                    </>
-                                  ) : (
-                                    <span className="text-xs font-medium text-[var(--foreground)] md:text-sm">{q.bookmaker}</span>
-                                  )}
+                                <td className="w-[72px] min-w-[72px] max-w-[72px] overflow-hidden px-2 py-2 md:w-auto md:min-w-0 md:max-w-none md:px-4 md:py-2.5">
+                                  <div className="flex min-w-0 items-center gap-2">
+                                    {(faviconByKey.get((q.bookmakerKey || "").toLowerCase()) || logoByKey.get((q.bookmakerKey || "").toLowerCase())) ? (
+                                      <>
+                                        <div className="flex shrink-0 items-center justify-center rounded border border-gray-200 bg-white p-1.5">
+                                          <BookmakerLogo
+                                            src={faviconByKey.get((q.bookmakerKey || "").toLowerCase()) || logoByKey.get((q.bookmakerKey || "").toLowerCase())!}
+                                            size="xs"
+                                            title={q.bookmaker}
+                                          />
+                                        </div>
+                                        <span className="hidden truncate text-xs font-medium text-[var(--foreground)] md:block md:text-sm">{q.bookmaker}</span>
+                                      </>
+                                    ) : (
+                                      <span className="truncate text-xs font-medium text-[var(--foreground)] md:text-sm">{q.bookmaker}</span>
+                                    )}
+                                  </div>
                                 </td>
                                 <td className="px-3 py-2 text-center text-xs font-semibold text-[var(--foreground)] md:px-4 md:py-2.5 md:text-sm">
                                   {(q.outcomes?.home ?? 0) > 0 ? (q.outcomes!.home as number).toFixed(2) : "-"}
@@ -280,7 +282,7 @@ export default function MatchQuotesTabs({ sportKey, homeTeam, awayTeam, country,
                 <table className="w-full text-sm md:text-base">
                     <thead>
                       <tr className="border-b border-[var(--card-border)] bg-slate-50">
-                        <th className="min-w-[80px] max-w-[100px] px-3 py-2 text-left text-xs font-semibold text-[var(--foreground)] md:min-w-0 md:max-w-none md:px-4 md:py-2.5 md:text-sm">{t("bookmaker")}</th>
+                        <th className="w-[72px] min-w-[72px] max-w-[72px] px-2 py-2 text-left text-xs font-semibold text-[var(--foreground)] md:w-auto md:min-w-[80px] md:max-w-[100px] md:px-4 md:py-2.5 md:text-sm">{t("bookmaker")}</th>
                         {market.columns.map((col) => (
                           <th
                             key={col.key}
@@ -300,21 +302,23 @@ export default function MatchQuotesTabs({ sportKey, homeTeam, awayTeam, country,
                         key={i}
                         className="border-b border-slate-100 last:border-0 hover:bg-slate-50/50"
                       >
-                        <td className="flex items-center gap-2 px-3 py-2 md:px-4 md:py-2.5">
-                          {(faviconByKey.get((q.bookmakerKey || "").toLowerCase()) || logoByKey.get((q.bookmakerKey || "").toLowerCase())) ? (
-                            <>
-                              <div className="flex shrink-0 items-center justify-center rounded border border-gray-200 bg-white p-1.5">
-                                <BookmakerLogo
-                                  src={faviconByKey.get((q.bookmakerKey || "").toLowerCase()) || logoByKey.get((q.bookmakerKey || "").toLowerCase())!}
-                                  size="xs"
-                                  title={q.bookmaker}
-                                />
-                              </div>
-                              <span className="text-xs font-medium text-[var(--foreground)] md:text-sm">{q.bookmaker}</span>
-                            </>
-                          ) : (
-                            <span className="text-xs font-medium text-[var(--foreground)] md:text-sm">{q.bookmaker}</span>
-                          )}
+                        <td className="w-[72px] min-w-[72px] max-w-[72px] overflow-hidden px-2 py-2 md:w-auto md:min-w-0 md:max-w-none md:px-4 md:py-2.5">
+                          <div className="flex min-w-0 items-center gap-2">
+                            {(faviconByKey.get((q.bookmakerKey || "").toLowerCase()) || logoByKey.get((q.bookmakerKey || "").toLowerCase())) ? (
+                              <>
+                                <div className="flex shrink-0 items-center justify-center rounded border border-gray-200 bg-white p-1.5">
+                                  <BookmakerLogo
+                                    src={faviconByKey.get((q.bookmakerKey || "").toLowerCase()) || logoByKey.get((q.bookmakerKey || "").toLowerCase())!}
+                                    size="xs"
+                                    title={q.bookmaker}
+                                  />
+                                </div>
+                                <span className="hidden truncate text-xs font-medium text-[var(--foreground)] md:block md:text-sm">{q.bookmaker}</span>
+                              </>
+                            ) : (
+                              <span className="truncate text-xs font-medium text-[var(--foreground)] md:text-sm">{q.bookmaker}</span>
+                            )}
+                          </div>
                         </td>
                         {market.columns.map((col) => {
                           const val = q.outcomes?.[col.key];
