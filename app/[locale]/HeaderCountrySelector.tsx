@@ -65,7 +65,6 @@ function ChevronDownIcon({ className }: { className?: string }) {
 }
 
 export default function HeaderCountrySelector() {
-  const pathname = usePathname();
   const currentLocale = useLocale();
   const t = useTranslations("common");
   const [open, setOpen] = useState(false);
