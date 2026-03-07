@@ -1,0 +1,46 @@
+{
+  "sports": {
+    "IT": [
+      "calcio"
+    ],
+    "FR": [
+      "calcio"
+    ],
+    "ES": [
+      "calcio"
+    ],
+    "DE": [
+      "calcio"
+    ],
+    "UK": [
+      "calcio"
+    ],
+    "BR": [
+      "calcio"
+    ],
+    "CO": [
+      "calcio"
+    ],
+    "NG": [
+      "calcio"
+    ],
+    "KE": [
+      "calcio"
+    ],
+    "GH": [
+      "calcio"
+    ]
+  },
+  "localePerCountry": {
+    "IT": "it",
+    "FR": "fr",
+    "ES": "es",
+    "DE": "de",
+    "UK": "en",
+    "BR": "pt-BR",
+    "CO": "es-CO",
+    "NG": "en-NG",
+    "KE": "en-KE",
+    "GH": "en-GH"
+  }
+}
