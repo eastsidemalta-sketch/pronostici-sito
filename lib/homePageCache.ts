@@ -27,6 +27,10 @@ const FALLBACK_KEY_PREFIX = "home:data:lastGood:";
 
 let redisClient: import("ioredis").default | null = null;
 
+/** Cache in-memory quando Redis non disponibile (evita fetch multipli) */
+let memoryGlobalCache: { fixtures: any[]; expires: number } | null = null;
+const MEMORY_CACHE_TTL_MS = 60 * 1000;
+
 function getRedis(): import("ioredis").default | null {
   if (redisClient) return redisClient;
   const url = process.env.REDIS_URL;
@@ -64,6 +68,10 @@ async function fetchGlobalFixtures(bypassCache = false): Promise<any[]> {
     }
   }
 
+  if (!redis && !bypassCache && memoryGlobalCache && Date.now() < memoryGlobalCache.expires) {
+    if (memoryGlobalCache.fixtures.length > 0) return memoryGlobalCache.fixtures;
+  }
+
   const leagueIds = getGlobalLeagueIds();
   if (leagueIds.length === 0) return [];
 
@@ -88,6 +96,10 @@ async function fetchGlobalFixtures(bypassCache = false): Promise<any[]> {
     } catch {
       /* ignore */
     }
+  }
+
+  if (!redis && fixtures.length > 0) {
+    memoryGlobalCache = { fixtures, expires: Date.now() + MEMORY_CACHE_TTL_MS };
   }
 
   return fixtures;
@@ -237,7 +249,27 @@ export async function getCachedHomeData(
 
   if (data.fixtures.length === 0) {
     const fallbackData = await tryFallbackFromOtherCountries(country, leagueIds);
-    if (fallbackData) data = fallbackData;
+    if (fallbackData) {
+      data = fallbackData;
+    } else if (!redis) {
+      const fallbackCountries = getCacheFallbackCountries(country);
+      const leagueSet = new Set(leagueIds);
+      for (const fc of fallbackCountries) {
+        const fcLeagueIds = getLeagueIdsForAllSports(fc);
+        if (fcLeagueIds.length === 0) continue;
+        try {
+          const fcFixtures = await getUpcomingFixtures(fcLeagueIds);
+          const filtered = fcFixtures.filter((m: any) => leagueSet.has(m.league?.id));
+          if (filtered.length > 0) {
+            data = await buildCountryData(country, filtered, leagueIds);
+            console.warn(`[homePageCache] ${country}: no Redis, used ${fc} fetch (${filtered.length} fixtures)`);
+            break;
+          }
+        } catch {
+          continue;
+        }
+      }
+    }
   }
 
   if (data.fixtures.length === 0 && redis) {

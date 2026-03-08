@@ -10,10 +10,9 @@ primary_region = "cdg"
   NODE_ENV = "production"
   NODE_OPTIONS = "--max-old-space-size=1536"
 
-# Solo app per test - cron disabilitato per evitare competizione risorse
 [processes]
   app = "node server.js"
-  # cron = "supercronic /app/crontab"
+  cron = "supercronic /app/crontab"
 
 [http_service]
   internal_port = 3000
