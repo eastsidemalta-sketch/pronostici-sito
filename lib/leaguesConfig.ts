@@ -1,7 +1,7 @@
 import { readFileSync, writeFileSync, mkdirSync, existsSync } from "fs";
 import path from "path";
 import { CALCIO_COMPETITIONS } from "./homeMenu";
-import { getAllMarketCodes } from "./markets";
+import { getAllMarketCodes, getActiveMarketCodes } from "./markets";
 import { getCompetitionsForSport } from "./sportsCompetitions";
 import { isHiddenCompetition } from "./hiddenCompetitions";
 
@@ -23,6 +23,10 @@ export type LeaguesConfigForCountry = Record<
 
 /** Config globale: per paese + fallback per retrocompatibilità */
 export type LeaguesConfig = {
+  /** Union di tutte le leghe da fetchare (un solo fetch per tutti i paesi) */
+  globalLeagueIds?: number[];
+  /** Quando paese X ha cache vuota, da quali paesi attingere (es. BR → IT) */
+  cacheFallback?: Record<string, string[]>;
   byCountry?: Record<string, LeaguesConfigForCountry>;
   leagueIds?: number[];
 };
@@ -110,4 +114,26 @@ export function getEnabledCompetitionIds(
 /** Lista paesi supportati (da markets config) */
 export function getSupportedCountries(): string[] {
   return getAllMarketCodes();
+}
+
+/** Union di tutte le leghe da fetchare (pool globale). Da config o derivato da byCountry. */
+export function getGlobalLeagueIds(): number[] {
+  const config = getRawConfig();
+  if (config.globalLeagueIds?.length) {
+    return filterHidden(config.globalLeagueIds);
+  }
+  const active = getActiveMarketCodes();
+  const seen = new Set<number>();
+  for (const country of active) {
+    for (const id of getEnabledLeagueIds(country)) {
+      seen.add(id);
+    }
+  }
+  return filterHidden(Array.from(seen));
+}
+
+/** Paesi da usare come fallback quando country ha cache vuota (config-driven). */
+export function getCacheFallbackCountries(country: string): string[] {
+  const config = getRawConfig();
+  return config.cacheFallback?.[country] ?? [];
 }
