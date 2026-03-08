@@ -79,7 +79,7 @@ export default function AdminDashboardPage() {
           </p>
         </Link>
         <Link
-          href="/ad2min3k/league-mapping"
+          href="/ad2min3k/leghe"
           className="rounded-xl border bg-white p-6 shadow-sm hover:border-emerald-500 hover:shadow transition"
         >
           <h3 className="font-semibold">Mapping leghe</h3>
