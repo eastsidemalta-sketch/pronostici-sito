@@ -42,6 +42,12 @@ export async function GET(req: Request) {
         /brasil|brazil|serie a|série a|campeonato/i.test(c.name) ||
         /brasileir[aã]o/i.test(c.name)
     );
+    const laLiga = categories.find(
+      (c) => /la liga|spain|spagna|españa|primera división|primera division/i.test(c.name)
+    );
+    const ligaPortugal = categories.find(
+      (c) => /portugal|primeira|liga portugal|portuguese/i.test(c.name)
+    );
 
     return NextResponse.json({
       ok: true,
@@ -50,6 +56,12 @@ export async function GET(req: Request) {
       brasileiraoHint: brasileirao
         ? { id: brasileirao.id, name: brasileirao.name, slug: brasileirao.url_slug }
         : "Cerca 'Brasil' o 'Serie A' nella lista. Football = sport_id 2 (default).",
+      laLigaHint: laLiga
+        ? { id: laLiga.id, name: laLiga.name, apiLeagueMapping: "140" }
+        : "Cerca 'La Liga' o 'Spain' nella lista per apiLeagueMapping 140.",
+      ligaPortugalHint: ligaPortugal
+        ? { id: ligaPortugal.id, name: ligaPortugal.name, apiLeagueMapping: "94" }
+        : "Cerca 'Portugal' o 'Primeira Liga' nella lista per apiLeagueMapping 94.",
     });
   } catch (e) {
     return NextResponse.json({

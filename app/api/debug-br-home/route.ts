@@ -50,7 +50,7 @@ export async function GET(request: Request) {
     error,
     hint:
       fixtures.length === 0
-        ? "Se debug-br-fixtures mostra 8 partite ma qui 0: possibile cache Redis stale. Usa ?invalidate=1 e ricarica /pt-BR/"
+        ? "Se debug-br-fixtures mostra partite ma qui 0: possibile cache Redis stale. Usa ?invalidate=1 e ricarica /pt-BR/. Fallback: homePageCache usa dati IT filtrati per leghe BR se API restituisce vuoto."
         : `Dovresti vedere ${fixtures.length} partite su /pt-BR/`,
   });
 }

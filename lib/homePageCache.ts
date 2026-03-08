@@ -61,6 +61,16 @@ async function fetchFreshData(country: string): Promise<CachedHomeData> {
           console.warn(`[homePageCache] Retry succeeded for ${country} (${fixtures.length} fixtures)`);
         }
       }
+      // Fallback BR: se ancora vuoto, usa leghe IT (include 94, 140) e filtra per BR
+      if (fixtures.length === 0 && country === "BR") {
+        const itLeagueIds = getLeagueIdsForAllSports("IT");
+        const brSet = new Set(leagueIds);
+        const itFixtures = await getUpcomingFixtures(itLeagueIds);
+        fixtures = itFixtures.filter((m: any) => brSet.has(m.league?.id));
+        if (fixtures.length > 0) {
+          console.warn(`[homePageCache] BR fallback: used IT fixtures filtered to BR leagues (${fixtures.length} fixtures)`);
+        }
+      }
     } catch (e) {
       console.error("[homePageCache] getUpcomingFixtures error:", e);
     }
@@ -141,6 +151,41 @@ export async function getCachedHomeData(
             const withFlag = { ...fallback, usingFallback: true };
             await redis.set(key, JSON.stringify(withFlag), "EX", CACHE_TTL_SEC);
             return withFlag;
+          }
+        }
+        // Fallback BR: usa dati IT dalla cache se disponibili (filtra per leghe BR)
+        if (country === "BR") {
+          const itRaw = await redis.get(`${KEY_PREFIX}IT`);
+          const itFallbackRaw = await redis.get(`${FALLBACK_KEY_PREFIX}IT`);
+          const rawToUse = itRaw ?? itFallbackRaw;
+          if (rawToUse) {
+            const itData = JSON.parse(rawToUse) as CachedHomeData;
+            const brLeagueIds = getLeagueIdsForAllSports("BR");
+            const brSet = new Set(brLeagueIds);
+            const filtered = (itData.fixtures ?? []).filter((m: any) => brSet.has(m.league?.id));
+            if (filtered.length > 0) {
+              const filteredIds = new Set(filtered.map((m: any) => m.fixture?.id).filter(Boolean));
+              const predictionsMap: Record<number, unknown> = {};
+              for (const [fid, p] of Object.entries(itData.predictionsMap ?? {})) {
+                if (filteredIds.has(Number(fid))) predictionsMap[Number(fid)] = p;
+              }
+              let quotesMap: Record<number, import("./quotes/fixturesQuotes").FixtureQuoteSummary> = {};
+              try {
+                quotesMap = await getQuotesForFixtures(filtered, "BR");
+              } catch {
+                /* quote fetch opzionale */
+              }
+              console.warn(`[homePageCache] BR: using IT cache filtered to BR leagues (${filtered.length} fixtures)`);
+              const withFlag: CachedHomeData = {
+                fixtures: filtered,
+                quotesMap,
+                predictionsMap: predictionsMap as Record<number, import("@/app/pronostici-quote/lib/apiFootball").FixturePredictions>,
+                fetchedAt: itData.fetchedAt,
+                usingFallback: true,
+              };
+              await redis.set(key, JSON.stringify(withFlag), "EX", CACHE_TTL_SEC);
+              return withFlag;
+            }
           }
         }
         // Non memorizziamo vuoto in main: il prossimo request riproverà il fetch
