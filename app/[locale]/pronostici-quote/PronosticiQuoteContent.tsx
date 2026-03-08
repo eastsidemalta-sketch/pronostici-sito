@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useCallback } from "react";
-import { usePathname } from "@/i18n/navigation";
+import { usePathname, useRouter } from "@/i18n/navigation";
 import { useSearchParams } from "next/navigation";
 import { Link } from "@/i18n/navigation";
 import { useTranslations } from "next-intl";
@@ -62,6 +62,7 @@ export default function PronosticiQuoteContent({
   bonusSidebar,
   initialTab,
 }: Props) {
+  const router = useRouter();
   const pathname = usePathname();
   const searchParams = useSearchParams();
   const t = useTranslations("pronosticiQuote");
@@ -78,9 +79,9 @@ export default function PronosticiQuoteContent({
       next.set("sport", s);
       if (s !== "calcio") next.delete("league");
       const qs = next.toString();
-      window.history.replaceState(null, "", qs ? `${pathname}?${qs}` : pathname);
+      router.replace(qs ? `${pathname}?${qs}` : pathname);
     },
-    [pathname, searchParams]
+    [pathname, searchParams, router]
   );
 
   const setLeague = useCallback(
@@ -90,9 +91,9 @@ export default function PronosticiQuoteContent({
       if (l === "all") next.delete("league");
       else next.set("league", l);
       const qs = next.toString();
-      window.history.replaceState(null, "", qs ? `${pathname}?${qs}` : pathname);
+      router.replace(qs ? `${pathname}?${qs}` : pathname);
     },
-    [pathname, searchParams]
+    [pathname, searchParams, router]
   );
 
   const calcioItem = menuItems.find((m) => m.key === "calcio");

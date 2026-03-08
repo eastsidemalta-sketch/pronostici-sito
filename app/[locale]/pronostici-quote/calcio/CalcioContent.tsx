@@ -98,9 +98,9 @@ export default function CalcioContent({
       if (l === "all") next.delete("league");
       else next.set("league", l);
       const qs = next.toString();
-      window.history.replaceState(null, "", qs ? `${pathname}?${qs}` : pathname);
+      router.replace(qs ? `${pathname}?${qs}` : pathname);
     },
-    [pathname, searchParams]
+    [pathname, searchParams, router]
   );
 
   const filteredFixtures =

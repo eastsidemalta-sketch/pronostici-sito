@@ -3,8 +3,7 @@
 import { useEffect, useState } from "react";
 import Image from "next/image";
 import { trackEvent } from "@/lib/analytics/ga";
-import { useRouter } from "next/navigation";
-import { usePathname } from "@/i18n/navigation";
+import { useRouter, usePathname } from "@/i18n/navigation";
 import { useSearchParams } from "next/navigation";
 import { Link } from "@/i18n/navigation";
 import { BookmakerLink } from "@/lib/components/BookmakerLink";
