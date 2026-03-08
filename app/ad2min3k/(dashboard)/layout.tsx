@@ -2,6 +2,7 @@ import { redirect } from "next/navigation";
 import { Suspense } from "react";
 import { getSession } from "@/lib/auth";
 import AdminDashboardShell from "../AdminDashboardShell";
+import AdminMatchingAlerts from "../AdminMatchingAlerts";
 
 export default async function AdminDashboardLayout({
   children,
@@ -16,7 +17,9 @@ export default async function AdminDashboardLayout({
 
   return (
     <Suspense fallback={<div className="min-h-screen bg-neutral-50 p-6">Caricamento…</div>}>
-      <AdminDashboardShell>{children}</AdminDashboardShell>
+      <AdminDashboardShell alertsSlot={<AdminMatchingAlerts />}>
+        {children}
+      </AdminDashboardShell>
     </Suspense>
   );
 }

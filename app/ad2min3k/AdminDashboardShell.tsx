@@ -2,13 +2,14 @@
 
 import { useState } from "react";
 import AdminLogoutButton from "./AdminLogoutButton";
-import AdminMatchingAlerts from "./AdminMatchingAlerts";
 import AdminSidebar from "./AdminSidebar";
 
 export default function AdminDashboardShell({
   children,
+  alertsSlot,
 }: {
   children: React.ReactNode;
+  alertsSlot?: React.ReactNode;
 }) {
   const [sidebarOpen, setSidebarOpen] = useState(false);
 
@@ -33,7 +34,7 @@ export default function AdminDashboardShell({
         </div>
       </header>
       <div className="mx-auto max-w-7xl px-4">
-        <AdminMatchingAlerts />
+        {alertsSlot}
       </div>
       <div className="flex">
         {/* Mobile overlay */}
