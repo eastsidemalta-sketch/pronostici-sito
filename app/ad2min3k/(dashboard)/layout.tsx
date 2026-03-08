@@ -1,4 +1,5 @@
 import { redirect } from "next/navigation";
+import { Suspense } from "react";
 import { getSession } from "@/lib/auth";
 import AdminLogoutButton from "../AdminLogoutButton";
 import AdminMatchingAlerts from "../AdminMatchingAlerts";
@@ -27,7 +28,9 @@ export default async function AdminDashboardLayout({
         <AdminMatchingAlerts />
       </div>
       <div className="flex">
-        <AdminSidebar />
+        <Suspense fallback={<div className="w-56 shrink-0 border-r border-neutral-200 bg-white" />}>
+          <AdminSidebar />
+        </Suspense>
         <div className="min-w-0 flex-1 p-6">{children}</div>
       </div>
     </div>

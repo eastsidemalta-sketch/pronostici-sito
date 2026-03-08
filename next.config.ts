@@ -11,7 +11,8 @@ const nextConfig: NextConfig = {
       { source: "/it/it/:path*", destination: "/it/:path*", permanent: true },
       { source: "/pt-BR/pt-BR", destination: "/pt-BR", permanent: true },
       { source: "/pt-BR/pt-BR/:path*", destination: "/pt-BR/:path*", permanent: true },
-      { source: "/ad2min3k/league-mapping", destination: "/ad2min3k/leghe", permanent: true },
+      { source: "/ad2min3k/league-mapping", destination: "/ad2min3k/team-aliases-by-provider?tab=leghe", permanent: true },
+      { source: "/ad2min3k/leghe", destination: "/ad2min3k/team-aliases-by-provider?tab=leghe", permanent: true },
     ];
   },
   images: {

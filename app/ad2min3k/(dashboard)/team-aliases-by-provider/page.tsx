@@ -2,13 +2,24 @@
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
+import { useSearchParams } from "next/navigation";
+import { CALCIO_COMPETITIONS } from "@/lib/homeMenu";
 
 type ProviderMapping = Record<string, string | string[]>;
 type MappingConfig = Record<string, ProviderMapping>;
 type CategoryMapping = Record<string, string[]>;
 type CategoryConfig = Record<string, CategoryMapping>;
 
-const TABS = ["squadre", "categorie"] as const;
+type Bookmaker = {
+  id: string;
+  siteId?: string;
+  name: string;
+  apiProvider?: string;
+  apiEndpoint?: string | null;
+  apiLeagueMapping?: Record<string, string>;
+};
+
+const TABS = ["squadre", "categorie", "leghe"] as const;
 
 export default function AdminTeamAliasesByProviderPage() {
   const [mapping, setMapping] = useState<MappingConfig>({});
@@ -20,8 +31,12 @@ export default function AdminTeamAliasesByProviderPage() {
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState("");
   const [success, setSuccess] = useState("");
+  const searchParams = useSearchParams();
   const [selectedProvider, setSelectedProvider] = useState<string>("");
   const [activeTab, setActiveTab] = useState<(typeof TABS)[number]>("squadre");
+  const [bookmakers, setBookmakers] = useState<Bookmaker[]>([]);
+  const [leagueSaving, setLeagueSaving] = useState<Record<string, boolean>>({});
+  const [leagueError, setLeagueError] = useState("");
 
   useEffect(() => {
     fetch("/api/ad2min3k/team-aliases-by-provider")
@@ -39,6 +54,24 @@ export default function AdminTeamAliasesByProviderPage() {
       .catch(() => setError("Errore caricamento"))
       .finally(() => setLoading(false));
   }, []);
+
+  useEffect(() => {
+    const t = searchParams.get("tab");
+    if (t === "leghe" || t === "squadre" || t === "categorie") setActiveTab(t);
+  }, [searchParams]);
+
+  useEffect(() => {
+    if (activeTab !== "leghe") return;
+    fetch("/api/ad2min3k/bookmakers")
+      .then((r) => r.json())
+      .then((data) => {
+        const withApi = (data.bookmakers ?? []).filter(
+          (b: Bookmaker) => b.apiProvider === "direct" && b.apiEndpoint
+        );
+        setBookmakers(withApi);
+      })
+      .catch(() => setBookmakers([]));
+  }, [activeTab]);
 
   async function handleSave() {
     setSaving(true);
@@ -93,6 +126,37 @@ export default function AdminTeamAliasesByProviderPage() {
     });
   }
 
+  function updateLeagueMapping(bmId: string, apiFootballId: string, bookmakerId: string) {
+    const bm = bookmakers.find((b) => b.id === bmId);
+    if (!bm) return;
+    const next = { ...(bm.apiLeagueMapping ?? {}) };
+    if (bookmakerId.trim()) next[apiFootballId] = bookmakerId.trim();
+    else delete next[apiFootballId];
+    setBookmakers((prev) =>
+      prev.map((b) => (b.id === bmId ? { ...b, apiLeagueMapping: next } : b))
+    );
+  }
+
+  async function saveBookmakerLeagueMapping(bm: Bookmaker) {
+    setLeagueSaving((s) => ({ ...s, [bm.id]: true }));
+    setLeagueError("");
+    try {
+      const res = await fetch("/api/ad2min3k/bookmakers", {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ ...bm, apiLeagueMapping: bm.apiLeagueMapping ?? {} }),
+      });
+      if (!res.ok) {
+        const d = await res.json().catch(() => ({}));
+        throw new Error(d.error || `Errore ${res.status}`);
+      }
+    } catch (e) {
+      setLeagueError(e instanceof Error ? e.message : "Errore salvataggio");
+    } finally {
+      setLeagueSaving((s) => ({ ...s, [bm.id]: false }));
+    }
+  }
+
   if (loading) {
     return (
       <main className="mx-auto max-w-5xl px-6 py-10">
@@ -143,7 +207,11 @@ export default function AdminTeamAliasesByProviderPage() {
                 : "border-transparent text-neutral-600 hover:text-neutral-900"
             }`}
           >
-            {tab === "squadre" ? "Mapping Squadre" : "Mapping Categorie"}
+            {tab === "squadre"
+              ? "Mapping Squadre"
+              : tab === "categorie"
+                ? "Mapping Categorie"
+                : "Mapping Leghe"}
           </button>
         ))}
       </div>
@@ -309,6 +377,81 @@ export default function AdminTeamAliasesByProviderPage() {
           >
             {saving ? "Salvataggio…" : "Salva"}
           </button>
+        </>
+      )}
+
+      {activeTab === "leghe" && (
+        <>
+          <h3 className="text-lg font-medium mb-2">Mapping Leghe API Football ↔ Bookmaker</h3>
+          <p className="text-sm text-neutral-600 mb-4">
+            Associa gli ID competizioni API Football con gli ID categoria dei bookmaker (es. Betboom).
+            Senza mapping si usa il fallback (tutte le categorie).
+          </p>
+          {leagueError && (
+            <div className="mb-4 rounded-lg border border-red-200 bg-red-50 px-4 py-2 text-sm text-red-800">
+              {leagueError}
+            </div>
+          )}
+          <div className="space-y-8">
+            {bookmakers.length === 0 ? (
+              <p className="text-neutral-600">Nessun bookmaker con API diretta. Caricamento…</p>
+            ) : (
+              bookmakers.map((bm) => (
+                <div key={bm.id} className="rounded-xl border border-neutral-200 bg-white p-6">
+                  <div className="mb-4 flex items-center justify-between">
+                    <h4 className="font-semibold">
+                      {bm.name}
+                      {bm.siteId && (
+                        <span className="ml-2 text-sm font-normal text-neutral-500">({bm.siteId})</span>
+                      )}
+                    </h4>
+                    <button
+                      type="button"
+                      onClick={() => saveBookmakerLeagueMapping(bm)}
+                      disabled={leagueSaving[bm.id]}
+                      className="rounded-lg bg-emerald-600 px-4 py-2 text-sm font-medium text-white hover:bg-emerald-700 disabled:opacity-50"
+                    >
+                      {leagueSaving[bm.id] ? "Salvataggio…" : "Salva"}
+                    </button>
+                  </div>
+                  <div className="overflow-x-auto">
+                    <table className="w-full min-w-[400px] text-sm">
+                      <thead>
+                        <tr className="border-b border-neutral-200 bg-neutral-50">
+                          <th className="px-4 py-2 text-left font-medium">API Football</th>
+                          <th className="px-4 py-2 text-left font-medium">ID Bookmaker</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {CALCIO_COMPETITIONS.map((comp) => (
+                          <tr key={comp.id} className="border-b border-neutral-100">
+                            <td className="px-4 py-2">
+                              <span className="font-medium">{comp.name}</span>
+                              <span className="ml-2 text-neutral-500">(ID: {comp.id})</span>
+                            </td>
+                            <td className="px-4 py-2">
+                              <input
+                                type="text"
+                                value={bm.apiLeagueMapping?.[String(comp.id)] ?? ""}
+                                onChange={(e) =>
+                                  updateLeagueMapping(bm.id, String(comp.id), e.target.value)
+                                }
+                                placeholder="ID categoria"
+                                className="w-full max-w-[140px] rounded border border-neutral-300 px-2 py-1.5 text-sm"
+                              />
+                            </td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  </div>
+                  <p className="mt-3 text-xs text-neutral-500">
+                    ID categoria: <code className="rounded bg-neutral-100 px-1">GET /api/debug-betboom-categories</code>
+                  </p>
+                </div>
+              ))
+            )}
+          </div>
         </>
       )}
     </main>
