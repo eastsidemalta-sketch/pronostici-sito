@@ -76,16 +76,20 @@ export async function getQuotesForFixtures(
     displayNameByKey.set(key, getBookmakerDisplayName(bm));
   });
 
-  const bySportKey = new Map<string, typeof fixtures>();
+  /** Raggruppa per (sportKey, leagueId): ogni lega ha quote proprie (Netwin/Betboom filtrano per league) */
+  const bySportAndLeague = new Map<string, typeof fixtures>();
   for (const f of fixtures) {
     const sportKey = getSportKeyForLeague(f.league?.id, f.league?.name);
     if (!sportKey) continue;
-    if (!bySportKey.has(sportKey)) bySportKey.set(sportKey, []);
-    bySportKey.get(sportKey)!.push(f);
+    const leagueId = f.league?.id ?? 0;
+    const key = `${sportKey}:${leagueId}`;
+    if (!bySportAndLeague.has(key)) bySportAndLeague.set(key, []);
+    bySportAndLeague.get(key)!.push(f);
   }
 
-  for (const [sportKey, leagueFixtures] of bySportKey) {
+  for (const [, leagueFixtures] of bySportAndLeague) {
     const leagueId = leagueFixtures[0]?.league?.id;
+    const sportKey = getSportKeyForLeague(leagueId, leagueFixtures[0]?.league?.name) ?? "calcio";
     let multiMarket: Awaited<ReturnType<typeof getMultiMarketQuotes>>;
     try {
       multiMarket = await getMultiMarketQuotes(sportKey, { leagueId, country });

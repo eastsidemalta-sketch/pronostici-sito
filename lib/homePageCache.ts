@@ -53,6 +53,14 @@ async function fetchFreshData(country: string): Promise<CachedHomeData> {
   if (calcioEnabled && leagueIds.length > 0) {
     try {
       fixtures = await getUpcomingFixtures(leagueIds);
+      // Retry una volta se API restituisce vuoto (rate limit o fallimento transitorio)
+      if (fixtures.length === 0) {
+        await new Promise((r) => setTimeout(r, 1000));
+        fixtures = await getUpcomingFixtures(leagueIds);
+        if (fixtures.length > 0) {
+          console.warn(`[homePageCache] Retry succeeded for ${country} (${fixtures.length} fixtures)`);
+        }
+      }
     } catch (e) {
       console.error("[homePageCache] getUpcomingFixtures error:", e);
     }
