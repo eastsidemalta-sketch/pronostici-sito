@@ -21,7 +21,7 @@ const NAV_ITEMS = [
   { href: "/ad2min3k/footer-disclaimer", label: "Disclaimer footer" },
 ];
 
-export default function AdminSidebar() {
+export default function AdminSidebar({ onNavigate }: { onNavigate?: () => void }) {
   const pathname = usePathname() ?? "";
   const searchParams = useSearchParams();
 
@@ -40,6 +40,7 @@ export default function AdminSidebar() {
             <Link
               key={item.href}
               href={item.href}
+              onClick={onNavigate}
               className={`rounded-lg px-3 py-2 text-sm transition ${
                 isActive
                   ? "bg-emerald-100 font-medium text-emerald-800"

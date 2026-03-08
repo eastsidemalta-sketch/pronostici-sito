@@ -11,6 +11,12 @@ export default function AdminBookmakersPage() {
         <h2 className="text-2xl font-semibold">Siti di scommesse</h2>
         <div className="flex items-center gap-3">
           <Link
+            href="/ad2min3k/team-aliases-by-provider?tab=leghe"
+            className="rounded-lg border border-neutral-300 bg-white px-4 py-2 text-sm font-medium text-neutral-700 hover:bg-neutral-50"
+          >
+            Mapping leghe
+          </Link>
+          <Link
             href="/ad2min3k/bookmakers/new"
             className="rounded-lg bg-emerald-600 px-4 py-2 text-sm font-medium text-white hover:bg-emerald-700"
           >

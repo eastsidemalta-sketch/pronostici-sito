@@ -814,7 +814,15 @@ export default function AdminBookmakerEditPage() {
               )}
 
               <div className="rounded-lg border border-neutral-200 bg-neutral-50 p-3">
-                <label className="block text-sm font-medium text-neutral-700 mb-2">Mapping leghe (leagueId → ID bookmaker)</label>
+                <div className="mb-2 flex items-center justify-between">
+                  <label className="block text-sm font-medium text-neutral-700">Mapping leghe (leagueId → ID bookmaker)</label>
+                  <Link
+                    href="/ad2min3k/team-aliases-by-provider?tab=leghe"
+                    className="text-xs font-medium text-emerald-600 hover:text-emerald-700 hover:underline"
+                  >
+                    Editor completo (tutti i bookmaker) →
+                  </Link>
+                </div>
                 <p className="mb-2 text-xs text-neutral-600">
                   Es: {`{"135": "serie_a", "140": "laliga"}`} — 135=Serie A, 140=La Liga. Usa l&apos;ID del bookmaker per filtrare.
                 </p>
