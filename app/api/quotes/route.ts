@@ -69,7 +69,12 @@ export async function GET(req: Request) {
     if (!hasAnyEvents && homeTeam && awayTeam && sportKey.startsWith("soccer_italy_")) {
       for (const fallbackKey of ITALIAN_SOCCER_KEYS) {
         if (fallbackKey === sportKey) continue;
-        const fallback = await getMultiMarketQuotes(fallbackKey, {});
+        const fallback = await getMultiMarketQuotes(fallbackKey, {
+          country: country ?? undefined,
+          homeTeam: homeTeam ?? undefined,
+          awayTeam: awayTeam ?? undefined,
+          leagueId: leagueId != null && !isNaN(leagueId) ? leagueId : undefined,
+        });
         const fallbackHasEvents = Object.values(fallback).some((arr) => Array.isArray(arr) && arr.length > 0);
         if (fallbackHasEvents) {
           multiMarket = fallback;
