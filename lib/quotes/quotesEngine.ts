@@ -63,12 +63,15 @@ export async function getMultiMarketQuotes(
 ): Promise<MultiMarketQuotes> {
   let bookmakers = getBookmakers();
   if (options?.country) {
-    const country = options.country.toUpperCase().slice(0, 2);
+    let parsedCountry = options.country.toUpperCase();
+    if (parsedCountry.includes('BR')) parsedCountry = 'BR';
+    else if (parsedCountry.includes('IT')) parsedCountry = 'IT';
+    else parsedCountry = parsedCountry.slice(0, 2);
     bookmakers = bookmakers.filter(
       (b) =>
-        b.countries?.includes(country) ||
-        b.country === country ||
-        b.countryConfig?.[country]
+        b.countries?.includes(parsedCountry) ||
+        b.country === parsedCountry ||
+        b.countryConfig?.[parsedCountry]
     );
   }
   const filteredBms = options?.bookmakerId

@@ -91,10 +91,11 @@ export default function MatchQuotesTabs({ sportKey, homeTeam, awayTeam, country,
     const ac = new AbortController();
     const requestedCountry = country;
     fetchCountryRef.current = requestedCountry;
+    const safeCountry = country || (locale.toLowerCase().includes('br') ? 'BR' : 'IT');
     const q = new URLSearchParams({ sportKey });
     if (homeTeam) q.set("homeTeam", homeTeam);
     if (awayTeam) q.set("awayTeam", awayTeam);
-    if (country) q.set("country", country);
+    if (safeCountry) q.set("country", safeCountry);
     if (leagueId != null) q.set("leagueId", String(leagueId));
     if (searchParams?.get("debug") === "1") q.set("debug", "1");
     setLoading(true);

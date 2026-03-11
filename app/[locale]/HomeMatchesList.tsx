@@ -74,9 +74,15 @@ export default function HomeMatchesList({
   const [mobileTab, setMobileTab] = useState<"quotes" | "pronostici">(initialTab);
   const liveMap = useLiveMatches();
 
+  const [visibleCount, setVisibleCount] = useState(15);
+
   useEffect(() => {
     setMobileTab(initialTab);
   }, [initialTab]);
+
+  useEffect(() => {
+    setVisibleCount(15);
+  }, [fixtures]);
 
   const handleTabClick = (tab: "quotes" | "pronostici") => {
     setMobileTab(tab);
@@ -88,14 +94,17 @@ export default function HomeMatchesList({
   const intlLocale = localeToIntl[locale] ?? "it-IT";
 
   const byDate = new Map<string, any[]>();
-  fixtures.forEach((m: any) => {
+  const safeFixtures = fixtures || [];
+  const visibleFixtures = fixtures.slice(0, visibleCount);
+  visibleFixtures.forEach((m: any) => {
+    if (!m || !m.fixture || !m.fixture.date) return;
     const dateStr = new Date(m.fixture.date).toISOString().split("T")[0];
     if (!byDate.has(dateStr)) byDate.set(dateStr, []);
     byDate.get(dateStr)!.push(m);
   });
   const dates = Array.from(byDate.keys()).sort();
 
-  if (fixtures.length === 0) {
+  if (safeFixtures.length === 0) {
     return (
       <div className="rounded-lg border border-[var(--card-border)] bg-[var(--card-bg)] p-6 text-center shadow-sm md:p-8">
         <p className="text-sm leading-relaxed text-[var(--foreground-muted)] md:text-base">{noMatchesLabel}</p>
@@ -508,6 +517,20 @@ export default function HomeMatchesList({
         );
       });
       })()}
+      {/* --- INIZIO BOTTONE MOSTRA ALTRI --- */}
+      {visibleCount < (fixtures?.length || 0) && (
+        <div className="mt-6 flex justify-center pb-8">
+          <button
+            onClick={() => setVisibleCount((prev) => prev + 15)}
+            className="rounded-lg bg-[var(--accent)] px-8 py-3 text-sm font-bold text-white shadow-md transition-all hover:bg-[var(--accent-hover)] active:scale-95"
+          >
+            {locale?.includes('pt') 
+              ? `Carregar mais jogos (${(fixtures?.length || 0) - visibleCount} restantes)` 
+              : `Carica altri match (${(fixtures?.length || 0) - visibleCount} rimanenti)`}
+          </button>
+        </div>
+      )}
+      {/* --- FINE BOTTONE MOSTRA ALTRI --- */}
     </div>
   );
 }
