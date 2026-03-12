@@ -50,11 +50,16 @@ export default async function HomePage({
   searchParams,
 }: {
   params: Promise<{ locale: string }>;
-  searchParams?: Promise<{ refresh?: string }>;
+  // Added sport and league typing here
+  searchParams?: Promise<{ refresh?: string; sport?: string; league?: string }>;
 }) {
   const { locale } = await params;
   const sp = searchParams ? await searchParams : {};
   const bypassCache = sp?.refresh === "1";
+  
+  // Extracting sport and league from search params with default fallback
+  const sport = sp?.sport ?? "all";
+  const league = sp?.league ?? "all";
 
   const t = await getTranslations("home");
   const tPronostici = await getTranslations("pronosticiQuote");

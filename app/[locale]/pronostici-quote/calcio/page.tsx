@@ -56,7 +56,8 @@ export default async function CalcioPage({
   searchParams: Promise<{ league?: string; tab?: string }>;
 }) {
   const { locale } = await params;
-  const { tab = "quotes" } = await searchParams;
+  // Extract league here with a default fallback
+  const { tab = "quotes", league = "all" } = await searchParams;
   const initialTab = tab === "pronostici" ? "pronostici" : "quotes";
   const t = await getTranslations("calcio");
   const tCommon = await getTranslations("common");
@@ -75,7 +76,6 @@ export default async function CalcioPage({
         ? await getUpcomingFixtures()
         : [];
 
-
   let filteredFixtures = fixtures;
   if (league !== "all") {
     filteredFixtures = filteredFixtures.filter((m: any) => m.league?.id === Number(league));
@@ -91,7 +91,7 @@ export default async function CalcioPage({
         getPredictionsForFixtures(initialFixtures.map((m: any) => m.fixture.id)),
       ]);
     } catch {
-      // Quote API può fallire - continua senza quote
+      // Quote API can fail - continue without quotes
     }
   }
 
