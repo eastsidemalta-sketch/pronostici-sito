@@ -43,6 +43,7 @@ export default async function HomeDataLoader({
   ]);
 
   const featuredBookmaker = getFeaturedBookmaker(country);
+  const showCalcioFixtures = (sport === "all" || sport === "calcio") && calcioEnabled;
   let filteredFixtures = cachedData.fixtures;
 
   if (!showCalcioFixtures) {
