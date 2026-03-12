@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { getPaginatedMatches } from "@/app/actions/homeActions";
 import Image from "next/image";
 import { trackEvent } from "@/lib/analytics/ga";
 import { useRouter, usePathname } from "@/i18n/navigation";
@@ -19,6 +20,7 @@ import type { FixturePredictions } from "@/app/pronostici-quote/lib/apiFootball"
 interface HomeMatchesListProps {
   fixtures: any[];
   locale: string;
+  country: string;
   /** Tab iniziale: "quotes" o "pronostici" - per mostrare quote o pronostici di default */
   initialTab?: "quotes" | "pronostici";
   noMatchesLabel?: string;
@@ -54,8 +56,11 @@ interface HomeMatchesListProps {
 }
 
 export default function HomeMatchesList({
-  fixtures,
+  fixtures: initialFixtures,
+  quotesMap: initialQuotes,
+  predictionsMap: initialPredictions,
   locale,
+  country,
   initialTab = "quotes",
   noMatchesLabel = "Nessuna partita nei prossimi 7 giorni per i filtri selezionati.",
   compareLabel = "Compara quote",
@@ -63,8 +68,8 @@ export default function HomeMatchesList({
   fullPredictionsLabel = "Pronostici completi >",
   quotesTabLabel = "Quote",
   predictionsTabLabel = "Pronostici",
-  quotesMap = {},
-  predictionsMap = {},
+  quotesMap: initialQuotesMap = {},
+  predictionsMap: initialPredictionsMap = {},
   featuredBookmaker,
   telegramBanner,
 }: HomeMatchesListProps) {
@@ -74,16 +79,43 @@ export default function HomeMatchesList({
   const [mobileTab, setMobileTab] = useState<"quotes" | "pronostici">(initialTab);
   const liveMap = useLiveMatches();
 
-  const [visibleCount, setVisibleCount] = useState(15);
+  // STATI: Inizializzati con i dati passati dal server al primo caricamento
+  const [fixtures, setFixtures] = useState(initialFixtures);
+  const [quotesMap, setQuotesMap] = useState(initialQuotes || initialQuotesMap);
+  const [predictionsMap, setPredictionsMap] = useState(initialPredictions || initialPredictionsMap);
+
+  const [loadingMore, setLoadingMore] = useState(false);
+  const [hasMore, setHasMore] = useState(true); // Nascondi il tasto se finiscono le partite
+
+  useEffect(() => {
+      setFixtures(initialFixtures);
+      setQuotesMap(initialQuotes || initialQuotesMap);
+      setPredictionsMap(initialPredictions || initialPredictionsMap);
+      setHasMore(initialFixtures.length === 15); // Supponiamo che se ne arrivano 15, ce ne siano altre
+    }, [initialFixtures, initialQuotes, initialPredictions, initialQuotesMap, initialPredictionsMap]);
 
   useEffect(() => {
     setMobileTab(initialTab);
   }, [initialTab]);
 
-  useEffect(() => {
-    setVisibleCount(15);
-  }, [fixtures]);
 
+  const loadMore = async () => {
+    setLoadingMore(true);
+    try {
+      const leagueFilter = searchParams.get("league") ?? "all";
+      // Chiamata alla Server Action che pesca dalla cache
+      const newData = await getPaginatedMatches(country, leagueFilter, fixtures.length, 15);
+      
+      setFixtures((prev) => [...prev, ...newData.fixtures]);
+      setQuotesMap((prev) => ({ ...prev, ...newData.quotesMap }));
+      setPredictionsMap((prev) => ({ ...prev, ...newData.predictionsMap }));
+      setHasMore(newData.hasMore);
+    } catch (error) {
+      console.error("Errore nel caricamento", error);
+    } finally {
+      setLoadingMore(false);
+    }
+  };
   const handleTabClick = (tab: "quotes" | "pronostici") => {
     setMobileTab(tab);
     const params = new URLSearchParams(searchParams.toString());
@@ -95,8 +127,7 @@ export default function HomeMatchesList({
 
   const byDate = new Map<string, any[]>();
   const safeFixtures = fixtures || [];
-  const visibleFixtures = fixtures.slice(0, visibleCount);
-  visibleFixtures.forEach((m: any) => {
+  safeFixtures.forEach((m: any) => {
     if (!m || !m.fixture || !m.fixture.date) return;
     const dateStr = new Date(m.fixture.date).toISOString().split("T")[0];
     if (!byDate.has(dateStr)) byDate.set(dateStr, []);
@@ -518,15 +549,18 @@ export default function HomeMatchesList({
       });
       })()}
       {/* --- INIZIO BOTTONE MOSTRA ALTRI --- */}
-      {visibleCount < (fixtures?.length || 0) && (
+      {hasMore && (
         <div className="mt-6 flex justify-center pb-8">
           <button
-            onClick={() => setVisibleCount((prev) => prev + 15)}
-            className="rounded-lg bg-[var(--accent)] px-8 py-3 text-sm font-bold text-white shadow-md transition-all hover:bg-[var(--accent-hover)] active:scale-95"
+            onClick={loadMore}
+            disabled={loadingMore}
+            className="rounded-lg bg-[var(--accent)] px-8 py-3 text-sm font-bold text-white shadow-md transition-all hover:bg-[var(--accent-hover)] active:scale-95 disabled:opacity-50"
           >
-            {locale?.includes('pt') 
-              ? `Carregar mais jogos (${(fixtures?.length || 0) - visibleCount} restantes)` 
-              : `Carica altri match (${(fixtures?.length || 0) - visibleCount} rimanenti)`}
+            {loadingMore ? (
+              locale?.includes('pt') ? "Carregando..." : "Caricamento..."
+            ) : (
+              locale?.includes('pt') ? "Carregar mais jogos" : "Carica altri match"
+            )}
           </button>
         </div>
       )}

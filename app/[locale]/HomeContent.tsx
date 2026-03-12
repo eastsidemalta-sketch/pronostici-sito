@@ -103,6 +103,8 @@ export default function HomeContent({
       ? fixtures.filter((m) => m.league?.id === Number(league))
       : fixtures;
 
+  const initialFixtures = filteredFixtures.slice(0, 15);
+
   const sportLabel =
     sport === "tennis"
       ? tPronostici("tennis")
@@ -136,7 +138,8 @@ export default function HomeContent({
             <div className="min-w-0 flex-1">
               <HomeMatchesList
                 key={country}
-                fixtures={filteredFixtures}
+                fixtures={initialFixtures}
+                country={country}
                 locale={locale}
                 initialTab={searchParams.get("tab") === "pronostici" ? "pronostici" : "quotes"}
                 noMatchesLabel={labels.noMatches}
