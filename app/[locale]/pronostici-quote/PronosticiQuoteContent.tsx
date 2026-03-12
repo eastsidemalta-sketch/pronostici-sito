@@ -104,6 +104,8 @@ export default function PronosticiQuoteContent({
       ? fixtures.filter((m) => m.league?.id === Number(league))
       : fixtures;
 
+  const initialFixtures = filteredFixtures.slice(0, 15);
+
   const sportLabel =
     sport === "tennis"
       ? t("tennis")
@@ -137,8 +139,9 @@ export default function PronosticiQuoteContent({
             <div className="min-w-0 flex-1">
               <HomeMatchesList
                 key={country}
-                fixtures={filteredFixtures}
+                fixtures={initialFixtures}
                 locale={locale}
+                country={country}
                 initialTab={initialTab}
                 noMatchesLabel={labels.noMatches}
                 compareLabel={labels.compareOdds}
