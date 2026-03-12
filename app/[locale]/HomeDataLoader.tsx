@@ -11,6 +11,8 @@ type Props = {
   bypassCache: boolean;
   menuItems: MenuItem[];
   calcioEnabled: boolean;
+  sport?: string; // <-- Added
+  league?: string; // <-- Added
   labels: {
     allSports: string;
     allCompetitions: string;
@@ -35,6 +37,8 @@ export default async function HomeDataLoader({
   bypassCache,
   menuItems,
   calcioEnabled,
+  sport = "all", // <-- Extract with default
+  league = "all", // <-- Extract with default
   labels,
 }: Props) {
   const [cachedData, telegramBanner] = await Promise.all([

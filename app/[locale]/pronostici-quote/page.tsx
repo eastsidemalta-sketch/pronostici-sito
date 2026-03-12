@@ -56,7 +56,7 @@ export default async function PronosticiQuotePage({
   searchParams: Promise<{ sport?: string; league?: string; tab?: string }>;
 }) {
   const { locale } = await params;
-  const { tab = "quotes" } = await searchParams;
+  const { tab = "quotes", sport = "all", league = "all" } = await searchParams;
   const initialTab = tab === "pronostici" ? "pronostici" : "quotes";
   const t = await getTranslations("pronosticiQuote");
   const tHome = await getTranslations("home");
