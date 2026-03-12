@@ -43,13 +43,33 @@ export default async function HomeDataLoader({
   ]);
 
   const featuredBookmaker = getFeaturedBookmaker(country);
+  let filteredFixtures = cachedData.fixtures;
 
+  if (!showCalcioFixtures) {
+    filteredFixtures = [];
+  } else if (league !== "all") {
+    filteredFixtures = filteredFixtures.filter((m: any) => m.league?.id === Number(league));
+  }
+
+  // Prendi solo i primi 15 match
+  const initialFixtures = filteredFixtures.slice(0, 15);
+
+  // Filtra Quote e Pronostici in modo da inviare via rete SOLO quelli dei 15 match visibili
+  const quotesMap: Record<number, any> = {};
+  const predictionsMap: Record<number, any> = {};
+
+  initialFixtures.forEach((m: any) => {
+    const id = m.fixture.id;
+    if (cachedData.quotesMap[id]) quotesMap[id] = cachedData.quotesMap[id];
+    if (cachedData.predictionsMap[id]) predictionsMap[id] = cachedData.predictionsMap[id];
+  });
+  // ------------------------------------------------
   return (
     <HomeContent
       menuItems={menuItems}
-      fixtures={cachedData.fixtures}
-      quotesMap={cachedData.quotesMap}
-      predictionsMap={cachedData.predictionsMap}
+      fixtures={initialFixtures}
+      quotesMap={quotesMap}
+      predictionsMap={predictionsMap}
       locale={locale}
       country={country}
       labels={labels}

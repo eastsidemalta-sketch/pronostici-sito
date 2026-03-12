@@ -74,14 +74,25 @@ export default async function PronosticiQuotePage({
       console.error("getUpcomingFixtures error:", e);
     }
   }
+  const showCalcioFixtures = (sport === "all" || sport === "calcio") && calcioEnabled;
+  let filteredFixtures = fixtures;
 
+  if (!showCalcioFixtures) {
+    filteredFixtures = [];
+  } else if (league !== "all") {
+    filteredFixtures = filteredFixtures.filter((m: any) => m.league?.id === Number(league));
+  }
+
+  // Taglia a 15 PRIMA di calcolare quote e pronostici (risparmio enorme di tempo!)
+  const initialFixtures = filteredFixtures.slice(0, 15);
+  // ----------------------------------------
   let quotesMap: Record<number, import("@/lib/quotes/fixturesQuotes").FixtureQuoteSummary> = {};
   let predictionsMap: Record<number, import("@/app/pronostici-quote/lib/apiFootball").FixturePredictions> = {};
   if (fixtures.length > 0) {
     try {
       [quotesMap, predictionsMap] = await Promise.all([
-        getQuotesForFixtures(fixtures, country),
-        getPredictionsForFixtures(fixtures.map((m: any) => m.fixture.id)),
+        getQuotesForFixtures(initialFixtures, country),
+        getPredictionsForFixtures(initialFixtures.map((m: any) => m.fixture.id)),
       ]);
     } catch {
       // Quote API può fallire - continua senza quote
@@ -94,7 +105,7 @@ export default async function PronosticiQuotePage({
   return (
     <PronosticiQuoteContent
       menuItems={menuItems}
-      fixtures={fixtures}
+      fixtures={initialFixtures}
       quotesMap={quotesMap}
       predictionsMap={predictionsMap}
       locale={locale}

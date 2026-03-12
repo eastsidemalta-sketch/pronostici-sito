@@ -98,12 +98,7 @@ export default function HomeContent({
   const leagueIds = calcioItem?.subItems?.map((s) => s.id) ?? [];
   const showCalcioFixtures = (sport === "all" || sport === "calcio") && calcioEnabled;
 
-  const filteredFixtures =
-    showCalcioFixtures && league !== "all" && league
-      ? fixtures.filter((m) => m.league?.id === Number(league))
-      : fixtures;
-
-  const initialFixtures = filteredFixtures.slice(0, 15);
+  const initialFixtures = fixtures;
 
   const sportLabel =
     sport === "tennis"

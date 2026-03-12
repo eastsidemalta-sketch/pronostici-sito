@@ -103,15 +103,8 @@ export default function CalcioContent({
     [pathname, searchParams, router]
   );
 
-  const filteredFixtures =
-    league !== "all" && league
-      ? fixtures.filter((m) => m.league?.id === Number(league))
-      : fixtures;
 
-
-  const initialFixtures = filteredFixtures.slice(0, 15);
-
-  const hasFixtures = filteredFixtures.length > 0;
+  const hasFixtures = fixtures.length > 0;
 
   return (
     <main className="min-h-screen bg-[var(--background)]">
@@ -136,7 +129,7 @@ export default function CalcioContent({
             <div className="min-w-0 flex-1">
               <HomeMatchesList
                 key={country}
-                fixtures={initialFixtures}
+                fixtures={fixtures}
                 country={country}
                 locale={locale}
                 initialTab={initialTab}

@@ -99,12 +99,6 @@ export default function PronosticiQuoteContent({
   const calcioItem = menuItems.find((m) => m.key === "calcio");
   const showCalcioFixtures = (sport === "all" || sport === "calcio") && calcioEnabled;
 
-  const filteredFixtures =
-    showCalcioFixtures && league !== "all" && league
-      ? fixtures.filter((m) => m.league?.id === Number(league))
-      : fixtures;
-
-  const initialFixtures = filteredFixtures.slice(0, 15);
 
   const sportLabel =
     sport === "tennis"
@@ -139,7 +133,7 @@ export default function PronosticiQuoteContent({
             <div className="min-w-0 flex-1">
               <HomeMatchesList
                 key={country}
-                fixtures={initialFixtures}
+                fixtures={fixtures}
                 locale={locale}
                 country={country}
                 initialTab={initialTab}

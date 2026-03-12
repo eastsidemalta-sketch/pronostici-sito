@@ -83,6 +83,8 @@ export default async function HomePage({
           country={country}
           locale={locale}
           bypassCache={bypassCache}
+          league={league}
+          sport={sport}
           menuItems={menuItems}
           calcioEnabled={calcioEnabled}
           labels={labels}
