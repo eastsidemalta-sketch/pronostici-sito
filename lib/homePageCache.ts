@@ -109,7 +109,8 @@ async function fetchGlobalFixtures(bypassCache = false): Promise<any[]> {
 async function buildCountryData(
   country: string,
   fixtures: any[],
-  leagueIds: number[]
+  leagueIds: number[],
+  limitQuotes: boolean = false
 ): Promise<CachedHomeData> {
   const filtered = fixtures.filter((m: any) => leagueIds.includes(m.league?.id));
   let quotesMap: Record<number, import("./quotes/fixturesQuotes").FixtureQuoteSummary> = {};
@@ -117,9 +118,13 @@ async function buildCountryData(
 
   if (filtered.length > 0) {
     try {
+      // If triggered by a user request, slice to 15 to prevent blocking.
+      // If triggered by Cron, process all matches.
+      const fixturesToProcess = limitQuotes ? filtered.slice(0, 15) : filtered;
+
       [quotesMap, predictionsMap] = await Promise.all([
-        getQuotesForFixtures(filtered, country),
-        getPredictionsForFixtures(filtered.map((m: any) => m.fixture.id)),
+        getQuotesForFixtures(fixturesToProcess, country),
+        getPredictionsForFixtures(fixturesToProcess.map((m: any) => m.fixture.id)),
       ]);
     } catch {
       /* quote/predictions possono fallire */
@@ -127,7 +132,7 @@ async function buildCountryData(
   }
 
   return {
-    fixtures: filtered,
+    fixtures: filtered, // Always return ALL fixtures so schedule remains intact
     quotesMap,
     predictionsMap,
     fetchedAt: Date.now(),
@@ -188,10 +193,12 @@ async function tryFallbackFromOtherCountries(
 /**
  * Ottiene i dati home: da cache Redis se disponibili, altrimenti deriva dal pool globale.
  * @param bypassCache - se true, ignora la cache e fetch sempre dati freschi
+ * @param isBackgroundCron - se true, processa tutte le quote; se false (live user), limita a 15
  */
 export async function getCachedHomeData(
   country: string,
-  bypassCache = false
+  bypassCache = false,
+  isBackgroundCron = false
 ): Promise<CachedHomeData> {
   const redis = getRedis();
   const key = `${KEY_PREFIX}${country}`;
@@ -245,7 +252,8 @@ export async function getCachedHomeData(
     }
   }
 
-  let data = await buildCountryData(country, globalFixtures, leagueIds);
+  // Pass !isBackgroundCron so live users trigger the 15-match limit
+  let data = await buildCountryData(country, globalFixtures, leagueIds, !isBackgroundCron);
 
   if (data.fixtures.length === 0) {
     const fallbackData = await tryFallbackFromOtherCountries(country, leagueIds);
@@ -261,7 +269,7 @@ export async function getCachedHomeData(
           const fcFixtures = await getUpcomingFixtures(fcLeagueIds);
           const filtered = fcFixtures.filter((m: any) => leagueSet.has(m.league?.id));
           if (filtered.length > 0) {
-            data = await buildCountryData(country, filtered, leagueIds);
+            data = await buildCountryData(country, filtered, leagueIds, !isBackgroundCron);
             console.warn(`[homePageCache] ${country}: no Redis, used ${fc} fetch (${filtered.length} fixtures)`);
             break;
           }
@@ -324,19 +332,20 @@ export async function invalidateHomeCache(country: string): Promise<void> {
 
 /**
  * Pre-popola la cache. Un solo fetch globale, poi deriva per ogni paese.
+ * Uses bypassCache=true and isBackgroundCron=true so all quotes are processed.
  */
 export async function warmHomePageCache(countries: string[]): Promise<void> {
   if (countries.length === 0) return;
 
   try {
-    const globalFixtures = await fetchGlobalFixtures(false);
+    const globalFixtures = await fetchGlobalFixtures(true); // force fresh global
     if (globalFixtures.length === 0) {
       console.warn("[homePageCache] Warm: global fixtures empty");
     }
 
     for (const country of countries) {
       try {
-        await getCachedHomeData(country);
+        await getCachedHomeData(country, true, true);
       } catch (e) {
         console.error(`[homePageCache] warm ${country} error:`, e);
       }
