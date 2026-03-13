@@ -18,7 +18,7 @@ import { getLeagueIdsForAllSports } from "./homeMenuData";
 import { isSportEnabledForCountry } from "./sportsPerCountryData";
 import { getGlobalLeagueIds, getCacheFallbackCountries } from "./leaguesConfig";
 
-const CACHE_TTL_SEC = 90;
+const CACHE_TTL_SEC = 180;
 const FALLBACK_TTL_SEC = 6 * 60 * 60; // 6 ore: last known good
 const GLOBAL_KEY = "home:fixtures:global";
 const GLOBAL_FALLBACK_KEY = "home:fixtures:lastGood";
