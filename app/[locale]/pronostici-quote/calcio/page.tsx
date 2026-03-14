@@ -1,8 +1,6 @@
 import type { Metadata } from "next";
 import { getTranslations } from "next-intl/server";
-import { getUpcomingFixtures } from "@/lib/apiFootball";
-import { getPredictionsForFixtures } from "@/app/pronostici-quote/lib/apiFootball";
-import { getQuotesForFixtures } from "@/lib/quotes/fixturesQuotes";
+import { getCachedHomeData } from "@/lib/homePageCache";
 import { getMenuForCountry } from "@/lib/homeMenuData";
 import { isSportEnabledForCountry } from "@/lib/sportsPerCountryData";
 import { getTelegramBannerForCountryAsync } from "@/lib/telegramBannerConfig";
@@ -69,31 +67,35 @@ export default async function CalcioPage({
   const leagueIds = calcioItem?.subItems?.map((s) => s.id) ?? [];
 
   const calcioEnabled = isSportEnabledForCountry(country, "calcio");
-  const fixtures =
-    calcioEnabled && leagueIds.length > 0
-      ? await getUpcomingFixtures(leagueIds)
-      : calcioEnabled && leagueIds.length === 0
-        ? await getUpcomingFixtures()
-        : [];
 
-  let filteredFixtures = fixtures;
-  if (league !== "all") {
-    filteredFixtures = filteredFixtures.filter((m: any) => m.league?.id === Number(league));
-  }
-  const initialFixtures = filteredFixtures.slice(0, 15);
-  // ----------------------------------------
-  let quotesMap: Record<number, import("@/lib/quotes/fixturesQuotes").FixtureQuoteSummary> = {};
-  let predictionsMap: Record<number, import("@/app/pronostici-quote/lib/apiFootball").FixturePredictions> = {};
-  if (fixtures.length > 0) {
-    try {
-      [quotesMap, predictionsMap] = await Promise.all([
-        getQuotesForFixtures(initialFixtures, country),
-        getPredictionsForFixtures(initialFixtures.map((m: any) => m.fixture.id)),
-      ]);
-    } catch {
-      // Quote API can fail - continue without quotes
+  let filteredFixtures: any[] = [];
+  let quotesMap: Record<number, any> = {};
+  let predictionsMap: Record<number, any> = {};
+
+  if (calcioEnabled) {
+    // 1. Fetch EVERYTHING from the 30-minute Redis cache (Costs 0 API calls)
+    const homeData = await getCachedHomeData(country);
+
+    // 2. Filter the global cache down to just the allowed Calcio leagues
+    const calcioFixtures = homeData.fixtures.filter((m: any) => {
+      if (leagueIds.length > 0) return leagueIds.includes(m.league?.id);
+      return true; // Fallback
+    });
+
+    // 3. Apply the URL league filter if one exists
+    filteredFixtures = calcioFixtures;
+    if (league !== "all") {
+      filteredFixtures = filteredFixtures.filter((m: any) => m.league?.id === Number(league));
     }
+
+    // 4. Grab the massive pre-loaded maps from the cron job
+    quotesMap = homeData.quotesMap || {};
+    predictionsMap = homeData.predictionsMap || {};
   }
+
+  // 5. Pass ALL matches to the client instead of slicing to 15.
+  // Because the data is already cached, loading 150 matches is completely free.
+  const initialFixtures = filteredFixtures;
 
   const featuredBookmaker = getFeaturedBookmaker(country);
   const telegramBanner = await getTelegramBannerForCountryAsync(country);

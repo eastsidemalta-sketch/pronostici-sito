@@ -1,3 +1,4 @@
+export const dynamic = "force-dynamic";
 import { NextResponse } from "next/server";
 import { getBookmakers } from "@/lib/quotes/bookmakers";
 import {
@@ -28,7 +29,7 @@ function addBookmakerUrls(
   }));
 }
 
-function filterByMatch<T extends { homeTeam?: string; awayTeam?: string }>(
+function filterByMatch<T extends { homeTeam?: string; awayTeam?: string; bookmakerKey?: string }>(
   items: T[],
   home?: string,
   away?: string
@@ -37,7 +38,7 @@ function filterByMatch<T extends { homeTeam?: string; awayTeam?: string }>(
   return items.filter((q) => {
     const qHome = (q.homeTeam || "").trim();
     const qAway = (q.awayTeam || "").trim();
-    return matchTeamNames(qHome, home) && matchTeamNames(qAway, away);
+    return matchTeamNames(qHome, home, q.bookmakerKey) && matchTeamNames(qAway, away, q.bookmakerKey);
   });
 }
 

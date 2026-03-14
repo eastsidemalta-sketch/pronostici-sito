@@ -392,8 +392,9 @@ export default async function MatchPage({
       getTeamLastFixtures(awayId),
       sportKey
         ? getMultiMarketQuotes(sportKey, {
-            homeTeam: homeName,
-            awayTeam: awayName,
+            // FIX: Use the raw API names here instead of homeName/awayName
+            homeTeam: fixture.teams.home.name,
+            awayTeam: fixture.teams.away.name,
             leagueId: fixture.league?.id,
             country: localeToCountryCode[locale] || (locale.toLowerCase().includes('br') ? 'BR' : 'IT'),
           }).catch(() => ({}))
@@ -613,8 +614,9 @@ export default async function MatchPage({
                 <MatchQuotesTabs
                   key={`${localeToCountryCode[locale] ?? locale}-${fixture.fixture.id}`}
                   sportKey={sportKey}
-                  homeTeam={home}
-                  awayTeam={away}
+                  // FIX: Pass raw names so the API endpoint can match aliases perfectly
+                  homeTeam={fixture.teams.home.name}
+                  awayTeam={fixture.teams.away.name}
                   country={localeToCountryCode[locale] ?? undefined}
                   leagueId={fixture.league?.id}
                   bookmakerLogos={Object.fromEntries(
