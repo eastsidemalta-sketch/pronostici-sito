@@ -18,8 +18,8 @@ import { getLeagueIdsForAllSports } from "./homeMenuData";
 import { isSportEnabledForCountry } from "./sportsPerCountryData";
 import { getGlobalLeagueIds, getCacheFallbackCountries } from "./leaguesConfig";
 
-const CACHE_TTL_SEC = 180;
-const FALLBACK_TTL_SEC = 6 * 60 * 60; // 6 ore: last known good
+const CACHE_TTL_SEC = 2100;
+const FALLBACK_TTL_SEC = 12 * 60 * 60; // 12 ore: last known good
 const GLOBAL_KEY = "home:fixtures:global";
 const GLOBAL_FALLBACK_KEY = "home:fixtures:lastGood";
 const KEY_PREFIX = "home:data:";
@@ -29,7 +29,7 @@ let redisClient: import("ioredis").default | null = null;
 
 /** Cache in-memory quando Redis non disponibile (evita fetch multipli) */
 let memoryGlobalCache: { fixtures: any[]; expires: number } | null = null;
-const MEMORY_CACHE_TTL_MS = 60 * 1000;
+const MEMORY_CACHE_TTL_MS = 30 * 60 * 1000;
 
 function getRedis(): import("ioredis").default | null {
   if (redisClient) return redisClient;
