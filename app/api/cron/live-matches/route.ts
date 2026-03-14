@@ -1,13 +1,8 @@
 import { NextResponse } from "next/server";
 import { runLivePollCycle } from "@/lib/live/livePoller";
-import { warmHomePageCache } from "@/lib/homePageCache";
-import { localeToCountryCode } from "@/i18n/routing";
-import { getActiveLocales } from "@/lib/markets";
 
 /**
- * Cron endpoint for live match polling + cache warmer.
- * Triggered every minute. Mantiene la cache home calda così la pagina è veloce anche con 0 utenti.
- *
+ * Cron endpoint for live match polling.
  * Protect with CRON_SECRET: Authorization: Bearer <CRON_SECRET>
  */
 export async function GET(request: Request) {
@@ -18,16 +13,13 @@ export async function GET(request: Request) {
   }
 
   try {
-    const [result, _] = await Promise.all([
-      runLivePollCycle(),
-      warmHomePageCache(
-        getActiveLocales().map((locale) => localeToCountryCode[locale] ?? "IT")
-      ),
-    ]);
+    const result = await runLivePollCycle();
+
     return NextResponse.json({
       ok: true,
       updated: result.updated,
       removed: result.removed,
+      skipped: result.skipped || false,
     });
   } catch (err) {
     console.error("[cron/live-matches] error:", err);
