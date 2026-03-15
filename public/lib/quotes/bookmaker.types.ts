@@ -1,0 +1,137 @@
+/** Tipi per bookmaker e quote */
+
+/** Dove utilizzare il link: scommetti, registrati, bonus, ecc. */
+export type BookmakerLinkUseCase = "scommetti" | "registrati" | "bonus" | "casino" | "sport" | string;
+
+/** Tipo di remunerazione per affiliazione */
+export type RemunerationModel = "CPA" | "CPL" | "revenue_share";
+
+/** Configurazione remunerazione del bookmaker */
+export type RemunerationConfig = {
+  /** Tipo di modello: CPA (costo per acquisizione), CPL (costo per lead), Revenue Share */
+  model: RemunerationModel;
+  /** Valore: importo fisso (CPA/CPL in €) o percentuale (Revenue Share es. 35 = 35%) */
+  value: number;
+  /** Valuta per CPA/CPL (default EUR) */
+  currency?: string;
+  /**
+   * Posizione manuale nella graduatoria quote (1 = primo, 2 = secondo, ecc.)
+   * Se impostato, sovrascrive il ranking automatico basato sulla remunerazione.
+   * Utile per accordi speciali o gestione manuale della vetrina.
+   */
+  manualPriority?: number | null;
+};
+
+export type BookmakerCountryConfig = {
+  bonusDescription?: string; // descrizione bonus per quel paese
+  links: Array<{
+    url: string;
+    useCase: BookmakerLinkUseCase; // dove utilizzare il link
+  }>;
+  /** Attiva Bonus sotto "Tutte le quote" */
+  matchBoxBonusEnabled?: boolean;
+  /** Testo bottone sotto "Tutte le quote" */
+  matchBoxButtonText?: string;
+  /** URL redirect sotto "Tutte le quote" */
+  matchBoxButtonUrl?: string;
+  /** Attiva Bonus sotto "Pronostici completi" */
+  matchBoxBonusInPronosticiEnabled?: boolean;
+  /** Testo bottone sotto "Pronostici completi" (se vuoto usa matchBoxButtonText) */
+  matchBoxPronosticiButtonText?: string;
+  /** URL redirect sotto "Pronostici completi" (se vuoto usa matchBoxButtonUrl) */
+  matchBoxPronosticiButtonUrl?: string;
+  /** Colore del box bonus: giallo (default) o arancione */
+  matchBoxButtonColor?: "yellow" | "orange";
+};
+
+export type Bookmaker = {
+  id: string;
+  /** ID univoco per integrazioni: {ISO2}-{4 cifre} es. IT-0001, BR-0002 */
+  siteId?: string;
+  name: string;
+  /** Nome visibile sul sito (se vuoto usa name) */
+  displayName?: string | null;
+  slug: string;
+  country: string; // paese principale/sede
+  countries?: string[]; // paesi in cui il bookmaker è presente (es. ["IT", "DE", "ES"])
+  /** Config per paese: link e descrizione bonus per ogni paese */
+  countryConfig?: Record<string, BookmakerCountryConfig>;
+  logoUrl: string;
+  /** Favicon (path es. /favicons/bet365.ico) - opzionale */
+  faviconUrl?: string | null;
+  /** Url di base / affiliate principale */
+  affiliateUrl: string; // fallback se non c'è countryConfig
+  /** Link specifico per il bottone "Scommetti" nelle quote */
+  quoteButtonUrl?: string | null;
+  /** Secondo URL con use case (es. registrati, bonus) */
+  url2?: string | null;
+  url2UseCase?: string; // dove utilizzare url2
+  /** Terzo URL con use case */
+  url3?: string | null;
+  url3UseCase?: string; // dove utilizzare url3
+  isActive: boolean;
+
+  apiProvider: "direct"; // API diretta del bookmaker
+  /** URL base API quote (es. The Odds API) */
+  apiBaseUrl?: string;
+  apiKey: string; // chiave API
+  apiBookmakerKey?: string; // chiave identificativa del bookmaker (es. "bet365", "netwinit")
+  apiConfig: {
+    markets: string[];
+  };
+
+  /** === API diretta (solo se apiProvider=direct) === */
+  /** URL documentazione API fornita dal bookmaker */
+  apiDocumentationUrl?: string | null;
+  /** Endpoint completo per le quote (es. https://api.bookmaker.com/v1/odds) */
+  apiEndpoint?: string | null;
+  /** Come inviare la chiave: query (param), header (X-Api-Key), bearer */
+  apiAuthType?: "query" | "header" | "bearer" | "x-access-token";
+  /** Chiave segreta aggiuntiva (es. per header Authorization) */
+  apiSecret?: string | null;
+  /** Mapping scoperto automaticamente: percorsi JSON per homeTeam, awayTeam, odds 1/X/2 */
+  apiMappingConfig?: {
+    homeTeam?: string; // es. "$.home" o "event.homeTeam"
+    awayTeam?: string;
+    odds1?: string;
+    oddsX?: string;
+    odds2?: string;
+    /** Quote personalizzate (preferite se presenti e > 0) - es. nei campionati principali */
+    odds1Personalized?: string;
+    oddsXPersonalized?: string;
+    odds2Personalized?: string;
+    /** Path per iterare sugli eventi (es. "$.events" o "data") */
+    eventsPath?: string;
+    /** Feed Exalogic (Manifestazione/Avvenimento/Scommessa): usa estrattore dedicato */
+    exalogic?: boolean;
+    /** Feed Betboom/Sporthub: quote in array stakes, mercato Winner, outcome_id 1=X 2=X 3=2 */
+    stakes1X2?: {
+      stakesPath?: string;
+      marketName?: string;
+      outcomeId1?: number;
+      outcomeIdX?: number;
+      outcomeId2?: number;
+    };
+  } | null;
+  /** Stato ultimo tentativo matching: pending | testing | matched | failed */
+  apiDiscoveryStatus?: "pending" | "testing" | "matched" | "failed";
+  /** Mapping leagueId (API-Football) -> identificatore lega per questo bookmaker */
+  apiLeagueMapping?: Record<string, string>;
+  /** Categorie da usare quando non c'è mapping (es. league 71). Betboom richiede >= 1. Da /api/debug-betboom-categories */
+  apiFallbackCategoryIds?: number[];
+  /** Config richiesta: method, queryParams, body (per POST) */
+  apiRequestConfig?: {
+    method?: "GET" | "POST";
+    queryParams?: Record<string, string>;
+    bodyTemplate?: Record<string, unknown>;
+    headers?: Record<string, string>;
+  };
+
+  /**
+   * Remunerazione del bookmaker (uno per paese — ogni bookmaker opera in un solo paese).
+   * Es. { model: "revenue_share", value: 35 } = Revenue Share al 35%
+   * In caso di parità di quota, viene mostrato prima il bookmaker con remunerazione più alta.
+   * Se manualPriority è impostato, sovrascrive la graduatoria automatica.
+   */
+  remuneration?: RemunerationConfig | null;
+}
