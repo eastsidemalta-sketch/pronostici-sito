@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { getLocale } from "next-intl/server";
 import { createMatchMetadata } from "@/lib/seo";
 import {
   getFixtureDetails,
@@ -10,6 +11,7 @@ import { generateMatchAnalysisText } from "@/lib/matchAnalysisText";
 import Quotes1X2 from "@/lib/components/Quotes1X2";
 import LiveMatchScore from "@/lib/components/LiveMatchScore";
 import { getSportKeyByLeague } from "@/lib/quotes/sportKeyMap";
+import { localeToCountryCode } from "@/i18n/routing";
 
 /**
  * Estrae fixtureId dallo slug
@@ -289,10 +291,14 @@ export async function generateMetadata({
 export default async function MatchPage({
   params,
 }: {
-  params: Promise<{ slug: string }>;
+  params: Promise<{ slug: string; locale?: string }>;
 }) {
   try {
-    const { slug } = await params;
+    const resolvedParams = await params;
+    const { slug } = resolvedParams;
+    const locale = resolvedParams.locale ?? (await getLocale());
+    const currentCountry = localeToCountryCode[locale] ?? (locale === "pt-BR" ? "BR" : "IT");
+
     const fixtureId = extractFixtureId(slug);
 
     if (!fixtureId) {
@@ -414,7 +420,7 @@ export default async function MatchPage({
             sportKey={sportKey}
             homeTeam={home}
             awayTeam={away}
-            country="IT"
+            country={currentCountry}
           />
         )}
 
