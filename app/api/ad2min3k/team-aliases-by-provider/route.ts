@@ -32,8 +32,12 @@ export async function GET() {
   const samples: Record<string, Array<{ homeTeam: string; awayTeam: string }>> = {};
   for (const p of providers) {
     if (p.key === "netwinit") {
-      // Add await since getCachedMatchSample is now asynchronous
-      samples[p.key] = await getCachedMatchSample(30);
+      // Await the promise and map the array to match the exact type
+      const cachedSamples = await getCachedMatchSample(30);
+      samples[p.key] = cachedSamples.map((match) => ({
+        homeTeam: match.homeTeam,
+        awayTeam: match.awayTeam,
+      }));
     } else if (p.key === "betboom") {
       try {
         const bm = getBookmakers().find(
