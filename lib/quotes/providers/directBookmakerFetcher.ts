@@ -16,6 +16,7 @@ import {
   canDoDelta,
   recordDeltaCall,
   logFullAttempt,
+  getRedis,
 } from "./netwinCache";
 
 /** Carica mapping leagueId -> pattern manifestazione Netwin */
@@ -748,6 +749,24 @@ export async function fetchDirectBookmakerQuotes(
 
   if (!endpoint || !mapping || !apiKey) return {};
 
+  const isNetwin = isNetwinBookmaker(bm.siteId, bm.id);
+
+  // --- 1. LETTURA REDIS (Normale) ---
+  const redis = getRedis();
+  const cacheKey = `bookmaker_cache:${bm.id}:${leagueId ?? "all"}`;
+  const fallbackKey = `bookmaker_cache:lastGood:${bm.id}:${leagueId ?? "all"}`;
+  if (!isNetwin && redis && !options?.forceFull) {
+    try {
+      const cachedRaw = await redis.get(cacheKey);
+      if (cachedRaw) {
+        return JSON.parse(cachedRaw);
+      }
+    } catch {
+      // Procediamo col fetch API in caso di miss/errore
+    }
+  }
+  // ------------------------------------------------------------------
+
   const eventsPath = mapping.eventsPath ?? "$";
   const homeTeamPath = mapping.homeTeam ?? "homeTeam";
   const awayTeamPath = mapping.awayTeam ?? "awayTeam";
@@ -764,7 +783,6 @@ export async function fetchDirectBookmakerQuotes(
   const method = reqConfig.method ?? "GET";
   let queryParams = { ...reqConfig.queryParams };
 
-  const isNetwin = isNetwinBookmaker(bm.siteId, bm.id);
   // Netwin: non aggiungere league/leagueId — l'API non li supporta (parametri non documentati), rischia di restituire vuoto
   if (!isNetwin && leagueId != null && bm.apiLeagueMapping?.[String(leagueId)]) {
     queryParams = {
@@ -774,8 +792,8 @@ export async function fetchDirectBookmakerQuotes(
     };
   }
   if (isNetwin) {
-    // Precarica cache da file PRIMA di decidere FULL/DELTA (utile se worker ha memoria vuota)
-    getCached();
+    // Precarica cache da Redis PRIMA di decidere FULL/DELTA (utile se worker ha memoria vuota)
+    await getCached();
   }
   // NETWIN_DISABLE_FULL=1: produzione non fa FULL né DELTA (solo test), evita hash_lock
   const netwinDisabled =
@@ -788,12 +806,12 @@ export async function fetchDirectBookmakerQuotes(
         : options?.forceDelta
           ? false
           : isNetwin
-            ? shouldUseFull()
+            ? await shouldUseFull()
             : true;
   // Produzione sospesa: usa solo cache, nessuna chiamata API Netwin.
   // ignoreExpiry=true: in prod non possiamo refreshare, usiamo la cache anche se >3h
   if (isNetwin && netwinDisabled) {
-    const cached = getCached(true);
+    const cached = await getCached(true);
     return applyNetwinLeagueFilter(cached ?? {}, leagueId, isNetwin) ?? {};
   }
   if (isNetwin) {
@@ -812,8 +830,8 @@ export async function fetchDirectBookmakerQuotes(
     if (systemCode) queryParams = { ...queryParams, system_code: systemCode };
   }
 
-  if (isNetwin && !netwinUseFull && !options?.forceDelta && !canDoDelta()) {
-    const cached = getCached();
+  if (isNetwin && !netwinUseFull && !options?.forceDelta && !(await canDoDelta())) {
+    const cached = await getCached();
     return applyNetwinLeagueFilter(cached ?? {}, leagueId, isNetwin) ?? {};
   }
 
@@ -879,7 +897,7 @@ export async function fetchDirectBookmakerQuotes(
   if (!res.ok) {
     if (isNetwin && netwinUseFull) {
       console.warn(`[Netwin] FULL fallita: HTTP ${res.status}`);
-      logFullAttempt(false, {
+      await logFullAttempt(false, {
         url: netwinUrl,
         error: `HTTP ${res.status}`,
         errorRaw: text.slice(0, 1500).replace(/\s+/g, " ").trim(),
@@ -888,7 +906,7 @@ export async function fetchDirectBookmakerQuotes(
       console.warn(`Direct API ${bm.name}: HTTP ${res.status}`);
     }
     if (isNetwin && !netwinUseFull) {
-      const cached = getCached();
+      const cached = await getCached();
       if (cached) return applyNetwinLeagueFilter(cached, leagueId, isNetwin);
     }
     return {};
@@ -905,13 +923,13 @@ export async function fetchDirectBookmakerQuotes(
       if (isLockError) {
         if (netwinUseFull) {
           console.warn(`[Netwin] FULL bloccata: richiesta FULL già in corso (hash_lock). Riprova tra qualche minuto.`);
-          logFullAttempt(false, {
+          await logFullAttempt(false, {
             url: netwinUrl,
             error: "hash_lock (FULL già in corso)",
             errorRaw: text.slice(0, 1500).replace(/\s+/g, " ").trim(),
           });
         }
-        const cached = getCached();
+        const cached = await getCached();
         return applyNetwinLeagueFilter(cached ?? {}, leagueId, isNetwin);
       }
       if (text.includes("isLive") && /can be 0 or 1/i.test(text)) {
@@ -920,13 +938,13 @@ export async function fetchDirectBookmakerQuotes(
           const urlParams = new URL(url).searchParams;
           const isLiveVal = urlParams.get("isLive") ?? urlParams.get("IsLive") ?? "(mancante)";
           console.warn(`[Netwin] FULL isLive error. Raw: ${raw}. URL isLive param: ${isLiveVal}`);
-          logFullAttempt(false, {
+          await logFullAttempt(false, {
             url: netwinUrl,
             error: "isLive non valido",
             errorRaw: text.slice(0, 1500).replace(/\s+/g, " ").trim(),
           });
         }
-        const cached = getCached();
+        const cached = await getCached();
         return applyNetwinLeagueFilter(cached ?? {}, leagueId, isNetwin);
       }
     }
@@ -935,14 +953,14 @@ export async function fetchDirectBookmakerQuotes(
     if (isNetwin && netwinUseFull) {
       const msg = e instanceof Error ? e.message : String(e);
       console.warn(`[Netwin] FULL parse fallito:`, msg);
-      logFullAttempt(false, {
+      await logFullAttempt(false, {
         url: netwinUrl,
         error: `Parse fallito: ${msg.slice(0, 150)}`,
         errorRaw: text.slice(0, 1500).replace(/\s+/g, " ").trim(),
       });
     }
     if (isNetwin && !netwinUseFull) {
-      const cached = getCached();
+      const cached = await getCached();
       if (cached) return applyNetwinLeagueFilter(cached, leagueId, isNetwin);
     }
     return {};
@@ -1177,7 +1195,7 @@ export async function fetchDirectBookmakerQuotes(
       console.log(`[Netwin] FULL OK: ${h2hCount} partite in cache`);
       // Salva solo se abbiamo partite: evita di sovrascrivere con vuoto (ultimo import corretto preservato)
       if (h2hCount > 0) {
-        setCache(result);
+        await setCache(result);
         const hasOther = (result.spreads?.length ?? 0) > 0 || (result.totals_25?.length ?? 0) > 0 || (result.btts?.length ?? 0) > 0 || (result.double_chance?.length ?? 0) > 0;
         if (!hasOther && useExalogic && events.length > 0) {
           try {
@@ -1204,12 +1222,12 @@ export async function fetchDirectBookmakerQuotes(
           }
         }
       } else {
-        const fallback = getCached();
+        const fallback = await getCached();
         if (fallback && (fallback.h2h?.length ?? 0) > 0) {
           console.warn(`[Netwin] FULL restituita 0 partite, mantengo ultimo import (${fallback.h2h?.length ?? 0} partite)`);
         }
       }
-      logFullAttempt(true, {
+      await logFullAttempt(true, {
         url: maskUrlForLog(url),
         h2hCount,
         ...(h2hCount === 0 && { eventsExtracted: events.length }),
@@ -1252,17 +1270,43 @@ export async function fetchDirectBookmakerQuotes(
         }
       }
     } else {
-      recordDeltaCall();
+      await recordDeltaCall();
       logApiCall("Netwin", "DELTA", true, { count: result.h2h?.length });
-      const merged = mergeDeltaWithCache(result);
+      const merged = await mergeDeltaWithCache(result);
       if ((merged.h2h?.length ?? 0) === 0) {
-        const fallback = getCached();
+        const fallback = await getCached();
         if (fallback && (fallback.h2h?.length ?? 0) > 0)
           return applyNetwinLeagueFilter(fallback, leagueId, isNetwin);
       }
       return applyNetwinLeagueFilter(merged, leagueId, isNetwin);
     }
   }
+
+  // --- PARACADUTE "LAST KNOWN GOOD" BETBOOM ---
+  if (!isNetwin && (result.h2h?.length ?? 0) === 0 && redis) {
+    try {
+      const fallbackRaw = await redis.get(fallbackKey);
+      if (fallbackRaw) {
+        console.warn(`[${bm.id}] API vuota o fallita. Uso i dati Last Known Good.`);
+        return JSON.parse(fallbackRaw);
+      }
+    } catch {
+      // ignore
+    }
+  }
+  // ---------------------------------------------
+
+  // --- 2. SCRITTURA REDIS UNIFICATA (Se il fetch ha avuto SUCCESSO) ---
+  if (!isNetwin && redis && (result.h2h?.length ?? 0) > 0) {
+    try {
+      const dataStr = JSON.stringify(result);
+      await redis.set(cacheKey, dataStr, "EX", 30 * 60);
+      await redis.set(fallbackKey, dataStr, "EX", 24 * 60 * 60);
+    } catch {
+      // ignore
+    }
+  }
+  // --------------------------------------------------------------------
 
   // Betboom/Sporthub: fetch anche partite live (type: "live") e merge con prematch
   if (endpoint?.includes("sporthub.bet") && method === "POST" && body) {
@@ -1316,7 +1360,7 @@ export async function fetchDirectBookmakerQuotes(
   }
 
   if (isNetwin && (result.h2h?.length ?? 0) === 0) {
-    const cached = getCached();
+    const cached = await getCached();
     if (cached && (cached.h2h?.length ?? 0) > 0)
       return applyNetwinLeagueFilter(cached, leagueId, isNetwin);
   }

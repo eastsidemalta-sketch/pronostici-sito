@@ -7,23 +7,39 @@
  * - FULL: può essere fatta solo ogni 3 ore
  * - DELTA: può essere fatta ogni 10 secondi, restituisce le quote modificate
  *
- * Cache su file: condivisa tra worker/processi (Next.js può usare più worker).
+ * Cache su Redis: condivisa tra worker/processi. Fallback in-memory se Redis non disponibile.
  */
-import { existsSync, readFileSync, writeFileSync, mkdirSync, appendFileSync } from "fs";
-import path from "path";
-import type { DirectMultiMarketResult } from "./directBookmakerFetcher";
-import type { DirectQuote } from "./directBookmakerFetcher";
+import { existsSync, mkdirSync, appendFileSync, readFileSync } from "fs";
+import type { DirectMultiMarketResult, DirectQuote } from "./directBookmakerFetcher";
 
 const FULL_FETCH_INTERVAL_MS = 3 * 60 * 60 * 1000; // 3 ore (limite Netwin)
 const DELTA_MIN_INTERVAL_MS = 10 * 1000; // 10 secondi tra una DELTA e l'altra (limite Netwin)
+const FULL_LOG_MAX_ENTRIES = 500; // retention log FULL su Redis (circa 7 giorni se 1 entry/20 min)
 
-const CACHE_FILE = path.join(process.cwd(), "data", ".netwin-cache.json");
-const CACHE_BACKUP_FILE = path.join(process.cwd(), "data", ".netwin-cache-backup.json");
-const FULL_LOG_FILE = path.join(process.cwd(), "data", ".netwin-full.log");
-const FULL_LOG_RETENTION_MS = 7 * 24 * 60 * 60 * 1000; // 7 giorni
+const REDIS_NETWIN_DATA = "netwin:cache:data";
+const REDIS_NETWIN_STATE = "netwin:cache:state"; // { timestamp, lastDeltaCallAt }
+const REDIS_NETWIN_FULL_LOG = "netwin:cache:full_log";
+const FULL_LOG_FILE = "data/netwin-full.log";
 
-let cache: { data: DirectMultiMarketResult; timestamp: number } | null = null;
-let lastDeltaCallAt: number | null = null;
+// --- Redis client condiviso ---
+let redisClient: import("ioredis").default | null = null;
+
+export function getRedis(): import("ioredis").default | null {
+  if (redisClient) return redisClient;
+  const url = process.env.REDIS_URL;
+  if (!url) return null;
+  try {
+    const Redis = require("ioredis").default;
+    redisClient = new Redis(url, { maxRetriesPerRequest: 1 });
+    return redisClient;
+  } catch {
+    return null;
+  }
+}
+
+// --- Fallback in-memory (quando Redis non c'è) ---
+let memCache: { data: DirectMultiMarketResult; timestamp: number } | null = null;
+let memLastDeltaCallAt: number | null = null;
 
 function quoteKey(q: { homeTeam: string; awayTeam: string }): string {
   return `${(q.homeTeam || "").toLowerCase().trim()}|${(q.awayTeam || "").toLowerCase().trim()}`;
@@ -68,136 +84,156 @@ export function isNetwinBookmaker(siteId?: string, _id?: string): boolean {
   return (siteId || "").toUpperCase() === "IT-0002";
 }
 
-export function shouldUseFull(): boolean {
-  if (!cache) return true;
-  return Date.now() - cache.timestamp > FULL_FETCH_INTERVAL_MS;
+// --- Gestione cache (Redis + fallback memoria) ---
+
+export async function shouldUseFull(): Promise<boolean> {
+  const redis = getRedis();
+  let ts = 0;
+  if (redis) {
+    try {
+      const stateRaw = await redis.get(REDIS_NETWIN_STATE);
+      if (stateRaw) ts = (JSON.parse(stateRaw) as { timestamp?: number }).timestamp ?? 0;
+    } catch {
+      // ignore
+    }
+  } else if (memCache) {
+    ts = memCache.timestamp;
+  }
+  return ts === 0 || Date.now() - ts > FULL_FETCH_INTERVAL_MS;
 }
 
 /** true se possiamo fare una chiamata DELTA (rispetta intervallo 10 sec) */
-export function canDoDelta(): boolean {
-  if (!lastDeltaCallAt) return true;
-  return Date.now() - lastDeltaCallAt >= DELTA_MIN_INTERVAL_MS;
-}
-
-export function recordDeltaCall(): void {
-  lastDeltaCallAt = Date.now();
-}
-
-function loadFromFileCache(ignoreExpiry = false): { data: DirectMultiMarketResult; timestamp: number } | null {
-  try {
-    if (!existsSync(CACHE_FILE)) return null;
-    const raw = readFileSync(CACHE_FILE, "utf-8");
-    const parsed = JSON.parse(raw) as { data: DirectMultiMarketResult; timestamp: number };
-    if (!parsed?.data || typeof parsed.timestamp !== "number") return null;
-    if (!ignoreExpiry && Date.now() - parsed.timestamp > FULL_FETCH_INTERVAL_MS) return null;
-    return parsed;
-  } catch {
-    return null;
-  }
-}
-
-function saveToFileCache(data: DirectMultiMarketResult, timestamp: number): void {
-  try {
-    const dir = path.dirname(CACHE_FILE);
-    if (!existsSync(dir)) mkdirSync(dir, { recursive: true });
-    writeFileSync(CACHE_FILE, JSON.stringify({ data, timestamp }), "utf-8");
-  } catch (e) {
-    console.warn("[Netwin] Impossibile salvare cache su file:", e instanceof Error ? e.message : String(e));
-  }
-}
-
-/** Backup FULL con partite (per prove). NON salva se h2h vuoto. */
-function saveBackupIfHasMatches(data: DirectMultiMarketResult, timestamp: number): void {
-  const h2hCount = data.h2h?.length ?? 0;
-  if (h2hCount === 0) return;
-  try {
-    const dir = path.dirname(CACHE_BACKUP_FILE);
-    if (!existsSync(dir)) mkdirSync(dir, { recursive: true });
-    writeFileSync(CACHE_BACKUP_FILE, JSON.stringify({ data, timestamp }), "utf-8");
-    console.log(`[Netwin] Backup FULL salvato (${h2hCount} partite) → .netwin-cache-backup.json`);
-  } catch (e) {
-    console.warn("[Netwin] Impossibile salvare backup:", e instanceof Error ? e.message : String(e));
-  }
-}
-
-/** Registra tentativo FULL (successo o errore). Retention 7 giorni. */
-export function logFullAttempt(
-  success: boolean,
-  details: { url?: string; h2hCount?: number; eventsExtracted?: number; error?: string; errorRaw?: string }
-): void {
-  try {
-    const dir = path.dirname(FULL_LOG_FILE);
-    if (!existsSync(dir)) mkdirSync(dir, { recursive: true });
-    const timestamp = Date.now();
-    const entry: Record<string, unknown> = {
-      timestamp,
-      iso: new Date(timestamp).toISOString(),
-      success,
-      ...(details.url && { url: details.url }),
-      ...(success && details.h2hCount != null && { h2hCount: details.h2hCount }),
-      ...(success && details.h2hCount === 0 && details.eventsExtracted != null && { eventsExtracted: details.eventsExtracted }),
-      ...(!success && details.error && { error: details.error }),
-      ...(!success && details.errorRaw && { errorRaw: details.errorRaw }),
-    };
-    appendFileSync(FULL_LOG_FILE, JSON.stringify(entry) + "\n", "utf-8");
-    trimLogToRetention();
-  } catch {
-    // ignora errori di log
-  }
-}
-
-/** Rimuove voci più vecchie di 7 giorni */
-function trimLogToRetention(): void {
-  try {
-    if (!existsSync(FULL_LOG_FILE)) return;
-    const raw = readFileSync(FULL_LOG_FILE, "utf-8");
-    const lines = raw.trim().split("\n").filter(Boolean);
-    const cutoff = Date.now() - FULL_LOG_RETENTION_MS;
-    const kept = lines.filter((line) => {
-      try {
-        const e = JSON.parse(line);
-        return e.timestamp >= cutoff;
-      } catch {
-        return true;
-      }
-    });
-    if (kept.length < lines.length) {
-      writeFileSync(FULL_LOG_FILE, kept.join("\n") + (kept.length ? "\n" : ""), "utf-8");
+export async function canDoDelta(): Promise<boolean> {
+  const redis = getRedis();
+  let lastD = 0;
+  if (redis) {
+    try {
+      const stateRaw = await redis.get(REDIS_NETWIN_STATE);
+      if (stateRaw) lastD = (JSON.parse(stateRaw) as { lastDeltaCallAt?: number }).lastDeltaCallAt ?? 0;
+    } catch {
+      // ignore
     }
-  } catch {
-    // ignora
+  } else {
+    lastD = memLastDeltaCallAt ?? 0;
+  }
+  return lastD === 0 || Date.now() - lastD >= DELTA_MIN_INTERVAL_MS;
+}
+
+export async function recordDeltaCall(): Promise<void> {
+  const now = Date.now();
+  memLastDeltaCallAt = now;
+  const redis = getRedis();
+  if (redis) {
+    try {
+      const stateRaw = await redis.get(REDIS_NETWIN_STATE);
+      const state = stateRaw ? (JSON.parse(stateRaw) as { timestamp?: number; lastDeltaCallAt?: number }) : { timestamp: 0 };
+      state.lastDeltaCallAt = now;
+      await redis.set(REDIS_NETWIN_STATE, JSON.stringify(state));
+    } catch {
+      // ignore
+    }
   }
 }
 
-export function getCached(ignoreExpiry = false): DirectMultiMarketResult | null {
-  if (cache && (ignoreExpiry || Date.now() - cache.timestamp <= FULL_FETCH_INTERVAL_MS)) return cache.data;
-  const fromFile = loadFromFileCache(ignoreExpiry);
-  if (fromFile) {
-    cache = fromFile;
-    return fromFile.data;
+export async function getCached(ignoreExpiry = false): Promise<DirectMultiMarketResult | null> {
+  const redis = getRedis();
+  if (redis) {
+    try {
+      const dataRaw = await redis.get(REDIS_NETWIN_DATA);
+      const stateRaw = await redis.get(REDIS_NETWIN_STATE);
+      if (dataRaw && stateRaw) {
+        const data = JSON.parse(dataRaw) as DirectMultiMarketResult;
+        const state = JSON.parse(stateRaw) as { timestamp?: number };
+        const ts = state.timestamp ?? 0;
+        if (ignoreExpiry || Date.now() - ts <= FULL_FETCH_INTERVAL_MS) return data;
+      }
+    } catch {
+      // ignore
+    }
+  }
+  if (memCache && (ignoreExpiry || Date.now() - memCache.timestamp <= FULL_FETCH_INTERVAL_MS)) {
+    return memCache.data;
   }
   return null;
 }
 
-export function setCache(data: DirectMultiMarketResult): void {
+export async function setCache(data: DirectMultiMarketResult): Promise<void> {
   const timestamp = Date.now();
-  cache = { data, timestamp };
-  lastDeltaCallAt = null;
-  saveToFileCache(data, timestamp);
-  saveBackupIfHasMatches(data, timestamp);
+  memCache = { data, timestamp };
+  memLastDeltaCallAt = null;
+  const redis = getRedis();
+  if (redis) {
+    try {
+      await redis.set(REDIS_NETWIN_DATA, JSON.stringify(data));
+      await redis.set(REDIS_NETWIN_STATE, JSON.stringify({ timestamp, lastDeltaCallAt: null }));
+    } catch {
+      // ignore
+    }
+  }
 }
 
-export function mergeDeltaWithCache(delta: DirectMultiMarketResult): DirectMultiMarketResult {
-  const full = getCached();
+export async function mergeDeltaWithCache(delta: DirectMultiMarketResult): Promise<DirectMultiMarketResult> {
+  const full = await getCached();
   if (!full) return delta;
   return mergeMarketResults(full, delta);
 }
 
-/** Debug: campione di partite in cache (per verificare nomi squadre usati da Netwin) */
-export function getCachedMatchSample(
+// --- Log FULL (Redis list) ---
+
+export async function logFullAttempt(
+  success: boolean,
+  details: { url?: string; h2hCount?: number; eventsExtracted?: number; error?: string; errorRaw?: string }
+): Promise<void> {
+  const timestamp = Date.now();
+  const entry: Record<string, unknown> = {
+    timestamp,
+    iso: new Date(timestamp).toISOString(),
+    success,
+    ...(details.url && { url: details.url }),
+    ...(success && details.h2hCount != null && { h2hCount: details.h2hCount }),
+    ...(success && details.h2hCount === 0 && details.eventsExtracted != null && { eventsExtracted: details.eventsExtracted }),
+    ...(!success && details.error && { error: details.error }),
+    ...(!success && details.errorRaw && { errorRaw: details.errorRaw }),
+  };
+  const redis = getRedis();
+  if (redis) {
+    try {
+      await redis.lpush(REDIS_NETWIN_FULL_LOG, JSON.stringify(entry));
+      await redis.ltrim(REDIS_NETWIN_FULL_LOG, 0, FULL_LOG_MAX_ENTRIES - 1);
+    } catch {
+      // ignore
+    }
+  }
+}
+
+/** Legge il log FULL da file (per debug/report). Ultime N ore. */
+export function getNetwinFullLogFromRedis(hours: number = 24): any[] {
+  try {
+    if (existsSync(FULL_LOG_FILE)) {
+      const content = readFileSync(FULL_LOG_FILE, "utf-8");
+
+      const cutoffTime = Date.now() - hours * 60 * 60 * 1000;
+
+      return content
+        .split("\n")
+        .filter((line) => line.trim().length > 0)
+        .map((line) => JSON.parse(line))
+        .filter((entry) => entry.timestamp && entry.timestamp >= cutoffTime)
+        .reverse()
+        .slice(0, 100); // Keep max 100 entries to prevent memory overload
+    }
+  } catch {
+    // Return empty array if file does not exist or cannot be read
+  }
+  return [];
+}
+
+// --- Debug / utility ---
+
+export async function getCachedMatchSample(
   limit = 50
-): Array<{ homeTeam: string; awayTeam: string; manifestazione?: string }> {
-  const c = getCached();
+): Promise<Array<{ homeTeam: string; awayTeam: string; manifestazione?: string }>> {
+  const c = await getCached();
   const h2h = c?.h2h ?? [];
   const max = limit <= 0 ? h2h.length : Math.min(limit, h2h.length);
   return h2h.slice(0, max).map((q) => ({
@@ -207,38 +243,8 @@ export function getCachedMatchSample(
   }));
 }
 
-/** Debug: legge tutte le partite direttamente dal file cache (bypass in-memory, per showMatches=all) */
-export function getAllCachedMatchesFromFile(): Array<{
-  homeTeam: string;
-  awayTeam: string;
-  manifestazione?: string;
-}> {
-  const candidates = [
-    path.join(process.cwd(), "data", ".netwin-cache.json"),
-    path.join(process.cwd(), ".next", "standalone", "data", ".netwin-cache.json"),
-  ];
-  for (const p of candidates) {
-    try {
-      if (!existsSync(p)) continue;
-      const raw = readFileSync(p, "utf-8");
-      const parsed = JSON.parse(raw) as {
-        data?: { h2h?: Array<{ homeTeam?: string; awayTeam?: string; manifestazione?: string }> };
-      };
-      const h2h = parsed?.data?.h2h ?? [];
-      return h2h.map((q) => ({
-        homeTeam: q.homeTeam ?? "",
-        awayTeam: q.awayTeam ?? "",
-        manifestazione: q.manifestazione,
-      }));
-    } catch {
-      continue;
-    }
-  }
-  return [];
-}
 
-/** Debug: info sulla cache Netwin (ultima FULL, prossima FULL consentita) */
-export function getCacheDebugInfo(): {
+export type CacheDebugInfo = {
   hasCache: boolean;
   lastFullTimestamp: number | null;
   lastFullIso: string | null;
@@ -246,19 +252,35 @@ export function getCacheDebugInfo(): {
   nextFullAllowedIso: string | null;
   h2hCount: number;
   shouldUseFull: boolean;
-  cacheFilePath: string;
-  cacheFileExists: boolean;
-} {
-  let data = cache;
-  if (!data) {
-    const fromFile = loadFromFileCache();
-    if (fromFile) {
-      cache = fromFile;
-      data = fromFile;
+  cacheSource: "redis" | "memory" | "none";
+};
+
+export async function getCacheDebugInfo(): Promise<CacheDebugInfo> {
+  const redis = getRedis();
+  let data: { data: DirectMultiMarketResult; timestamp: number } | null = null;
+  let cacheSource: "redis" | "memory" | "none" = "none";
+
+  if (redis) {
+    try {
+      const dataRaw = await redis.get(REDIS_NETWIN_DATA);
+      const stateRaw = await redis.get(REDIS_NETWIN_STATE);
+      if (dataRaw && stateRaw) {
+        const parsedData = JSON.parse(dataRaw) as DirectMultiMarketResult;
+        const state = JSON.parse(stateRaw) as { timestamp?: number };
+        const ts = state.timestamp ?? 0;
+        if (Date.now() - ts <= FULL_FETCH_INTERVAL_MS) {
+          data = { data: parsedData, timestamp: ts };
+          cacheSource = "redis";
+        }
+      }
+    } catch {
+      // ignore
     }
   }
-  const cacheFilePath = CACHE_FILE;
-  const cacheFileExists = existsSync(CACHE_FILE);
+  if (!data && memCache && Date.now() - memCache.timestamp <= FULL_FETCH_INTERVAL_MS) {
+    data = memCache;
+    cacheSource = "memory";
+  }
 
   if (!data) {
     return {
@@ -269,10 +291,10 @@ export function getCacheDebugInfo(): {
       nextFullAllowedIso: null,
       h2hCount: 0,
       shouldUseFull: true,
-      cacheFilePath,
-      cacheFileExists,
+      cacheSource: "none",
     };
   }
+
   const nextFullAt = data.timestamp + FULL_FETCH_INTERVAL_MS;
   return {
     hasCache: true,
@@ -281,8 +303,25 @@ export function getCacheDebugInfo(): {
     nextFullAllowedAt: nextFullAt,
     nextFullAllowedIso: new Date(nextFullAt).toISOString(),
     h2hCount: data.data.h2h?.length ?? 0,
-    shouldUseFull: shouldUseFull(),
-    cacheFilePath,
-    cacheFileExists,
+    shouldUseFull: await shouldUseFull(),
+    cacheSource,
   };
+}
+
+// --- FUNZIONI DI SUPPORTO PER LE ROTTE DI DEBUG ---
+
+async function getAllCachedMatchesFromFile(): Promise<
+  Array<{ homeTeam: string; awayTeam: string; manifestazione?: string }>
+> {
+  const c = await getCached(true);
+  const h2h = c?.h2h ?? [];
+  return h2h.map((q) => ({
+    homeTeam: q.homeTeam ?? "",
+    awayTeam: q.awayTeam ?? "",
+    manifestazione: (q as { manifestazione?: string }).manifestazione,
+  }));
+}
+
+export async function getAllCachedMatches() {
+  return getAllCachedMatchesFromFile();
 }

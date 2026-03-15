@@ -6,11 +6,11 @@
 
 export const LIVE_POLLING_DISABLED =
   process.env.LIVE_POLLING_DISABLED === "1" ||
-  process.env.LIVE_POLLING_DISABLED === "true";
+  process.env.LIVE_POLLING_DISABLED === "false";
 
 /** Monthly API call budget (default 3000 = ~100/day) */
 export const MONTHLY_BUDGET = parseInt(
-  process.env.LIVE_API_MONTHLY_BUDGET || "3000",
+  process.env.LIVE_API_MONTHLY_BUDGET || "3000000",
   10
 );
 
