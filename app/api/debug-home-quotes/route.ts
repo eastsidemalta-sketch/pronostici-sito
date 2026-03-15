@@ -101,7 +101,7 @@ export async function GET(req: Request) {
       }
     }
 
-    const netwinCacheInfo = netwinBm ? getCacheDebugInfo() : null;
+    const netwinCacheInfo = netwinBm ? await getCacheDebugInfo() : null;
 
     return NextResponse.json({
       ok: true,
@@ -112,7 +112,7 @@ export async function GET(req: Request) {
       netwinSample,
       matchTest,
       netwinCacheInfo,
-      hint: "Se netwinRawCount>0 ma netwinInQuotes=false, il problema è il matching nomi. Se netwinCacheInfo.hasCache=false, la FULL non è mai riuscita: controlla .netwin-full.log in data/.",
+      hint: "Se netwinRawCount>0 ma netwinInQuotes=false, il problema è il matching nomi. Se netwinCacheInfo.hasCache=false, la FULL non è mai riuscita: controlla log FULL su Redis (netwin:cache:full_log).",
     });
   } catch (e) {
     return NextResponse.json(

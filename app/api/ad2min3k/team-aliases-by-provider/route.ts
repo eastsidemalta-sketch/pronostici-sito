@@ -32,7 +32,7 @@ export async function GET() {
   const samples: Record<string, Array<{ homeTeam: string; awayTeam: string }>> = {};
   for (const p of providers) {
     if (p.key === "netwinit") {
-      samples[p.key] = getCachedMatchSample(30);
+      samples[p.key] = await getCachedMatchSample(30);
     } else if (p.key === "betboom") {
       try {
         const bm = getBookmakers().find(

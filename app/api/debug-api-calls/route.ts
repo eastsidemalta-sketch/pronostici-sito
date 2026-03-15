@@ -9,8 +9,8 @@
  * Test: FULL e DELTA Netwin attive. Produzione: NETWIN_DISABLE_FULL=1 → solo cache.
  */
 import { NextResponse } from "next/server";
-import { getCacheDebugInfo } from "@/lib/quotes/providers/netwinCache";
-import { readApiCallLog, readNetwinFullLog } from "@/lib/apiCallLog";
+import { getCacheDebugInfo, getNetwinFullLog } from "@/lib/quotes/providers/netwinCache";
+import { readApiCallLog } from "@/lib/apiCallLog";
 
 /** Report righe: tutte le chiamate API esterne */
 type ReportRow = {
@@ -48,8 +48,11 @@ function formatAgo(ts: number): string {
   return `${h}h fa`;
 }
 
-function buildReport(base: string, lastCalls: ReturnType<typeof lastCallByProvider>): ReportRow[] {
-  const netwin = getCacheDebugInfo();
+function buildReport(
+  base: string,
+  lastCalls: ReturnType<typeof lastCallByProvider>,
+  netwin: Awaited<ReturnType<typeof getCacheDebugInfo>>
+): ReportRow[] {
   const netwinDisabled = process.env.NETWIN_DISABLE_FULL === "1" || process.env.NETWIN_DISABLE_FULL === "true";
   let netwinStato: string;
   if (netwinDisabled) {
@@ -138,13 +141,16 @@ export async function GET(request: Request) {
   const base = `${url.protocol}//${url.host}`;
 
   // Log unificato (prima del report, per lastCalls)
-  const apiLog = readApiCallLog(hours);
-  const netwinLog = readNetwinFullLog(hours);
+  const [apiLog, netwinLog, netwinInfo] = await Promise.all([
+    Promise.resolve(readApiCallLog(hours)),
+    getNetwinFullLog(hours),
+    getCacheDebugInfo(),
+  ]);
   const allLog = [...netwinLog.map((e) => ({ ...e, source: "netwin-full" })), ...apiLog.map((e) => ({ ...e, source: "api-calls" }))];
   allLog.sort((a, b) => (b.timestamp ?? 0) - (a.timestamp ?? 0));
 
   const lastCalls = lastCallByProvider(allLog);
-  const report = buildReport(base, lastCalls);
+  const report = buildReport(base, lastCalls, netwinInfo);
 
   if (format === "html") {
     const netwinDisabled = process.env.NETWIN_DISABLE_FULL === "1" || process.env.NETWIN_DISABLE_FULL === "true";
