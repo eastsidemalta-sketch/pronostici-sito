@@ -9,7 +9,7 @@
  * Test: FULL e DELTA Netwin attive. Produzione: NETWIN_DISABLE_FULL=1 → solo cache.
  */
 import { NextResponse } from "next/server";
-import { getCacheDebugInfo, getNetwinFullLog } from "@/lib/quotes/providers/netwinCache";
+import { getCacheDebugInfo, getNetwinFullLogFromRedis } from "@/lib/quotes/providers/netwinCache";
 import { readApiCallLog } from "@/lib/apiCallLog";
 
 /** Report righe: tutte le chiamate API esterne */
@@ -143,7 +143,7 @@ export async function GET(request: Request) {
   // Log unificato (prima del report, per lastCalls)
   const [apiLog, netwinLog, netwinInfo] = await Promise.all([
     Promise.resolve(readApiCallLog(hours)),
-    getNetwinFullLog(hours),
+    getNetwinFullLogFromRedis(hours),
     getCacheDebugInfo(),
   ]);
   const allLog = [...netwinLog.map((e) => ({ ...e, source: "netwin-full" })), ...apiLog.map((e) => ({ ...e, source: "api-calls" }))];
