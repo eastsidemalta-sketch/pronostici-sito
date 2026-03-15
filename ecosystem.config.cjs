@@ -10,14 +10,14 @@ module.exports = {
       cwd: "/var/www/pronostici-sito-test/.next/standalone",
       script: "node",
       args: "server.js",
-      env: { PORT: 3001, HOSTNAME: "0.0.0.0", CRON_SECRET: "VURWDkW6Jw" },
+      env: { PORT: 3001, HOSTNAME: "0.0.0.0", CRON_SECRET: "VURWDkW6Jw", LIVE_API_MONTHLY_BUDGET: "100000" },
     },
     {
       name: "pronostici",
       cwd: "/var/www/pronostici-sito/.next/standalone",
       script: "./start-standalone.sh",
       interpreter: "bash",
-      env: { PORT: "3000", HOSTNAME: "0.0.0.0", CRON_SECRET: "VURWDkW6Jw" },
+      env: { PORT: "3000", HOSTNAME: "0.0.0.0", CRON_SECRET: "VURWDkW6Jw", LIVE_API_MONTHLY_BUDGET: "100000" },
     },
   ],
 };
