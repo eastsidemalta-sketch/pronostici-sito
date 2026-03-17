@@ -322,7 +322,7 @@ const NETWIN_LISTA = {
 
 /** Estrae il codice mercato da Scommessa (Lista, cod, Codice) */
 function getListaFromScommessa(o: Record<string, unknown>): number {
-  const val = o.Lista ?? o.lista ?? o.cod ?? o.Cod ?? o.Codice ?? o.codice;
+  const val = o.cod ?? o.Cod ?? o.Codice ?? o.codice ?? o.Lista ?? o.lista;
   if (val == null) return NaN;
   const n = parseInt(String(val), 10);
   return Number.isNaN(n) ? NaN : n;
