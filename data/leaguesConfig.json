@@ -1,9 +1,4 @@
 {
-  "cacheFallback": {
-    "BR": ["IT"],
-    "PT": ["IT", "ES"],
-    "CO": ["ES"]
-  },
   "byCountry": {
     "IT": {
       "calcio": {
