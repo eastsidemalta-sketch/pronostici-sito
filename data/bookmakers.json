@@ -83,10 +83,12 @@
       "71": "161",
       "72": "161",
       "78": "131",
+      "94": "154",
       "135": "141",
       "136": "141",
       "137": "141",
       "138": "141",
+      "140": "142",
       "942": "141",
       "943": "141"
     }
@@ -174,6 +176,70 @@
         ],
         "matchBoxButtonText": "300€ DI BONUS"
       }
+    }
+  },
+  {
+    "id": "betwinner_br",
+    "siteId": "BR-0002",
+    "name": "Betwinner",
+    "slug": "betwinner",
+    "country": "BR",
+    "countries": [
+      "BR"
+    ],
+    "isActive": true,
+    "logoUrl": "/logos/betwinner.png",
+    "faviconUrl": "/favicons/betwinner.png",
+    "affiliateUrl": "INSERISCI_QUI_IL_TUO_LINK_AFFILIATO",
+    "apiProvider": "direct",
+    "apiBookmakerKey": "betwinner",
+    "apiConfig": {
+      "markets": [
+        "h2h",
+        "spreads",
+        "totals_25",
+        "totals_15",
+        "btts",
+        "double_chance"
+      ]
+    },
+    "countryConfig": {
+      "BR": {
+        "bonusDescription": "INSERISCI_LA_DESCRIZIONE_DEL_BONUS_PER_IL_BRASILE",
+        "matchBoxBonusEnabled": true,
+        "matchBoxButtonText": "RECEBA O BÔNUS",
+        "links": [
+          {
+            "url": "INSERISCI_QUI_IL_TUO_LINK_AFFILIATO",
+            "useCase": "scommetti"
+          },
+          {
+            "url": "INSERISCI_QUI_IL_TUO_LINK_AFFILIATO",
+            "useCase": "registrati"
+          },
+          {
+            "url": "INSERISCI_QUI_IL_TUO_LINK_AFFILIATO",
+            "useCase": "bonus"
+          }
+        ]
+      }
+    },
+    "apiRequestConfig": {
+      "method": "GET",
+      "apiEndpoint": "https://bwapipub.com/all-games/pt.json",
+      "queryParams": {
+        "type": "Line",
+        "site_id": "betwinner",
+        "id": "2O6r"
+      }
+    },
+    "apiMappingConfig": {
+      "eventsPath": "payload",
+      "homeTeam": "Home",
+      "awayTeam": "Away",
+      "odds1": "H",
+      "oddsX": "D",
+      "odds2": "A"
     }
   }
 ]
