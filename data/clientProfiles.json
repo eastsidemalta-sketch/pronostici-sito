@@ -56,5 +56,36 @@
         }
       }
     }
+  },
+  "BR-0002": {
+    "siteId": "BR-0002",
+    "name": "Betwinner",
+    "internalName": "Betwinner_BR",
+    "bookmakerId": "betwinner_br",
+    "affiliateUrl": "https://bwredir.com/2O6r",
+    "bonusDescription": "INSERT_BONUS_DESCRIPTION",
+    "matchBoxBonusEnabled": true,
+    "matchBoxButtonText": "RECEBA O BÔNUS",
+    "logoPath": "/logos/betwinner.png",
+    "faviconPath": "/favicons/betwinner.png",
+    "commission": "CPA/Revenue Share",
+    "remuneration": {
+      "model": "cpa",
+      "value": 0
+    },
+    "api": {
+      "enabled": true,
+      "endpoint": "https://bwapipub.com/all-games/pt.json",
+      "method": "GET",
+      "authType": "none",
+      "mapping": {
+        "eventsPath": "payload",
+        "homeTeam": "Home",
+        "awayTeam": "Away",
+        "odds1": "H",
+        "oddsX": "D",
+        "odds2": "A"
+      }
+    }
   }
 }

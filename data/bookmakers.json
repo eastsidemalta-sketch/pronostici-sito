@@ -190,9 +190,12 @@
     "isActive": true,
     "logoUrl": "/logos/betwinner.png",
     "faviconUrl": "/favicons/betwinner.png",
-    "affiliateUrl": "INSERISCI_QUI_IL_TUO_LINK_AFFILIATO",
+    "affiliateUrl": "https://bwredir.com/2O6r",
     "apiProvider": "direct",
     "apiBookmakerKey": "betwinner",
+    "apiEndpoint": "https://bwapipub.com/all-games/pt.json",
+    "apiKey": "none",
+    "apiAuthType": "none",
     "apiConfig": {
       "markets": [
         "h2h",
@@ -210,15 +213,15 @@
         "matchBoxButtonText": "RECEBA O BÔNUS",
         "links": [
           {
-            "url": "INSERISCI_QUI_IL_TUO_LINK_AFFILIATO",
+            "url": "https://bwredir.com/2O6r",
             "useCase": "scommetti"
           },
           {
-            "url": "INSERISCI_QUI_IL_TUO_LINK_AFFILIATO",
+            "url": "https://bwredir.com/2O6r",
             "useCase": "registrati"
           },
           {
-            "url": "INSERISCI_QUI_IL_TUO_LINK_AFFILIATO",
+            "url": "https://bwredir.com/2O6r",
             "useCase": "bonus"
           }
         ]
