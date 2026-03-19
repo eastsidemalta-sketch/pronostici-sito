@@ -78,20 +78,7 @@
       "model": "revenue_share",
       "value": 40
     },
-    "apiLeagueMapping": {
-      "39": "128",
-      "71": "161",
-      "72": "161",
-      "78": "131",
-      "94": "154",
-      "135": "141",
-      "136": "141",
-      "137": "141",
-      "138": "141",
-      "140": "142",
-      "942": "141",
-      "943": "141"
-    }
+    "apiLeagueMapping": {}
   },
   {
     "id": "netwinit",
@@ -208,7 +195,7 @@
     },
     "countryConfig": {
       "BR": {
-        "bonusDescription": "INSERISCI_LA_DESCRIZIONE_DEL_BONUS_PER_IL_BRASILE",
+        "bonusDescription": "INSERT_BONUS_DESCRIPTION",
         "matchBoxBonusEnabled": true,
         "matchBoxButtonText": "RECEBA O BÔNUS",
         "links": [
@@ -229,12 +216,7 @@
     },
     "apiRequestConfig": {
       "method": "GET",
-      "apiEndpoint": "https://bwapipub.com/all-games/pt.json",
-      "queryParams": {
-        "type": "Line",
-        "site_id": "betwinner",
-        "id": "2O6r"
-      }
+      "queryParams": {}
     },
     "apiMappingConfig": {
       "eventsPath": "payload",
@@ -243,6 +225,10 @@
       "odds1": "H",
       "oddsX": "D",
       "odds2": "A"
+    },
+    "remuneration": {
+      "model": "cpa",
+      "value": 0
     }
   }
 ]
