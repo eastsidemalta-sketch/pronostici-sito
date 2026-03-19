@@ -130,6 +130,16 @@ function parseApiResponse(text: string): unknown {
   return JSON.parse(text) as unknown;
 }
 
+/**
+ * Converte una quota singola in uno "score" probabilistico (0..1).
+ * Nota: non normalizza sull'intero mercato; serve per compatibilità con parser specifici (es. Betwinner).
+ */
+function oddsToScore(odds: number): number {
+  const o = Number(odds);
+  if (!Number.isFinite(o) || o <= 1) return 0;
+  return 1 / o;
+}
+
 export type DirectQuote = {
   homeTeam: string;
   awayTeam: string;
@@ -138,6 +148,8 @@ export type DirectQuote = {
   bookmaker: string;
   /** Netwin: descr della Manifestazione (es. "ITALIA I DIVISIONE") per filtrare per leagueId */
   manifestazione?: string;
+  /** Betwinner: ISO string (derivata dal campo Start) */
+  date?: string;
 };
 
 /** Chiavi mercati supportate (allineate a MatchQuotesTabs / quotesEngine) */
@@ -1026,6 +1038,154 @@ export async function fetchDirectBookmakerQuotes(
       bookmaker: getBookmakerDisplayName(bm),
       ...(manifestazione && { manifestazione }),
     };
+
+    const quote: any = { ...baseQuote };
+    const outcomes: any[] = [];
+    const matchObj = ev as any;
+
+    // Controlla se il bookmaker corrente è Betwinner
+    const isBetwinner = endpoint?.includes("bwapipub");
+
+    if (isBetwinner) {
+      const hOdds = Number(matchObj.H);
+      const dOdds = Number(matchObj.D);
+      const aOdds = Number(matchObj.A);
+
+      // 1. Estrazione Esito Finale (1X2)
+      if (!isNaN(hOdds) && !isNaN(dOdds) && !isNaN(aOdds)) {
+        outcomes.push({ name: "1", odds: hOdds, prob: oddsToScore(hOdds), isPersonalized: false });
+        outcomes.push({ name: "X", odds: dOdds, prob: oddsToScore(dOdds), isPersonalized: false });
+        outcomes.push({ name: "2", odds: aOdds, prob: oddsToScore(aOdds), isPersonalized: false });
+      }
+
+      // 2. Estrazione Doppia Chance
+      // HD = 1X, HA = 12, AD = X2
+      const dc1X = Number(matchObj.HD);
+      const dc12 = Number(matchObj.HA);
+      const dcX2 = Number(matchObj.AD);
+
+      if (!isNaN(dc1X) && !isNaN(dc12) && !isNaN(dcX2)) {
+        quote.double_chance = [
+          { name: "1X", odds: dc1X, prob: oddsToScore(dc1X) },
+          { name: "12", odds: dc12, prob: oddsToScore(dc12) },
+          { name: "X2", odds: dcX2, prob: oddsToScore(dcX2) },
+        ];
+      }
+
+      // 3. Estrazione Under/Over (Linea Dinamica)
+      // TP = Linea (es. 2.5), TO = Over, TU = Under
+      const lineOU = Number(matchObj.TP);
+      const overOdds = Number(matchObj.TO);
+      const underOdds = Number(matchObj.TU);
+
+      if (!isNaN(lineOU) && !isNaN(overOdds) && !isNaN(underOdds)) {
+        // Trasforma 2.5 in "25" per mappare la chiave usata dal tuo sistema
+        const lineKey = lineOU.toString().replace(".", "");
+        const targetKey = `totals_${lineKey}`;
+
+        quote[targetKey] = [
+          { name: "Over", odds: overOdds, prob: oddsToScore(overOdds) },
+          { name: "Under", odds: underOdds, prob: oddsToScore(underOdds) },
+        ];
+      }
+
+      // 4. Estrazione Handicap
+      // HP = Linea Handicap Home (es. -1.5), HF = Quota 1, AF = Quota 2
+      const lineHdp = Number(matchObj.HP);
+      const hdp1 = Number(matchObj.HF);
+      const hdp2 = Number(matchObj.AF);
+
+      if (!isNaN(lineHdp) && !isNaN(hdp1) && !isNaN(hdp2)) {
+        quote.spreads = [
+          { name: "1", odds: hdp1, prob: oddsToScore(hdp1), hdp: lineHdp },
+          { name: "2", odds: hdp2, prob: oddsToScore(hdp2), hdp: Number(matchObj.AP) }, // AP è il segno opposto
+        ];
+      }
+
+      // 5. Correzione della Data di Inizio (Start)
+      // Converte stringhe come "/Date(1773769500000)/" in un ISO String standard
+      const startRaw = matchObj.Start;
+      if (typeof startRaw === "string") {
+        const dateMatch = startRaw.match(/\/Date\((\d+)\)\//);
+        if (dateMatch && dateMatch[1]) {
+          const timestamp = parseInt(dateMatch[1], 10);
+          quote.date = new Date(timestamp).toISOString();
+        }
+      }
+    }
+
+    if (isBetwinner) {
+      // 1X2 -> result.h2h
+      const h1 = Number(outcomes.find((o) => o?.name === "1")?.odds);
+      const x = Number(outcomes.find((o) => o?.name === "X")?.odds);
+      const a = Number(outcomes.find((o) => o?.name === "2")?.odds);
+
+      if (h1 > 0 || x > 0 || a > 0) {
+        result.h2h!.push({
+          ...baseQuote,
+          ...(quote.date ? { date: quote.date } : undefined),
+          outcomes: { home: h1, draw: x, away: a },
+        });
+      }
+
+      // Doppia chance -> result.double_chance
+      const dcArr = Array.isArray(quote.double_chance) ? (quote.double_chance as any[]) : [];
+      const dc = { homeOrDraw: 0, homeOrAway: 0, drawOrAway: 0 };
+      for (const e of dcArr) {
+        const odds = Number(e?.odds);
+        if (Number.isNaN(odds) || odds <= 0) continue;
+        const name = String(e?.name ?? "");
+        if (name === "1X") dc.homeOrDraw = odds;
+        else if (name === "12") dc.homeOrAway = odds;
+        else if (name === "X2") dc.drawOrAway = odds;
+      }
+
+      if (dc.homeOrDraw > 0 || dc.homeOrAway > 0 || dc.drawOrAway > 0) {
+        result.double_chance!.push({
+          ...baseQuote,
+          ...(quote.date ? { date: quote.date } : undefined),
+          outcomes: dc,
+        });
+      }
+
+      // Under/Over -> result.totals_25 / result.totals_15
+      const pushTotals = (targetKey: "totals_25" | "totals_15") => {
+        const t = Array.isArray(quote[targetKey]) ? (quote[targetKey] as any[]) : null;
+        if (!t) return;
+        const over = Number(t.find((o) => o?.name === "Over")?.odds);
+        const under = Number(t.find((o) => o?.name === "Under")?.odds);
+        if (over > 0 || under > 0) {
+          (result[targetKey] as any[]).push({
+            ...baseQuote,
+            ...(quote.date ? { date: quote.date } : undefined),
+            outcomes: { over, under },
+          });
+        }
+      };
+
+      pushTotals("totals_25");
+      pushTotals("totals_15");
+
+      // Handicap -> result.spreads
+      const spArr = Array.isArray(quote.spreads) ? (quote.spreads as any[]) : null;
+      if (spArr) {
+        const sp1 = spArr.find((s) => s?.name === "1");
+        const sp2 = spArr.find((s) => s?.name === "2");
+        const home = Number(sp1?.odds);
+        const away = Number(sp2?.odds);
+        const homePoint = Number(sp1?.hdp);
+        const awayPoint = Number(sp2?.hdp);
+        if (home > 0 || away > 0) {
+          result.spreads!.push({
+            ...baseQuote,
+            ...(quote.date ? { date: quote.date } : undefined),
+            outcomes: { home, away, homePoint, awayPoint },
+          });
+        }
+      }
+
+      continue; // Betwinner gestito: salta il parsing standard
+    }
 
     if (stakesConfig) {
       const stakesPath = stakesConfig.stakesPath ?? "stakes";
