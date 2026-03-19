@@ -192,7 +192,7 @@
     "faviconUrl": "/favicons/betwinner.png",
     "affiliateUrl": "https://bwredir.com/2O6r",
     "apiProvider": "direct",
-    "apiBookmakerKey": "betwinner",
+    "apiBookmakerKey": "betwinner_br",
     "apiEndpoint": "https://bwapipub.com/all-games/pt.json",
     "apiKey": "none",
     "apiAuthType": "none",
