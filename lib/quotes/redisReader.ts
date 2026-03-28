@@ -9,7 +9,7 @@ function getRedis(): import("ioredis").default | null {
     const Redis = require("ioredis").default;
     redisClient = new Redis(url, {
       maxRetriesPerRequest: 3,
-      retryStrategy(times) {
+      retryStrategy(times: number) {
         return Math.min(times * 50, 2000);
       },
     });
