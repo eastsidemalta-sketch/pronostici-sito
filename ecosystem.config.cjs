@@ -2,6 +2,8 @@
  * PM2 config per droplet (test + produzione).
  * Test: pm2 start ecosystem.config.cjs --only pronostici-test
  * Prod: pm2 start ecosystem.config.cjs --only pronostici
+ * Worker test: pm2 start ecosystem.config.cjs --only pronostici-test-data-workers
+ * Worker prod: pm2 start ecosystem.config.cjs --only pronostici-data-workers
  */
 module.exports = {
   apps: [
@@ -18,6 +20,32 @@ module.exports = {
       script: "./start-standalone.sh",
       interpreter: "bash",
       env: { PORT: "3000", HOSTNAME: "0.0.0.0", LIVE_API_MONTHLY_BUDGET: "4500000" },
+    },
+    {
+      name: "pronostici-test-data-workers",
+      cwd: "/var/www/pronostici-sito-test",
+      script: "npx",
+      args: "tsx workers/index.ts",
+      instances: 1,
+      autorestart: true,
+      watch: false,
+      max_memory_restart: "500M",
+      env: {
+        NODE_ENV: "production",
+      },
+    },
+    {
+      name: "pronostici-data-workers",
+      cwd: "/var/www/pronostici-sito",
+      script: "npx",
+      args: "tsx workers/index.ts",
+      instances: 1,
+      autorestart: true,
+      watch: false,
+      max_memory_restart: "500M",
+      env: {
+        NODE_ENV: "production",
+      },
     },
   ],
 };
