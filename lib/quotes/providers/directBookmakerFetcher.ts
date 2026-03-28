@@ -121,7 +121,8 @@ import { getBookmakerDisplayName } from "../bookmakers";
 import { getByPath, getNumber, getString } from "@/lib/jsonPath";
 import { XMLParser } from "fast-xml-parser";
 
-function parseApiResponse(text: string): unknown {
+/** Risposta JSON o XML (Exalogic/Netwin) come in `fetchDirectBookmakerQuotes`. */
+export function parseBookmakerFeedResponse(text: string): unknown {
   const trimmed = text.trim();
   if (trimmed.startsWith("<")) {
     const parser = new XMLParser({ ignoreAttributes: false });
@@ -218,6 +219,60 @@ function buildHeaders(
   }
 
   return headers;
+}
+
+/** Ordine parametri query richiesto da Netwin (allineato a `fetchDirectBookmakerQuotes`). */
+const NETWIN_QUERY_PARAM_ORDER = [
+  "isLive",
+  "system_code",
+  "type",
+  "codiceSito",
+  "v_sport",
+  "v_scommesse",
+] as const;
+
+/**
+ * Costruisce URL GET e header per il feed Netwin (`bm.apiEndpoint`, es. `get_eventi_psqf`).
+ * Stessa logica di `fetchDirectBookmakerQuotes`: `type` FULL o delta, `NETWIN_SYSTEM_CODE_OVERRIDE` su `system_code`.
+ */
+export function buildNetwinGetRequest(
+  bm: Bookmaker,
+  kind: "FULL" | "delta"
+): { url: string; headers: Record<string, string> } | null {
+  const endpoint = bm.apiEndpoint;
+  const apiKey = bm.apiKey;
+  const mapping = bm.apiMappingConfig;
+  if (!endpoint || !mapping || !apiKey?.trim()) return null;
+
+  const authType = bm.apiAuthType ?? "query";
+  const reqConfig = bm.apiRequestConfig ?? {};
+  if ((reqConfig.method ?? "GET") !== "GET") return null;
+
+  let queryParams = { ...(reqConfig.queryParams as Record<string, string> | undefined) ?? {} };
+  const { isLive: _i, is_live: _il, islive: _ii, ...rest } = queryParams;
+  queryParams = {
+    isLive: "0",
+    ...rest,
+    type: kind === "FULL" ? "FULL" : "delta",
+  };
+  const systemCode = process.env.NETWIN_SYSTEM_CODE_OVERRIDE;
+  if (systemCode) queryParams = { ...queryParams, system_code: systemCode };
+
+  const url = buildUrl(
+    endpoint,
+    apiKey,
+    bm.apiSecret ?? undefined,
+    authType,
+    queryParams,
+    [...NETWIN_QUERY_PARAM_ORDER]
+  );
+
+  const headers = {
+    ...buildHeaders(apiKey, bm.apiSecret ?? undefined, authType),
+    ...(reqConfig.headers ?? {}),
+  };
+  headers["X-IsLive"] = "0";
+  return { url, headers };
 }
 
 /**
@@ -590,6 +645,17 @@ function getEventsArray(data: unknown, eventsPath: string): unknown[] {
   return [];
 }
 
+/** Eventi flat come nel loop principale di `fetchDirectBookmakerQuotes` (Exalogic o `eventsPath`). */
+export function extractEventsFromDirectFeed(
+  data: unknown,
+  mapping: Bookmaker["apiMappingConfig"]
+): unknown[] {
+  if (!mapping) return [];
+  const useExalogic = mapping.exalogic === true;
+  const eventsPath = mapping.eventsPath ?? "$";
+  return useExalogic ? flattenExalogicEvents(data) : getEventsArray(data, eventsPath);
+}
+
 /**
  * Estrae quote 1X2 da array stakes (Betboom/Sporthub).
  * market_name "Winner" o "Result" (Betboom può usare entrambi). Mappa per outcome_id (1,2,3) o per name (home, Draw, away).
@@ -960,7 +1026,7 @@ export async function fetchDirectBookmakerQuotes(
         return applyNetwinLeagueFilter(cached ?? {}, leagueId, isNetwin);
       }
     }
-    data = parseApiResponse(text);
+    data = parseBookmakerFeedResponse(text);
   } catch (e) {
     if (isNetwin && netwinUseFull) {
       const msg = e instanceof Error ? e.message : String(e);
@@ -1299,7 +1365,7 @@ export async function fetchDirectBookmakerQuotes(
       if (liveRes.ok) {
         const liveText = await liveRes.text();
         if (!liveText.includes("hash_lock") && !liveText.includes("isLive") && !/can be 0 or 1/i.test(liveText)) {
-          const liveData = parseApiResponse(liveText);
+          const liveData = parseBookmakerFeedResponse(liveText);
           const liveEvents = useExalogic
             ? flattenExalogicEvents(liveData)
             : getEventsArray(liveData, eventsPath);
@@ -1481,7 +1547,7 @@ export async function fetchDirectBookmakerQuotes(
           cache: "no-store",
         });
         if (resLive.ok) {
-          const dataLive = parseApiResponse(await resLive.text()) as Record<string, unknown>;
+          const dataLive = parseBookmakerFeedResponse(await resLive.text()) as Record<string, unknown>;
           const eventsLive = getEventsArray(dataLive, eventsPath);
           const stakesConfig = mapping.stakes1X2;
           if (stakesConfig && eventsLive.length > 0) {
