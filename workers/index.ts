@@ -1,3 +1,4 @@
+import "./bootLog";
 import { DirectBookmakerPoller } from './pollers/DirectBookmakerPoller';
 import { NetwinDeltaPoller } from './pollers/NetwinDeltaPoller';
 
