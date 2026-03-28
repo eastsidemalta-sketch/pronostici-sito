@@ -1,6 +1,6 @@
 import { getBookmakers } from '@/lib/quotes/bookmakersData';
+import { buildNetwinGetRequest } from '@/lib/quotes/providers/netwinBuildRequest';
 import {
-  buildNetwinGetRequest,
   extractEventsFromDirectFeed,
   parseBookmakerFeedResponse,
 } from '@/lib/quotes/providers/directBookmakerFetcher';

@@ -1,4 +1,4 @@
-import { getMultiMarketQuotes } from "./quotesEngine";
+import { getH2hQuotesFromRedisForFixture, getMultiMarketQuotes } from "./quotesEngine";
 import { getSportKeyForLeague } from "./leagueToSportKey";
 import { getBookmakers, getBookmakerDisplayName } from "./bookmakers";
 import { getBookmakerUrl } from "./bookmakerUrls";
@@ -56,15 +56,7 @@ function computeOddsBasedPercentages(
   };
 }
 
-export async function getQuotesForFixtures(
-  fixtures: Array<{
-    fixture: { id: number };
-    league: { id?: number; name?: string };
-    teams: { home: { name: string }; away: { name: string } };
-  }>,
-  country?: string
-): Promise<Record<number, FixtureQuoteSummary>> {
-  const result: Record<number, FixtureQuoteSummary> = {};
+function buildBookmakerLookupMaps() {
   const bookmakers = getBookmakers();
   const logoByKey = new Map<string, string>();
   const faviconByKey = new Map<string, string>();
@@ -75,8 +67,89 @@ export async function getQuotesForFixtures(
     if (bm.faviconUrl) faviconByKey.set(key, bm.faviconUrl);
     displayNameByKey.set(key, getBookmakerDisplayName(bm));
   });
+  return { logoByKey, faviconByKey, displayNameByKey };
+}
 
-  /** Raggruppa per (sportKey, leagueId): ogni lega ha quote proprie (Netwin/Betboom filtrano per league) */
+function h2hToFixtureSummary(
+  fixtureQuotes: Array<{
+    bookmaker?: string;
+    bookmakerKey?: string;
+    outcomes?: { home?: number; draw?: number; away?: number };
+  }>,
+  country: string | undefined,
+  logoByKey: Map<string, string>,
+  faviconByKey: Map<string, string>,
+  displayNameByKey: Map<string, string>
+): FixtureQuoteSummary | null {
+  if (fixtureQuotes.length === 0) return null;
+
+  const valid = fixtureQuotes.filter(
+    (q) =>
+      (q.outcomes?.home || 0) > 0 &&
+      (q.outcomes?.draw || 0) > 0 &&
+      (q.outcomes?.away || 0) > 0
+  );
+  const source = valid.length > 0 ? valid : fixtureQuotes;
+
+  const best1 = Math.max(...source.map((q) => q.outcomes?.home || 0), 0);
+  const bestX = Math.max(...source.map((q) => q.outcomes?.draw || 0), 0);
+  const best2 = Math.max(...source.map((q) => q.outcomes?.away || 0), 0);
+
+  const oddsBased = computeOddsBasedPercentages(source);
+
+  const q1 = source.find((q) => (q.outcomes?.home || 0) === best1);
+  const qX = source.find((q) => (q.outcomes?.draw || 0) === bestX);
+  const q2 = source.find((q) => (q.outcomes?.away || 0) === best2);
+
+  return {
+    best1,
+    bestX,
+    best2,
+    oddsBasedPct1: oddsBased?.pct1,
+    oddsBasedPctX: oddsBased?.pctX,
+    oddsBasedPct2: oddsBased?.pct2,
+    bookmaker1: q1
+      ? {
+          key: q1.bookmakerKey || "",
+          name: displayNameByKey.get((q1.bookmakerKey || "").toLowerCase()) || q1.bookmaker || "",
+          logoUrl: logoByKey.get((q1.bookmakerKey || "").toLowerCase()),
+          faviconUrl: faviconByKey.get((q1.bookmakerKey || "").toLowerCase()),
+          url: getBookmakerUrl(q1.bookmakerKey || "", country) ?? undefined,
+        }
+      : undefined,
+    bookmakerX: qX
+      ? {
+          key: qX.bookmakerKey || "",
+          name: displayNameByKey.get((qX.bookmakerKey || "").toLowerCase()) || qX.bookmaker || "",
+          logoUrl: logoByKey.get((qX.bookmakerKey || "").toLowerCase()),
+          faviconUrl: faviconByKey.get((qX.bookmakerKey || "").toLowerCase()),
+          url: getBookmakerUrl(qX.bookmakerKey || "", country) ?? undefined,
+        }
+      : undefined,
+    bookmaker2: q2
+      ? {
+          key: q2.bookmakerKey || "",
+          name: displayNameByKey.get((q2.bookmakerKey || "").toLowerCase()) || q2.bookmaker || "",
+          logoUrl: logoByKey.get((q2.bookmakerKey || "").toLowerCase()),
+          faviconUrl: faviconByKey.get((q2.bookmakerKey || "").toLowerCase()),
+          url: getBookmakerUrl(q2.bookmakerKey || "", country) ?? undefined,
+        }
+      : undefined,
+  };
+}
+
+/** Un bulk bookmaker per lega (fallback se `QUOTES_LIST_USE_DIRECT_BOOKMAKER=1`). */
+async function getQuotesForFixturesViaDirectBulk(
+  fixtures: Array<{
+    fixture: { id: number };
+    league: { id?: number; name?: string };
+    teams: { home: { name: string }; away: { name: string } };
+  }>,
+  country?: string
+): Promise<Record<number, FixtureQuoteSummary>> {
+  const result: Record<number, FixtureQuoteSummary> = {};
+  const { logoByKey, faviconByKey, displayNameByKey } = buildBookmakerLookupMaps();
+
   const bySportAndLeague = new Map<string, typeof fixtures>();
   for (const f of fixtures) {
     const sportKey = getSportKeyForLeague(f.league?.id, f.league?.name);
@@ -105,63 +178,58 @@ export async function getQuotesForFixtures(
         matchTeam(q.homeTeam || "", q.awayTeam || "", home, away, q.bookmakerKey)
       );
 
-      if (fixtureQuotes.length === 0) continue;
-
-      const valid = fixtureQuotes.filter(
-        (q) =>
-          (q.outcomes?.home || 0) > 0 &&
-          (q.outcomes?.draw || 0) > 0 &&
-          (q.outcomes?.away || 0) > 0
+      const summary = h2hToFixtureSummary(
+        fixtureQuotes,
+        country,
+        logoByKey,
+        faviconByKey,
+        displayNameByKey
       );
-      const source = valid.length > 0 ? valid : fixtureQuotes;
-
-      const best1 = Math.max(...source.map((q) => q.outcomes?.home || 0), 0);
-      const bestX = Math.max(...source.map((q) => q.outcomes?.draw || 0), 0);
-      const best2 = Math.max(...source.map((q) => q.outcomes?.away || 0), 0);
-
-      const oddsBased = computeOddsBasedPercentages(source);
-
-      const q1 = source.find((q) => (q.outcomes?.home || 0) === best1);
-      const qX = source.find((q) => (q.outcomes?.draw || 0) === bestX);
-      const q2 = source.find((q) => (q.outcomes?.away || 0) === best2);
-
-      result[fixture.fixture.id] = {
-        best1,
-        bestX,
-        best2,
-        oddsBasedPct1: oddsBased?.pct1,
-        oddsBasedPctX: oddsBased?.pctX,
-        oddsBasedPct2: oddsBased?.pct2,
-        bookmaker1: q1
-          ? {
-              key: q1.bookmakerKey || "",
-              name: displayNameByKey.get((q1.bookmakerKey || "").toLowerCase()) || q1.bookmaker || "",
-              logoUrl: logoByKey.get((q1.bookmakerKey || "").toLowerCase()),
-              faviconUrl: faviconByKey.get((q1.bookmakerKey || "").toLowerCase()),
-              url: getBookmakerUrl(q1.bookmakerKey || "", country) ?? undefined,
-            }
-          : undefined,
-        bookmakerX: qX
-          ? {
-              key: qX.bookmakerKey || "",
-              name: displayNameByKey.get((qX.bookmakerKey || "").toLowerCase()) || qX.bookmaker || "",
-              logoUrl: logoByKey.get((qX.bookmakerKey || "").toLowerCase()),
-              faviconUrl: faviconByKey.get((qX.bookmakerKey || "").toLowerCase()),
-              url: getBookmakerUrl(qX.bookmakerKey || "", country) ?? undefined,
-            }
-          : undefined,
-        bookmaker2: q2
-          ? {
-              key: q2.bookmakerKey || "",
-              name: displayNameByKey.get((q2.bookmakerKey || "").toLowerCase()) || q2.bookmaker || "",
-              logoUrl: logoByKey.get((q2.bookmakerKey || "").toLowerCase()),
-              faviconUrl: faviconByKey.get((q2.bookmakerKey || "").toLowerCase()),
-              url: getBookmakerUrl(q2.bookmakerKey || "", country) ?? undefined,
-            }
-          : undefined,
-      };
+      if (summary) result[fixture.fixture.id] = summary;
     }
   }
+
+  return result;
+}
+
+/**
+ * Riepilogo quote per lista home: una lettura Redis per partita (`match:odds:{idCasa-idOspite}`), in parallelo.
+ * Fallback bulk bookmaker solo con `QUOTES_LIST_USE_DIRECT_BOOKMAKER=1`.
+ */
+export async function getQuotesForFixtures(
+  fixtures: Array<{
+    fixture: { id: number };
+    league: { id?: number; name?: string };
+    teams: { home: { name: string }; away: { name: string } };
+  }>,
+  country?: string
+): Promise<Record<number, FixtureQuoteSummary>> {
+  if (process.env.QUOTES_LIST_USE_DIRECT_BOOKMAKER === "1") {
+    return getQuotesForFixturesViaDirectBulk(fixtures, country);
+  }
+
+  const result: Record<number, FixtureQuoteSummary> = {};
+  const { logoByKey, faviconByKey, displayNameByKey } = buildBookmakerLookupMaps();
+
+  await Promise.all(
+    fixtures.map(async (fixture) => {
+      const sportKey = getSportKeyForLeague(fixture.league?.id, fixture.league?.name);
+      if (!sportKey) return;
+
+      const home = fixture.teams?.home?.name || "";
+      const away = fixture.teams?.away?.name || "";
+      const h2h = await getH2hQuotesFromRedisForFixture(home, away, country);
+
+      const summary = h2hToFixtureSummary(
+        h2h,
+        country,
+        logoByKey,
+        faviconByKey,
+        displayNameByKey
+      );
+      if (summary) result[fixture.fixture.id] = summary;
+    })
+  );
 
   return result;
 }

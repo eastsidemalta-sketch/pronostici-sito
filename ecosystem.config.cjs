@@ -40,8 +40,9 @@ module.exports = {
     {
       name: "pronostici-test-data-workers",
       cwd: "/var/www/pronostici-sito-test",
-      script: "npx",
-      args: "tsx workers/index.ts",
+      script: "workers/index.ts",
+      interpreter: "node",
+      interpreter_args: "--import tsx",
       instances: 1,
       autorestart: true,
       watch: false,
@@ -54,8 +55,9 @@ module.exports = {
     {
       name: "pronostici-data-workers",
       cwd: "/var/www/pronostici-sito",
-      script: "npx",
-      args: "tsx workers/index.ts",
+      script: "workers/index.ts",
+      interpreter: "node",
+      interpreter_args: "--import tsx",
       instances: 1,
       autorestart: true,
       watch: false,

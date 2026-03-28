@@ -5,6 +5,7 @@ import { matchTeamNames } from "@/lib/teamAliases";
 import { compareBookmakers } from "./bookmakerRanking";
 import type { Bookmaker, RemunerationConfig } from "./bookmaker.types";
 import { getUniversalTeamId } from "@/workers/utils/teamMatcher";
+import type { NormalizedMatch } from "@/workers/core/DataNormalizer";
 
 function matchTeam(
   providerHome: string,
@@ -37,28 +38,31 @@ function qn(v?: number): number {
   return typeof v === "number" && Number.isFinite(v) && v > 0 ? v : 0;
 }
 
-/**
- * Se i worker hanno popolato `match:odds:{homeId-awayId}` e i nomi risolvono gli stessi id di `DataNormalizer`,
- * restituisce le quote senza chiamare le API bookmaker.
- */
-async function tryLoadMultiMarketFromRedis(
-  options: { homeTeam?: string; awayTeam?: string },
+function filterBookmakersByCountry(
+  bookmakers: Bookmaker[],
+  country?: string
+): Bookmaker[] {
+  if (!country) return bookmakers;
+  let parsedCountry = country.toUpperCase();
+  if (parsedCountry.includes("BR")) parsedCountry = "BR";
+  else if (parsedCountry.includes("IT")) parsedCountry = "IT";
+  else parsedCountry = parsedCountry.slice(0, 2);
+  return bookmakers.filter(
+    (b) =>
+      b.countries?.includes(parsedCountry) ||
+      b.country === parsedCountry ||
+      b.countryConfig?.[parsedCountry]
+  );
+}
+
+/** Costruisce `MultiMarketQuotes` da `match:odds:{homeId-awayId}` (hash field = bookmaker id). */
+function mergeRedisRawToMultiMarket(
+  raw: Record<string, NormalizedMatch>,
+  ht: string,
+  at: string,
   filteredBms: Bookmaker[],
   bookmakers: Bookmaker[]
-): Promise<MultiMarketQuotes | null> {
-  if (process.env.QUOTES_SKIP_REDIS === "1" || process.env.QUOTES_SKIP_REDIS === "true") {
-    return null;
-  }
-
-  const ht = options.homeTeam?.trim();
-  const at = options.awayTeam?.trim();
-  if (!ht || !at) return null;
-
-  const hid = getUniversalTeamId(ht);
-  const aid = getUniversalTeamId(at);
-  if (hid == null || aid == null) return null;
-
-  const raw = await getMatchOddsFromRedis(`${hid}-${aid}`);
+): MultiMarketQuotes | null {
   if (Object.keys(raw).length === 0) return null;
 
   const merged: MultiMarketQuotes = {
@@ -189,6 +193,64 @@ async function tryLoadMultiMarketFromRedis(
   return merged;
 }
 
+/**
+ * Quote 1X2 per una singola partita da Redis (`match:odds:{idCasa-idOspite}`), stessi filtri paese di `getMultiMarketQuotes`.
+ * Usato dalla lista home: N letture parallele invece di un bulk bookmaker.
+ */
+export async function getH2hQuotesFromRedisForFixture(
+  homeTeam: string,
+  awayTeam: string,
+  country?: string
+): Promise<MultiMarketQuotes["h2h"]> {
+  if (process.env.QUOTES_SKIP_REDIS === "1" || process.env.QUOTES_SKIP_REDIS === "true") {
+    return [];
+  }
+
+  const ht = homeTeam?.trim();
+  const at = awayTeam?.trim();
+  if (!ht || !at) return [];
+
+  let bookmakers = getBookmakers();
+  bookmakers = filterBookmakersByCountry(bookmakers, country);
+  const filteredBms = bookmakers;
+
+  const hid = getUniversalTeamId(ht);
+  const aid = getUniversalTeamId(at);
+  if (hid == null || aid == null) return [];
+
+  const raw = await getMatchOddsFromRedis(`${hid}-${aid}`);
+  const merged = mergeRedisRawToMultiMarket(raw, ht, at, filteredBms, bookmakers);
+  if (!merged) return [];
+
+  const sorted = applyFiltersAndSort(merged, { homeTeam: ht, awayTeam: at }, filteredBms);
+  return sorted.h2h ?? [];
+}
+
+/**
+ * Se i worker hanno popolato `match:odds:{homeId-awayId}` e i nomi risolvono gli stessi id di `DataNormalizer`,
+ * restituisce le quote senza chiamare le API bookmaker.
+ */
+async function tryLoadMultiMarketFromRedis(
+  options: { homeTeam?: string; awayTeam?: string },
+  filteredBms: Bookmaker[],
+  bookmakers: Bookmaker[]
+): Promise<MultiMarketQuotes | null> {
+  if (process.env.QUOTES_SKIP_REDIS === "1" || process.env.QUOTES_SKIP_REDIS === "true") {
+    return null;
+  }
+
+  const ht = options.homeTeam?.trim();
+  const at = options.awayTeam?.trim();
+  if (!ht || !at) return null;
+
+  const hid = getUniversalTeamId(ht);
+  const aid = getUniversalTeamId(at);
+  if (hid == null || aid == null) return null;
+
+  const raw = await getMatchOddsFromRedis(`${hid}-${aid}`);
+  return mergeRedisRawToMultiMarket(raw, ht, at, filteredBms, bookmakers);
+}
+
 function applyFiltersAndSort(
   merged: MultiMarketQuotes,
   options?: {
@@ -256,19 +318,7 @@ export async function getMultiMarketQuotes(
   sportKey: string,
   options?: { homeTeam?: string; awayTeam?: string; leagueId?: number; bookmakerId?: string; country?: string }
 ): Promise<MultiMarketQuotes> {
-  let bookmakers = getBookmakers();
-  if (options?.country) {
-    let parsedCountry = options.country.toUpperCase();
-    if (parsedCountry.includes('BR')) parsedCountry = 'BR';
-    else if (parsedCountry.includes('IT')) parsedCountry = 'IT';
-    else parsedCountry = parsedCountry.slice(0, 2);
-    bookmakers = bookmakers.filter(
-      (b) =>
-        b.countries?.includes(parsedCountry) ||
-        b.country === parsedCountry ||
-        b.countryConfig?.[parsedCountry]
-    );
-  }
+  let bookmakers = filterBookmakersByCountry(getBookmakers(), options?.country);
   const filteredBms = options?.bookmakerId
     ? bookmakers.filter(
         (b) =>
