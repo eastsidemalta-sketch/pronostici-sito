@@ -1,9 +1,5 @@
 import { getBookmakers } from '@/lib/quotes/bookmakersData';
-import { buildNetwinGetRequest } from '@/lib/quotes/providers/netwinBuildRequest';
-import {
-  extractEventsFromDirectFeed,
-  parseBookmakerFeedResponse,
-} from '@/lib/quotes/providers/directBookmakerFetcher';
+import { buildNetwinGetRequest } from '../../lib/quotes/providers/netwinBuildRequest';
 import { canDoDelta, isNetwinBookmaker, recordDeltaCall } from '@/lib/quotes/providers/netwinCache';
 import { BasePoller } from '../core/BasePoller';
 import { redis } from '../config/redisClient';
@@ -87,6 +83,25 @@ export class NetwinDeltaPoller extends BasePoller {
         /FULL\s+.*\s+in\s+corso/i.test(text)
       ) {
         console.warn('[NetwinDeltaPoller] Risposta hash_lock / FULL in corso: delta non applicata.');
+        return;
+      }
+
+      // Netwin a volte risponde 200 con testo tipo "Error isLive..." (parametri/header errati).
+      if (/^\s*error\b/i.test(text.trim())) {
+        console.warn(
+          '[NetwinDeltaPoller] Corpo errore testuale (non JSON/XML):',
+          text.slice(0, 400).replace(/\s+/g, ' ').trim()
+        );
+        return;
+      }
+
+      // import() dinamico: con tsx l’import statico da `directBookmakerFetcher` può lasciare
+      // `parseBookmakerFeedResponse` / `extractEventsFromDirectFeed` non ancora funzioni (ordine ESM).
+      const feed = await import('../../lib/quotes/providers/directBookmakerFetcher');
+      const parseBookmakerFeedResponse = feed.parseBookmakerFeedResponse;
+      const extractEventsFromDirectFeed = feed.extractEventsFromDirectFeed;
+      if (typeof parseBookmakerFeedResponse !== 'function' || typeof extractEventsFromDirectFeed !== 'function') {
+        console.error('[NetwinDeltaPoller] Parser feed non disponibili dopo import dinamico.');
         return;
       }
 

@@ -124,11 +124,25 @@ import { XMLParser } from "fast-xml-parser";
 /** Risposta JSON o XML (Exalogic/Netwin) come in `fetchDirectBookmakerQuotes`. */
 export function parseBookmakerFeedResponse(text: string): unknown {
   const trimmed = text.trim();
+  if (!trimmed) {
+    throw new Error("Feed vuoto");
+  }
   if (trimmed.startsWith("<")) {
     const parser = new XMLParser({ ignoreAttributes: false });
     return parser.parse(trimmed);
   }
-  return JSON.parse(text) as unknown;
+  const c = trimmed[0];
+  if (c !== "{" && c !== "[") {
+    const preview = trimmed.slice(0, 200).replace(/\s+/g, " ").trim();
+    throw new Error(`Feed non JSON/XML (atteso { o [ o <): ${preview}`);
+  }
+  try {
+    return JSON.parse(trimmed) as unknown;
+  } catch (e) {
+    const preview = trimmed.slice(0, 200).replace(/\s+/g, " ").trim();
+    const msg = e instanceof Error ? e.message : String(e);
+    throw new Error(`JSON feed non valido (${msg}): ${preview}`);
+  }
 }
 
 /**
